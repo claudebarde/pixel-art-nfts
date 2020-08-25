@@ -20,9 +20,20 @@ footer {
   grid-column: 1 / span 5;
 }
 
+header {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
 main {
   grid-column: 2 / span 4;
-  display: grid;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  padding: 30px 10px;
 }
 
 aside {
