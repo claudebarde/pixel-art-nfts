@@ -41,13 +41,17 @@ main {
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
-  padding: 30px 10px;
+  padding: 30px 0px;
 }
 
 aside {
   grid-column: span 1;
   padding: 30px 20px;
   border-right: solid 3px #edf2f7;
+}
+
+h2 {
+  text-align: center;
 }
 
 @media (max-width: 700px) {

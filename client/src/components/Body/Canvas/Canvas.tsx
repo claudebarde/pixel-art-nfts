@@ -32,6 +32,7 @@ const Canvas: React.FC = () => {
   const [largeCanvas, setLargeCanvas] = useState(defaultLargeCanvas());
   const [colorPicker, setColorPicker] = useState(undefined);
   const [bgColorPicker, setBgColorPicker] = useState(undefined);
+  const [displayGrid, setDisplayGrid] = useState(true);
   const activeBrushColor = useRef(brushColor);
   const activeBgColor = useRef(bgColor);
   const activeSmallCanvas = useRef([...smallCanvas]);
@@ -185,89 +186,122 @@ const Canvas: React.FC = () => {
           <h2>
             <i className="fas fa-toolbox"></i> Tool Box
           </h2>
-          <p>Canvas Size</p>
-          <label htmlFor="12x12-grid">
-            <input
-              id="12x12-grid"
-              type="radio"
-              name="grid-size"
-              value="12x12"
-              checked={gridSize === GridSize.Small}
-              onChange={() => {
-                setGridSize(GridSize.Small);
-                activeGridSize.current = GridSize.Small;
-                resetCanvas();
-              }}
-            />
-            12x12
-          </label>
-          <label htmlFor="32x32-grid">
-            <input
-              id="32x32-grid"
-              type="radio"
-              name="grid-size"
-              value="32x32"
-              checked={gridSize === GridSize.Medium}
-              onChange={() => {
-                setGridSize(GridSize.Medium);
-                activeGridSize.current = GridSize.Medium;
-                resetCanvas();
-              }}
-            />
-            32x32
-          </label>
-          <label htmlFor="64x64-grid">
-            <input
-              id="64x64-grid"
-              type="radio"
-              name="grid-size"
-              value="64x64"
-              checked={gridSize === GridSize.Large}
-              onChange={() => {
-                setGridSize(GridSize.Large);
-                activeGridSize.current = GridSize.Large;
-                resetCanvas();
-              }}
-            />
-            64x64
-          </label>
-          <p>Color Picker</p>
-          <div className={styles.colorPickerContainer}>
-            <div>
+          <p className={styles.menu_title}>Canvas Size</p>
+          <div className={styles.menu_list}>
+            <label
+              htmlFor="12x12-grid"
+              className={
+                gridSize === GridSize.Small ? styles.active : undefined
+              }
+            >
+              <input
+                id="12x12-grid"
+                type="radio"
+                name="grid-size"
+                value="12x12"
+                checked={gridSize === GridSize.Small}
+                onChange={() => {
+                  setGridSize(GridSize.Small);
+                  activeGridSize.current = GridSize.Small;
+                  resetCanvas();
+                }}
+              />
+              <span>12x12</span>
+            </label>
+            <label
+              htmlFor="32x32-grid"
+              className={
+                gridSize === GridSize.Medium ? styles.active : undefined
+              }
+            >
+              <input
+                id="32x32-grid"
+                type="radio"
+                name="grid-size"
+                value="32x32"
+                checked={gridSize === GridSize.Medium}
+                onChange={() => {
+                  setGridSize(GridSize.Medium);
+                  activeGridSize.current = GridSize.Medium;
+                  resetCanvas();
+                }}
+              />
+              <span>32x32</span>
+            </label>
+            <label
+              htmlFor="64x64-grid"
+              className={
+                gridSize === GridSize.Large ? styles.active : undefined
+              }
+            >
+              <input
+                id="64x64-grid"
+                type="radio"
+                name="grid-size"
+                value="64x64"
+                checked={gridSize === GridSize.Large}
+                onChange={() => {
+                  setGridSize(GridSize.Large);
+                  activeGridSize.current = GridSize.Large;
+                  resetCanvas();
+                }}
+              />
+              <span>64x64</span>
+            </label>
+          </div>
+          <p className={styles.menu_title}>Color Picker</p>
+          <div className={styles.menu_list}>
+            <div className={styles.colorPickerContainer}>
               <div id="color-picker" className={styles.colorpicker}></div>
               <div>
                 <em>Brush color</em>
               </div>
             </div>
-            <div>
+            <div className={styles.colorPickerContainer}>
               <div id="bg-color-picker" className={styles.colorpicker}></div>
               <div>
                 <em>Background color</em>
               </div>
             </div>
           </div>
-          <p>Options</p>
-          <ul>
-            <li>Hide the grid</li>
-            <li onClick={resetCanvas}>Reset the grid</li>
-          </ul>
-          <p>Upload</p>
-          <div>Give it a name</div>
-          <div>Add a price</div>
-          <div>Add your name (optional)</div>
+          <p className={styles.menu_title}>Options</p>
+          <div className={styles.menu_list}>
+            {displayGrid ? (
+              <p onClick={() => setDisplayGrid(false)}>Hide the grid</p>
+            ) : (
+              <p onClick={() => setDisplayGrid(true)}>Show the grid</p>
+            )}
+            <p onClick={resetCanvas}>Reset the grid</p>
+          </div>
+          <p className={styles.menu_title}>Upload</p>
+          <div className={styles.menu_list}>
+            <p>Give it a name</p>
+            <p>Add a price</p>
+            <p>Add your name (optional)</p>
+          </div>
         </div>
         <div className={styles.layout__canvas}>
           <div>
             <h2>Draw your pixel art below</h2>
             {/* Small Grid */}
             {gridSize === GridSize.Small && (
-              <div className={styles.pixelGridSmall}>
+              <div
+                className={styles.pixelGridSmall}
+                style={{
+                  borderBottom: displayGrid ? "solid 1px black" : "none",
+                  borderRight: displayGrid ? "solid 1px black" : "none"
+                }}
+              >
                 {smallCanvas.map((row, i1) =>
                   row.map((bgColor, i2) => (
                     <div
                       key={i1.toString() + i2.toString()}
                       className={styles.pixel}
-                      style={{ backgroundColor: bgColor }}
+                      style={{
+                        backgroundColor: bgColor,
+                        borderTop: displayGrid ? "solid 1px black" : "none",
+                        borderLeft: displayGrid ? "solid 1px black" : "none"
+                      }}
                       onClick={() => {
                         //console.log(`row: ${i1} ; column: ${i2}`);
                         // updates color in `smallCanvas` variable
@@ -283,13 +317,23 @@ const Canvas: React.FC = () => {
             )}
             {/* Medium Grid */}
             {gridSize === GridSize.Medium && (
-              <div className={styles.pixelGridMedium}>
+              <div
+                className={styles.pixelGridMedium}
+                style={{
+                  borderBottom: displayGrid ? "solid 1px black" : "none",
+                  borderRight: displayGrid ? "solid 1px black" : "none"
+                }}
+              >
                 {mediumCanvas.map((row, i1) =>
                   row.map((bgColor, i2) => (
                     <div
                       key={i1.toString() + i2.toString()}
                       className={styles.pixel}
-                      style={{ backgroundColor: bgColor }}
+                      style={{
+                        backgroundColor: bgColor,
+                        borderTop: displayGrid ? "solid 1px black" : "none",
+                        borderLeft: displayGrid ? "solid 1px black" : "none"
+                      }}
                       onClick={() => {
                         // updates color in `smallCanvas` variable
                         const newCanvas: string[][] = [...mediumCanvas];
@@ -304,13 +348,23 @@ const Canvas: React.FC = () => {
             )}
             {/* Large Grid */}
             {gridSize === GridSize.Large && (
-              <div className={styles.pixelGridLarge}>
+              <div
+                className={styles.pixelGridLarge}
+                style={{
+                  borderBottom: displayGrid ? "solid 1px black" : "none",
+                  borderRight: displayGrid ? "solid 1px black" : "none"
+                }}
+              >
                 {largeCanvas.map((row, i1) =>
                   row.map((bgColor, i2) => (
                     <div
                       key={i1.toString() + i2.toString()}
                       className={styles.pixel}
-                      style={{ backgroundColor: bgColor }}
+                      style={{
+                        backgroundColor: bgColor,
+                        borderTop: displayGrid ? "solid 1px black" : "none",
+                        borderLeft: displayGrid ? "solid 1px black" : "none"
+                      }}
                       onClick={() => {
                         // updates color in `smallCanvas` variable
                         const newCanvas: string[][] = [...largeCanvas];

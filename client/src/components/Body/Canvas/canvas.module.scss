@@ -12,8 +12,6 @@ $large-grid-blocks: 48;
   grid-template-columns: repeat($small-grid-blocks, $pixel-size-small);
   width: $pixel-size-small * $small-grid-blocks;
   height: $pixel-size-small * $small-grid-blocks;
-  border-right: solid 1px black;
-  border-bottom: solid 1px black;
   margin: auto;
 }
 
@@ -23,8 +21,6 @@ $large-grid-blocks: 48;
   grid-template-columns: repeat($medium-grid-blocks, $pixel-size-medium);
   width: $pixel-size-medium * $medium-grid-blocks;
   height: $pixel-size-medium * $medium-grid-blocks;
-  border-right: solid 1px black;
-  border-bottom: solid 1px black;
   margin: auto;
 }
 
@@ -34,14 +30,10 @@ $large-grid-blocks: 48;
   grid-template-columns: repeat($large-grid-blocks, $pixel-size-large);
   width: $pixel-size-large * $large-grid-blocks;
   height: $pixel-size-large * $large-grid-blocks;
-  border-right: solid 1px black;
-  border-bottom: solid 1px black;
   margin: auto;
 }
 
 .pixel {
-  border-top: solid 1px black;
-  border-left: solid 1px black;
   cursor: pointer;
 }
 
@@ -60,27 +52,55 @@ $large-grid-blocks: 48;
   label {
     display: inline-block;
     padding: 5px;
+    margin: 0px 5px;
     cursor: pointer;
+    border: solid 1px white;
+    border-radius: 5px;
+
+    input[type="radio"] {
+      appearance: none;
+    }
+
+    span {
+      margin-left: -10px;
+    }
   }
 
-  div {
-    padding: 2px;
-    margin: 2px 20px;
+  label.active {
+    border: solid 1px #4fd1c5;
+    background-color: #4fd1c5;
+    color: white;
   }
 }
 
 .layout__canvas {
-  width: 65%;
+  width: 75%;
   display: grid;
   text-align: center;
 }
 
 .colorPickerContainer {
+  display: flex;
+  flex-direction: row;
+  justify-content: left;
+  align-items: center;
+
   div {
+    margin: 5px;
+  }
+}
+
+.menu_title {
+  background-color: #edf2f7;
+  padding: 10px;
+}
+
+.menu_list {
+  padding-left: 15px;
+
+  p {
+    cursor: pointer;
     margin: 0px;
-    display: flex;
-    flex-direction: row;
-    justify-content: left;
-    align-items: center;
+    padding: 5px;
   }
 }
