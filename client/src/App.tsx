@@ -1,12 +1,13 @@
 import React from "react";
 import "./App.scss";
 import Header from "./components/Header/Header";
+import LeftColumn from "./components/LeftColumn/LeftColumn";
 
 function App() {
   return (
     <div className="grid">
       <Header />
-      <aside>Left column</aside>
+      <LeftColumn />
       <main>
         <div>Body</div>
       </main>

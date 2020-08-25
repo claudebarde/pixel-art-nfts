@@ -27,6 +27,14 @@ header {
   align-items: center;
 }
 
+footer {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 5px 10px;
+}
+
 main {
   grid-column: 2 / span 4;
   display: flex;
@@ -38,6 +46,8 @@ main {
 
 aside {
   grid-column: span 1;
+  padding: 30px 20px;
+  border-right: solid 3px #edf2f7;
 }
 
 @media (max-width: 700px) {
