@@ -1,0 +1,71 @@
+$pixel-size-small: 30px;
+$pixel-size-medium: 20px;
+$pixel-size-large: 14px;
+
+$small-grid-blocks: 12;
+$medium-grid-blocks: 32;
+$large-grid-blocks: 48;
+
+.pixelGridSmall {
+  display: grid;
+  grid-template-rows: repeat($small-grid-blocks, $pixel-size-small);
+  grid-template-columns: repeat($small-grid-blocks, $pixel-size-small);
+  width: $pixel-size-small * $small-grid-blocks;
+  height: $pixel-size-small * $small-grid-blocks;
+  border-right: solid 1px black;
+  border-bottom: solid 1px black;
+  margin: auto;
+}
+
+.pixelGridMedium {
+  display: grid;
+  grid-template-rows: repeat($medium-grid-blocks, $pixel-size-medium);
+  grid-template-columns: repeat($medium-grid-blocks, $pixel-size-medium);
+  width: $pixel-size-medium * $medium-grid-blocks;
+  height: $pixel-size-medium * $medium-grid-blocks;
+  border-right: solid 1px black;
+  border-bottom: solid 1px black;
+  margin: auto;
+}
+
+.pixelGridLarge {
+  display: grid;
+  grid-template-rows: repeat($large-grid-blocks, $pixel-size-large);
+  grid-template-columns: repeat($large-grid-blocks, $pixel-size-large);
+  width: $pixel-size-large * $large-grid-blocks;
+  height: $pixel-size-large * $large-grid-blocks;
+  border-right: solid 1px black;
+  border-bottom: solid 1px black;
+  margin: auto;
+}
+
+.pixel {
+  border-top: solid 1px black;
+  border-left: solid 1px black;
+  cursor: pointer;
+}
+
+.layout {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.layout__tools {
+  width: 20%;
+  display: flex;
+  flex-direction: column;
+
+  label {
+    display: inline-block;
+    padding: 5px;
+    cursor: pointer;
+  }
+}
+
+.layout__canvas {
+  width: 70%;
+  display: grid;
+  text-align: center;
+}
