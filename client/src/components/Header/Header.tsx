@@ -1,5 +1,6 @@
 import React, { useContext } from "react";
-import ReactTooltip from "react-tooltip";
+import { LedgerSigner, DerivationType } from "@taquito/ledger-signer";
+import TransportU2F from "@ledgerhq/hw-transport-u2f";
 import styles from "./header.module.scss";
 import line1 from "./templates/template-line-1";
 import line2 from "./templates/template-line-2";
@@ -10,6 +11,27 @@ import { Context, View } from "../../Context";
 
 const Header: React.FC = () => {
   const { view, setView } = useContext(Context);
+
+  /*const connectLedger = async () => {
+    try {
+      const transport = await TransportU2F.create();
+      const ledgerSigner = new LedgerSigner(
+        transport,
+        "44'/1729'/0'/0'",
+        true,
+        DerivationType.tz1
+      );
+
+      Tezos.setProvider({ signer: ledgerSigner });
+
+      //Get the public key and the public key hash from the Ledger
+      publicKeyHash = await Tezos.signer.publicKeyHash();
+
+      console.log("Public key:", publicKey);
+    } catch (error) {
+      console.log("Error!", error);
+    }
+  };*/
 
   return (
     <header>
@@ -92,7 +114,11 @@ const Header: React.FC = () => {
           ))}
       </div>
       <div className={styles.nav}>
-        <div onClick={() => setView(View.CANVAS)}>
+        <div
+          onClick={() => {
+            if (setView) setView(View.CANVAS);
+          }}
+        >
           <i
             className="fas fa-palette fa-lg"
             style={
@@ -100,7 +126,11 @@ const Header: React.FC = () => {
             }
           ></i>
         </div>
-        <div onClick={() => setView(View.MARKET)}>
+        <div
+          onClick={() => {
+            if (setView) setView(View.MARKET);
+          }}
+        >
           <i
             className="fas fa-store fa-lg"
             style={

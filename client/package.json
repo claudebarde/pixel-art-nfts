@@ -3,8 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@ledgerhq/hw-transport-u2f": "^5.22.0",
     "@simonwep/pickr": "^1.7.2",
     "@taquito/beacon-wallet": "^6.3.5-beta.0",
+    "@taquito/ledger-signer": "^6.4.0-ledger.0",
     "@taquito/taquito": "^6.3.5-beta.0",
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.3.2",
@@ -17,7 +19,6 @@
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-scripts": "3.4.3",
-    "react-tooltip": "^4.2.8",
     "typescript": "~3.7.2"
   },
   "scripts": {

@@ -10,17 +10,17 @@ export type ModalProps = {
   state: State;
   header: string;
   body: string;
-  close: () => any;
-  confirm: () => any;
+  close: any;
+  confirm: any;
 };
 
-export const Modal: React.FC = ({
+export const Modal: React.FC<ModalProps> = ({
   state,
   header,
   body,
   close,
   confirm
-}: ModalProps) => {
+}) => {
   if (state === State.CLOSED) {
     return null;
   } else {

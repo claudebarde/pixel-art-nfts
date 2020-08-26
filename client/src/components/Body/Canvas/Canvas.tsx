@@ -31,8 +31,8 @@ const Canvas: React.FC = () => {
   const [smallCanvas, setSmallCanvas] = useState(defaultSmallCanvas());
   const [mediumCanvas, setMediumCanvas] = useState(defaultMediumCanvas());
   const [largeCanvas, setLargeCanvas] = useState(defaultLargeCanvas());
-  const [colorPicker, setColorPicker] = useState(undefined);
-  const [bgColorPicker, setBgColorPicker] = useState(undefined);
+  const [colorPicker, setColorPicker] = useState<Pickr | undefined>();
+  const [bgColorPicker, setBgColorPicker] = useState<Pickr | undefined>();
   const [displayGrid, setDisplayGrid] = useState(true);
   const activeBrushColor = useRef(brushColor);
   const activeBgColor = useRef(bgColor);
@@ -46,21 +46,25 @@ const Canvas: React.FC = () => {
   const [artName, setArtName] = useState("masterpiece");
   const [price, setPrice] = useState(3);
   const [artistName, setArtistName] = useState("Claude B.");
-  const [modalState, setModalState] = useState({
+  const [modalState, setModalState] = useState<ModalProps>({
     state: ModalState.CLOSED,
     header: "",
-    body: ""
-  } as ModalProps);
+    body: "",
+    confirm: undefined,
+    close: undefined
+  });
 
   const resetCanvas = () => {
-    colorPicker.setColor(brushColor);
-    bgColorPicker.setColor(bgColor);
-    setSmallCanvas(defaultSmallCanvas());
-    activeSmallCanvas.current = defaultSmallCanvas();
-    setMediumCanvas(defaultMediumCanvas());
-    activeMediumCanvas.current = defaultMediumCanvas();
-    setLargeCanvas(defaultLargeCanvas());
-    activeLargeCanvas.current = defaultLargeCanvas();
+    if (colorPicker && bgColorPicker) {
+      colorPicker.setColor(brushColor);
+      bgColorPicker.setColor(bgColor);
+      setSmallCanvas(defaultSmallCanvas());
+      activeSmallCanvas.current = defaultSmallCanvas();
+      setMediumCanvas(defaultMediumCanvas());
+      activeMediumCanvas.current = defaultMediumCanvas();
+      setLargeCanvas(defaultLargeCanvas());
+      activeLargeCanvas.current = defaultLargeCanvas();
+    }
   };
 
   const upload = (emptyCanvas: boolean) => {
@@ -72,7 +76,7 @@ const Canvas: React.FC = () => {
         smallCanvas.flat(2).reduce((a, b) => {
           if (a === b) return a;
 
-          return false;
+          return "";
         }) &&
         !emptyCanvas
       ) {
@@ -82,7 +86,15 @@ const Canvas: React.FC = () => {
           header: "Empty canvas",
           body:
             "Your canvas appears to be empty, are you sure you want to upload it?",
-          confirm: () => upload(true)
+          confirm: () => upload(true),
+          close: () =>
+            setModalState({
+              state: ModalState.CLOSED,
+              header: "",
+              body: "",
+              confirm: undefined,
+              close: undefined
+            })
         });
         return;
       }
@@ -92,7 +104,7 @@ const Canvas: React.FC = () => {
         mediumCanvas.flat(2).reduce((a, b) => {
           if (a === b) return a;
 
-          return false;
+          return "";
         }) &&
         !emptyCanvas
       ) {
@@ -102,7 +114,15 @@ const Canvas: React.FC = () => {
           header: "Empty canvas",
           body:
             "Your canvas appears to be empty, are you sure you want to upload it?",
-          confirm: () => upload(true)
+          confirm: () => upload(true),
+          close: () =>
+            setModalState({
+              state: ModalState.CLOSED,
+              header: "",
+              body: "",
+              confirm: undefined,
+              close: undefined
+            })
         });
         return;
       }
@@ -112,7 +132,7 @@ const Canvas: React.FC = () => {
         largeCanvas.flat(2).reduce((a, b) => {
           if (a === b) return a;
 
-          return false;
+          return "";
         }) &&
         !emptyCanvas
       ) {
@@ -122,7 +142,15 @@ const Canvas: React.FC = () => {
           header: "Empty canvas",
           body:
             "Your canvas appears to be empty, are you sure you want to upload it?",
-          confirm: () => upload(true)
+          confirm: () => upload(true),
+          close: () =>
+            setModalState({
+              state: ModalState.CLOSED,
+              header: "",
+              body: "",
+              confirm: undefined,
+              close: undefined
+            })
         });
         return;
       }
@@ -280,7 +308,7 @@ const Canvas: React.FC = () => {
                 value="12x12"
                 checked={gridSize === GridSize.Small}
                 onChange={() => {
-                  setGridSize(GridSize.Small);
+                  if (setGridSize) setGridSize(GridSize.Small);
                   activeGridSize.current = GridSize.Small;
                   resetCanvas();
                 }}
@@ -300,7 +328,7 @@ const Canvas: React.FC = () => {
                 value="32x32"
                 checked={gridSize === GridSize.Medium}
                 onChange={() => {
-                  setGridSize(GridSize.Medium);
+                  if (setGridSize) setGridSize(GridSize.Medium);
                   activeGridSize.current = GridSize.Medium;
                   resetCanvas();
                 }}
@@ -320,7 +348,7 @@ const Canvas: React.FC = () => {
                 value="64x64"
                 checked={gridSize === GridSize.Large}
                 onChange={() => {
-                  setGridSize(GridSize.Large);
+                  if (setGridSize) setGridSize(GridSize.Large);
                   activeGridSize.current = GridSize.Large;
                   resetCanvas();
                 }}
@@ -375,7 +403,7 @@ const Canvas: React.FC = () => {
                 <input
                   type="number"
                   placeholder="Price in XTZ"
-                  onChange={e => setPrice(e.target.value)}
+                  onChange={e => setPrice(+e.target.value)}
                   value={price}
                 />
               </div>
@@ -514,12 +542,7 @@ const Canvas: React.FC = () => {
           <div></div>
         </div>
       </div>
-      <Modal
-        {...modalState}
-        close={() =>
-          setModalState({ state: ModalState.CLOSED, header: "", body: "" })
-        }
-      />
+      <Modal {...modalState} />
     </main>
   );
 };
