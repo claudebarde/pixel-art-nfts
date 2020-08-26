@@ -20,6 +20,7 @@ type State = {
   Tezos: TezosToolkit;
   userAddress: string;
   setUserAddress: React.Dispatch<React.SetStateAction<string>>;
+  network: string;
 };
 
 export const Context = React.createContext<Partial<State>>({});
@@ -29,14 +30,6 @@ export const Provider: React.FC = props => {
   const [gridSize, setGridSize] = useState(GridSize.Small);
   const [userAddress, setUserAddress] = useState<string>("");
 
-  useEffect(() => {
-    Tezos.setRpcProvider(
-      process.env.NODE_ENV === "development"
-        ? "http://localhost:8732"
-        : "https://carthagenet.smartpy.io"
-    );
-  }, []);
-
   const state: State = {
     view,
     setView,
@@ -44,8 +37,16 @@ export const Provider: React.FC = props => {
     setGridSize,
     Tezos,
     userAddress,
-    setUserAddress
+    setUserAddress,
+    network:
+      process.env.NODE_ENV === "development"
+        ? "http://localhost:8732"
+        : "https://carthagenet.smartpy.io"
   };
+
+  useEffect(() => {
+    Tezos.setRpcProvider(state.network);
+  }, []);
 
   return (
     <Context.Provider value={{ ...state }}>{props.children}</Context.Provider>

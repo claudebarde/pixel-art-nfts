@@ -1,6 +1,8 @@
 import React, { useContext } from "react";
 import { LedgerSigner, DerivationType } from "@taquito/ledger-signer";
 import TransportU2F from "@ledgerhq/hw-transport-u2f";
+import { BeaconWallet } from "@taquito/beacon-wallet";
+import { NetworkType } from "@airgap/beacon-sdk";
 import styles from "./header.module.scss";
 import line1 from "./templates/template-line-1";
 import line2 from "./templates/template-line-2";
@@ -10,9 +12,66 @@ import line5 from "./templates/template-line-5";
 import { Context, View } from "../../Context";
 
 const Header: React.FC = () => {
-  const { view, setView, Tezos, userAddress, setUserAddress } = useContext(
-    Context
-  );
+  const {
+    view,
+    setView,
+    Tezos,
+    userAddress,
+    setUserAddress,
+    network
+  } = useContext(Context);
+
+  const connectWallet = async () => {
+    try {
+      if (!Tezos || !setUserAddress)
+        throw new Error("Undefined Tezos or setUserAddress");
+
+      const wallet = new BeaconWallet({
+        name: "Pixel Art NFTs",
+        eventHandlers: {
+          P2P_LISTEN_FOR_CHANNEL_OPEN: {
+            handler: async data => {
+              console.log("Listening to P2P channel:", data);
+              //setBeaconConnection(BeaconConnection.LISTENING);
+              //setPublicToken(data.publicKey);
+            }
+          },
+          P2P_CHANNEL_CONNECT_SUCCESS: {
+            handler: async data => {
+              console.log("Channel connected:", data);
+              //setBeaconConnection(BeaconConnection.CONNECTED);
+            }
+          },
+          PERMISSION_REQUEST_SENT: {
+            handler: async data => {
+              console.log("Permission request sent:", data);
+              //setBeaconConnection(BeaconConnection.PERMISSION_REQUEST_SENT);
+            }
+          },
+          PERMISSION_REQUEST_SUCCESS: {
+            handler: async data => {
+              console.log("Wallet is connected:", data);
+              //setBeaconConnection(BeaconConnection.PERMISSION_REQUEST_SUCCESS);
+            }
+          }
+        }
+      });
+      Tezos.setWalletProvider(wallet);
+      await wallet.requestPermissions({
+        network: {
+          type: NetworkType.CARTHAGENET,
+          rpcUrl: network
+        }
+      });
+      // gets user's address
+      const keyHash = await wallet.getPKH();
+      setUserAddress(keyHash);
+
+      console.log("Public key:", keyHash);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const connectLedger = async () => {
     try {
@@ -154,7 +213,7 @@ const Header: React.FC = () => {
               <div className={styles.wallet_tooltip_container}>
                 <div className={styles.wallet_tooltip}>
                   <div>Choose your wallet</div>
-                  <p>
+                  <p onClick={connectWallet}>
                     <i className="fas fa-network-wired"></i> Beacon
                   </p>
                   <p onClick={connectLedger}>
