@@ -67,6 +67,22 @@ const Canvas: React.FC = () => {
     }
   };
 
+  const updateCanvas = (
+    pos1: number,
+    pos2: number,
+    canvas: string[][]
+  ): string[][] => {
+    // updates color in `smallCanvas` variable
+    const newCanvas: string[][] = [...canvas];
+    if (newCanvas[pos1][pos2] === activeBrushColor.current) {
+      // user clicks on a block with the same color as the brush
+      newCanvas[pos1][pos2] = activeBgColor.current;
+    } else {
+      newCanvas[pos1][pos2] = activeBrushColor.current;
+    }
+    return newCanvas;
+  };
+
   const upload = (emptyCanvas: boolean) => {
     if (!artName || !price || !artistName) return;
 
@@ -461,13 +477,9 @@ const Canvas: React.FC = () => {
                       onMouseDown={() => {
                         //console.log(`row: ${i1} ; column: ${i2}`);
                         // updates color in `smallCanvas` variable
-                        const newCanvas: string[][] = [...smallCanvas];
-                        if (newCanvas[i1][i2] === activeBrushColor.current) {
-                          // user clicks on a block with the same color as the brush
-                          newCanvas[i1][i2] = activeBgColor.current;
-                        } else {
-                          newCanvas[i1][i2] = activeBrushColor.current;
-                        }
+                        const newCanvas: string[][] = updateCanvas(i1, i2, [
+                          ...smallCanvas
+                        ]);
                         setSmallCanvas(newCanvas);
                         activeSmallCanvas.current = newCanvas;
                       }}
@@ -475,13 +487,9 @@ const Canvas: React.FC = () => {
                         // draw as user drags the mouse
                         if (event.buttons === 1) {
                           // updates color in `smallCanvas` variable
-                          const newCanvas: string[][] = [...smallCanvas];
-                          if (newCanvas[i1][i2] === activeBrushColor.current) {
-                            // user clicks on a block with the same color as the brush
-                            newCanvas[i1][i2] = activeBgColor.current;
-                          } else {
-                            newCanvas[i1][i2] = activeBrushColor.current;
-                          }
+                          const newCanvas: string[][] = updateCanvas(i1, i2, [
+                            ...smallCanvas
+                          ]);
                           setSmallCanvas(newCanvas);
                           activeSmallCanvas.current = newCanvas;
                         }
@@ -510,12 +518,24 @@ const Canvas: React.FC = () => {
                         borderTop: displayGrid ? "solid 1px black" : "none",
                         borderLeft: displayGrid ? "solid 1px black" : "none"
                       }}
-                      onClick={() => {
+                      onMouseDown={() => {
                         // updates color in `smallCanvas` variable
-                        const newCanvas: string[][] = [...mediumCanvas];
-                        newCanvas[i1][i2] = activeBrushColor.current;
+                        const newCanvas: string[][] = updateCanvas(i1, i2, [
+                          ...mediumCanvas
+                        ]);
                         setMediumCanvas(newCanvas);
                         activeMediumCanvas.current = newCanvas;
+                      }}
+                      onMouseEnter={event => {
+                        // draw as user drags the mouse
+                        if (event.buttons === 1) {
+                          // updates color in `smallCanvas` variable
+                          const newCanvas: string[][] = updateCanvas(i1, i2, [
+                            ...mediumCanvas
+                          ]);
+                          setSmallCanvas(newCanvas);
+                          activeSmallCanvas.current = newCanvas;
+                        }
                       }}
                     ></div>
                   ))
@@ -541,12 +561,24 @@ const Canvas: React.FC = () => {
                         borderTop: displayGrid ? "solid 1px black" : "none",
                         borderLeft: displayGrid ? "solid 1px black" : "none"
                       }}
-                      onClick={() => {
+                      onMouseDown={() => {
                         // updates color in `smallCanvas` variable
-                        const newCanvas: string[][] = [...largeCanvas];
-                        newCanvas[i1][i2] = activeBrushColor.current;
+                        const newCanvas: string[][] = updateCanvas(i1, i2, [
+                          ...largeCanvas
+                        ]);
                         setLargeCanvas(newCanvas);
                         activeLargeCanvas.current = newCanvas;
+                      }}
+                      onMouseEnter={event => {
+                        // draw as user drags the mouse
+                        if (event.buttons === 1) {
+                          // updates color in `smallCanvas` variable
+                          const newCanvas: string[][] = updateCanvas(i1, i2, [
+                            ...largeCanvas
+                          ]);
+                          setSmallCanvas(newCanvas);
+                          activeSmallCanvas.current = newCanvas;
+                        }
                       }}
                     ></div>
                   ))
