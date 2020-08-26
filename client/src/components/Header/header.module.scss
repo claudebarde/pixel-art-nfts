@@ -23,3 +23,61 @@
     cursor: pointer;
   }
 }
+
+.wallet_button {
+  position: relative;
+
+  &:hover .wallet_tooltip {
+    display: block;
+  }
+}
+
+.wallet_tooltip_container {
+  position: absolute;
+  top: 0px;
+  right: -20px;
+  margin: 0px;
+  padding: 0px;
+  padding-top: 30px;
+  width: 60px;
+  background-color: transparent;
+
+  :hover .wallet_tooltip {
+    display: block;
+  }
+}
+
+.wallet_tooltip {
+  display: none;
+  background-color: white;
+  border: solid 1px black;
+  border-radius: 5px;
+  padding: 0px;
+  width: 160px;
+  font-size: 1rem;
+  transition: 0.3s;
+  float: right;
+
+  :hover {
+    display: block;
+  }
+
+  div {
+    padding: 10px;
+    margin: 0px;
+  }
+
+  p {
+    padding: 10px;
+    margin: 0px;
+    cursor: pointer;
+
+    i {
+      margin-right: 5px;
+    }
+  }
+
+  p:hover {
+    background-color: #edf2f7;
+  }
+}

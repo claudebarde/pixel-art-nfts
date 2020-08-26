@@ -1,4 +1,5 @@
 import React, { useContext } from "react";
+import ReactTooltip from "react-tooltip";
 import styles from "./header.module.scss";
 import line1 from "./templates/template-line-1";
 import line2 from "./templates/template-line-2";
@@ -107,8 +108,19 @@ const Header: React.FC = () => {
             }
           ></i>
         </div>
-        <div>
+        <div className={styles.wallet_button}>
           <i className="fas fa-wallet fa-lg"></i>
+          <div className={styles.wallet_tooltip_container}>
+            <div className={styles.wallet_tooltip}>
+              <div>Choose your wallet</div>
+              <p>
+                <i className="fas fa-network-wired"></i> Beacon
+              </p>
+              <p>
+                <i className="fab fa-usb"></i> Nano Ledger
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </header>
