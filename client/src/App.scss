@@ -9,7 +9,7 @@ body,
 
 .grid {
   display: grid;
-  grid-template-columns: 1fr 5fr;
+  grid-template-columns: 5fr 1fr;
   grid-template-rows: 10% 85% 5%;
   grid-gap: 0px;
   height: 100%;
@@ -22,8 +22,8 @@ footer {
 
 header {
   display: flex;
-  flex-direction: column;
-  justify-content: center;
+  flex-direction: row;
+  justify-content: space-around;
   align-items: center;
 }
 
@@ -36,12 +36,12 @@ footer {
 }
 
 main {
-  grid-column: 2 / span 4;
+  grid-column: span 4 / 2;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
-  padding: 30px 0px;
+  padding: 30px;
 }
 
 aside {
@@ -57,6 +57,6 @@ h2 {
 @media (max-width: 700px) {
   main,
   aside {
-    grid-column: 1 / span 5;
+    grid-column: span 5 / 1;
   }
 }

@@ -282,7 +282,9 @@ const Canvas: React.FC = () => {
         </div>
         <div className={styles.layout__canvas}>
           <div>
-            <h2>Draw your pixel art below</h2>
+            <h2>
+              <i className="fas fa-paint-brush"></i> Draw your pixel art below
+            </h2>
             {/* Small Grid */}
             {gridSize === GridSize.Small && (
               <div

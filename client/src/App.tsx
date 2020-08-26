@@ -12,7 +12,6 @@ function App() {
   return (
     <div className="grid">
       <Header />
-      <LeftColumn />
       {view === View.CANVAS ? <Canvas /> : <Market />}
       <footer>Footer</footer>
     </div>
