@@ -43,9 +43,9 @@ const Canvas: React.FC = () => {
   const [showArtName, setShowArtName] = useState(false);
   const [showPrice, setShowPrice] = useState(false);
   const [showArtistName, setShowArtistName] = useState(false);
-  const [artName, setArtName] = useState("");
-  const [price, setPrice] = useState(0);
-  const [artistName, setArtistName] = useState("");
+  const [artName, setArtName] = useState("masterpiece");
+  const [price, setPrice] = useState(3);
+  const [artistName, setArtistName] = useState("Claude B.");
   const [modalState, setModalState] = useState({
     state: ModalState.CLOSED,
     header: "",
@@ -63,7 +63,9 @@ const Canvas: React.FC = () => {
     activeLargeCanvas.current = defaultLargeCanvas();
   };
 
-  const upload = () => {
+  const upload = (emptyCanvas: boolean) => {
+    if (!artName || !price || !artistName) return;
+
     if (gridSize === GridSize.Small) {
       // for the small canvas
       if (
@@ -71,20 +73,61 @@ const Canvas: React.FC = () => {
           if (a === b) return a;
 
           return false;
-        })
+        }) &&
+        !emptyCanvas
       ) {
         // canvas is made of the same color
         setModalState({
           state: ModalState.OPEN,
-          header: "This is a modal",
-          body: "Hello Tezos"
+          header: "Empty canvas",
+          body:
+            "Your canvas appears to be empty, are you sure you want to upload it?",
+          confirm: () => upload(true)
         });
+        return;
       }
     } else if (gridSize === GridSize.Medium) {
       // for the medium canvas
+      if (
+        mediumCanvas.flat(2).reduce((a, b) => {
+          if (a === b) return a;
+
+          return false;
+        }) &&
+        !emptyCanvas
+      ) {
+        // canvas is made of the same color
+        setModalState({
+          state: ModalState.OPEN,
+          header: "Empty canvas",
+          body:
+            "Your canvas appears to be empty, are you sure you want to upload it?",
+          confirm: () => upload(true)
+        });
+        return;
+      }
     } else if (gridSize === GridSize.Large) {
       // for the large canvas
+      if (
+        largeCanvas.flat(2).reduce((a, b) => {
+          if (a === b) return a;
+
+          return false;
+        }) &&
+        !emptyCanvas
+      ) {
+        // canvas is made of the same color
+        setModalState({
+          state: ModalState.OPEN,
+          header: "Empty canvas",
+          body:
+            "Your canvas appears to be empty, are you sure you want to upload it?",
+          confirm: () => upload(true)
+        });
+        return;
+      }
     }
+    console.log("upload is on!");
   };
 
   useEffect(() => {
@@ -352,10 +395,11 @@ const Canvas: React.FC = () => {
             )}
             <div>
               <button
+                disabled={!artName || !price || !artistName}
                 className={`button ${
                   artName && price && artistName ? "info" : "disabled"
                 }`}
-                onClick={upload}
+                onClick={() => upload(false)}
               >
                 <i className="fas fa-file-upload"></i> Upload
               </button>
@@ -390,7 +434,12 @@ const Canvas: React.FC = () => {
                         //console.log(`row: ${i1} ; column: ${i2}`);
                         // updates color in `smallCanvas` variable
                         const newCanvas: string[][] = [...smallCanvas];
-                        newCanvas[i1][i2] = activeBrushColor.current;
+                        if (newCanvas[i1][i2] === activeBrushColor.current) {
+                          // user clicks on a block with the same color as the brush
+                          newCanvas[i1][i2] = activeBgColor.current;
+                        } else {
+                          newCanvas[i1][i2] = activeBrushColor.current;
+                        }
                         setSmallCanvas(newCanvas);
                         activeSmallCanvas.current = newCanvas;
                       }}
