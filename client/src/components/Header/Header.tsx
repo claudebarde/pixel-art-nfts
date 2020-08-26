@@ -10,28 +10,35 @@ import line5 from "./templates/template-line-5";
 import { Context, View } from "../../Context";
 
 const Header: React.FC = () => {
-  const { view, setView } = useContext(Context);
+  const { view, setView, Tezos, userAddress, setUserAddress } = useContext(
+    Context
+  );
 
-  /*const connectLedger = async () => {
+  const connectLedger = async () => {
     try {
-      const transport = await TransportU2F.create();
-      const ledgerSigner = new LedgerSigner(
-        transport,
-        "44'/1729'/0'/0'",
-        true,
-        DerivationType.tz1
-      );
+      if (Tezos && setUserAddress) {
+        const transport = await TransportU2F.create();
+        const ledgerSigner = new LedgerSigner(
+          transport,
+          "44'/1729'/0'/0'",
+          true,
+          DerivationType.tz1
+        );
 
-      Tezos.setProvider({ signer: ledgerSigner });
+        Tezos.setProvider({ signer: ledgerSigner });
 
-      //Get the public key and the public key hash from the Ledger
-      publicKeyHash = await Tezos.signer.publicKeyHash();
+        //Get the public key and the public key hash from the Ledger
+        const keyHash = await Tezos.signer.publicKeyHash();
+        setUserAddress(keyHash);
 
-      console.log("Public key:", publicKey);
+        console.log("Public key:", keyHash);
+      } else {
+        throw new Error("Undefined Tezos or setPublicKeyHash");
+      }
     } catch (error) {
       console.log("Error!", error);
     }
-  };*/
+  };
 
   return (
     <header>
@@ -139,18 +146,24 @@ const Header: React.FC = () => {
           ></i>
         </div>
         <div className={styles.wallet_button}>
-          <i className="fas fa-wallet fa-lg"></i>
-          <div className={styles.wallet_tooltip_container}>
-            <div className={styles.wallet_tooltip}>
-              <div>Choose your wallet</div>
-              <p>
-                <i className="fas fa-network-wired"></i> Beacon
-              </p>
-              <p>
-                <i className="fab fa-usb"></i> Nano Ledger
-              </p>
-            </div>
-          </div>
+          {userAddress ? (
+            <i className="fas fa-user-check fa-lg"></i>
+          ) : (
+            <>
+              <i className="fas fa-wallet fa-lg"></i>
+              <div className={styles.wallet_tooltip_container}>
+                <div className={styles.wallet_tooltip}>
+                  <div>Choose your wallet</div>
+                  <p>
+                    <i className="fas fa-network-wired"></i> Beacon
+                  </p>
+                  <p onClick={connectLedger}>
+                    <i className="fab fa-usb"></i> Nano Ledger
+                  </p>
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </header>
