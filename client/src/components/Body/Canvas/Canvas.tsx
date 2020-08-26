@@ -3,6 +3,7 @@ import Pickr from "@simonwep/pickr";
 import "@simonwep/pickr/dist/themes/classic.min.css";
 import styles from "./canvas.module.scss";
 import { Context, GridSize } from "../../../Context";
+import { State as ModalState, ModalProps, Modal } from "../../Modal/Modal";
 
 const [blockNumberSmall, blockNumberMedium, blockNumberLarge]: number[] = [
   12,
@@ -39,6 +40,17 @@ const Canvas: React.FC = () => {
   const activeMediumCanvas = useRef([...mediumCanvas]);
   const activeLargeCanvas = useRef([...largeCanvas]);
   const activeGridSize = useRef(GridSize.Small);
+  const [showArtName, setShowArtName] = useState(false);
+  const [showPrice, setShowPrice] = useState(false);
+  const [showArtistName, setShowArtistName] = useState(false);
+  const [artName, setArtName] = useState("");
+  const [price, setPrice] = useState(0);
+  const [artistName, setArtistName] = useState("");
+  const [modalState, setModalState] = useState({
+    state: ModalState.CLOSED,
+    header: "",
+    body: ""
+  } as ModalProps);
 
   const resetCanvas = () => {
     colorPicker.setColor(brushColor);
@@ -49,6 +61,30 @@ const Canvas: React.FC = () => {
     activeMediumCanvas.current = defaultMediumCanvas();
     setLargeCanvas(defaultLargeCanvas());
     activeLargeCanvas.current = defaultLargeCanvas();
+  };
+
+  const upload = () => {
+    if (gridSize === GridSize.Small) {
+      // for the small canvas
+      if (
+        smallCanvas.flat(2).reduce((a, b) => {
+          if (a === b) return a;
+
+          return false;
+        })
+      ) {
+        // canvas is made of the same color
+        setModalState({
+          state: ModalState.OPEN,
+          header: "This is a modal",
+          body: "Hello Tezos"
+        });
+      }
+    } else if (gridSize === GridSize.Medium) {
+      // for the medium canvas
+    } else if (gridSize === GridSize.Large) {
+      // for the large canvas
+    }
   };
 
   useEffect(() => {
@@ -275,16 +311,62 @@ const Canvas: React.FC = () => {
           </div>
           <p className={styles.menu_title}>Upload</p>
           <div className={styles.menu_list}>
-            <p>Give it a name</p>
-            <p>Add a price</p>
-            <p>Add your name (optional)</p>
+            <div onClick={() => setShowArtName(!showArtName)}>
+              <i className="fas fa-chevron-down"></i> Give it a name
+            </div>
+            {showArtName && (
+              <div>
+                <input
+                  type="text"
+                  placeholder="Name of your piece"
+                  onChange={e => setArtName(e.target.value)}
+                  value={artName}
+                />
+              </div>
+            )}
+            <div onClick={() => setShowPrice(!showPrice)}>
+              <i className="fas fa-chevron-down"></i> Add a price
+            </div>
+            {showPrice && (
+              <div>
+                <input
+                  type="number"
+                  placeholder="Price in XTZ"
+                  onChange={e => setPrice(e.target.value)}
+                  value={price}
+                />
+              </div>
+            )}
+            <div onClick={() => setShowArtistName(!showArtistName)}>
+              <i className="fas fa-chevron-down"></i> Add your name (optional)
+            </div>
+            {showArtistName && (
+              <div>
+                <input
+                  type="text"
+                  placeholder="Your name"
+                  onChange={e => setArtistName(e.target.value)}
+                  value={artistName}
+                />
+              </div>
+            )}
+            <div>
+              <button
+                className={`button ${
+                  artName && price && artistName ? "info" : "disabled"
+                }`}
+                onClick={upload}
+              >
+                <i className="fas fa-file-upload"></i> Upload
+              </button>
+            </div>
           </div>
         </div>
         <div className={styles.layout__canvas}>
+          <h2>
+            <i className="fas fa-paint-brush"></i> Draw your pixel art below
+          </h2>
           <div>
-            <h2>
-              <i className="fas fa-paint-brush"></i> Draw your pixel art below
-            </h2>
             {/* Small Grid */}
             {gridSize === GridSize.Small && (
               <div
@@ -380,8 +462,15 @@ const Canvas: React.FC = () => {
               </div>
             )}
           </div>
+          <div></div>
         </div>
       </div>
+      <Modal
+        {...modalState}
+        close={() =>
+          setModalState({ state: ModalState.CLOSED, header: "", body: "" })
+        }
+      />
     </main>
   );
 };

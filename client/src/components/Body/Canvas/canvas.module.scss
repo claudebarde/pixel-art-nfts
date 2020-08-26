@@ -42,12 +42,14 @@ $large-grid-blocks: 48;
   flex-direction: row;
   justify-content: flex-start;
   width: 100%;
+  height: 100%;
 }
 
 .layout__tools {
   width: 25%;
   display: flex;
   flex-direction: column;
+  overflow: auto;
 
   label {
     display: inline-block;
@@ -71,11 +73,24 @@ $large-grid-blocks: 48;
     background-color: #4fd1c5;
     color: white;
   }
+
+  input[type="text"],
+  input[type="number"] {
+    padding: 5px;
+  }
+
+  p {
+    margin: 6px;
+    padding: 6px;
+    cursor: pointer;
+  }
 }
 
 .layout__canvas {
   width: 75%;
-  display: grid;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
   text-align: center;
 }
 
@@ -98,7 +113,7 @@ $large-grid-blocks: 48;
 .menu_list {
   padding-left: 15px;
 
-  p {
+  div {
     cursor: pointer;
     margin: 0px;
     padding: 5px;

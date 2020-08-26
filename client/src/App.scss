@@ -54,6 +54,51 @@ h2 {
   text-align: center;
 }
 
+.button {
+  padding: 10px 15px;
+  cursor: pointer;
+  border: none;
+  outline: none;
+  border-radius: 5px;
+  margin: 10px;
+  transition: 0.1s;
+
+  &.disabled {
+    background-color: #e2e8f0;
+
+    &:active {
+      background-color: darken(#e2e8f0, 10);
+    }
+  }
+
+  &.success {
+    background-color: #68d391;
+    color: white;
+
+    &:active {
+      background-color: darken(#68d391, 10);
+    }
+  }
+
+  &.info {
+    background-color: #63b3ed;
+    color: white;
+
+    &:active {
+      background-color: darken(#63b3ed, 10);
+    }
+  }
+
+  &.error {
+    background-color: #fc8181;
+    color: white;
+
+    &:active {
+      background-color: darken(#fc8181, 10);
+    }
+  }
+}
+
 @media (max-width: 700px) {
   main,
   aside {

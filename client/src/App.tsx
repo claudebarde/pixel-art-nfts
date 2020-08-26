@@ -1,7 +1,7 @@
 import React, { useContext } from "react";
 import "./App.scss";
 import Header from "./components/Header/Header";
-import LeftColumn from "./components/LeftColumn/LeftColumn";
+import RightColumn from "./components/RightColumn/RightColumn";
 import { Context, View } from "./Context";
 import Canvas from "./components/Body/Canvas/Canvas";
 import Market from "./components/Body/Market/Market";
@@ -13,6 +13,7 @@ function App() {
     <div className="grid">
       <Header />
       {view === View.CANVAS ? <Canvas /> : <Market />}
+      <RightColumn />
       <footer>Footer</footer>
     </div>
   );

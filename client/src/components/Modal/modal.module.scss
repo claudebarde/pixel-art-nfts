@@ -1,0 +1,37 @@
+.modal_container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  background: rgba(0, 0, 0, 0.5);
+  width: 100vw;
+  height: 100vh;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal {
+  background-color: white;
+  margin: 0 auto;
+  width: 40%;
+  opacity: 1;
+  border-radius: 5px;
+
+  .modal__header {
+    padding: 20px;
+    font-size: 1.2rem;
+  }
+
+  .modal__body {
+    padding: 30px 20px;
+  }
+
+  .modal__buttons {
+    padding: 5px 10px;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+  }
+}
