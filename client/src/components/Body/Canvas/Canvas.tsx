@@ -5,6 +5,15 @@ import styles from "./canvas.module.scss";
 import { Context, GridSize } from "../../../Context";
 import { State as ModalState, ModalProps, Modal } from "../../Modal/Modal";
 
+interface IPFSObject {
+  canvas: string;
+  size: number;
+  createdOn: number;
+  author: string;
+  name: string;
+  artistName?: string;
+}
+
 const [blockNumberSmall, blockNumberMedium, blockNumberLarge]: number[] = [
   12,
   32,
@@ -27,7 +36,7 @@ const defaultLargeCanvas = (): string[][] =>
     .map(el => Array(blockNumberLarge).fill(bgColor));
 
 const Canvas: React.FC = () => {
-  const { gridSize, setGridSize } = useContext(Context);
+  const { gridSize, setGridSize, userAddress } = useContext(Context);
   const [smallCanvas, setSmallCanvas] = useState(defaultSmallCanvas());
   const [mediumCanvas, setMediumCanvas] = useState(defaultMediumCanvas());
   const [largeCanvas, setLargeCanvas] = useState(defaultLargeCanvas());
@@ -171,7 +180,28 @@ const Canvas: React.FC = () => {
         return;
       }
     }
-    console.log("upload is on!");
+    let canvasJSON: string = "";
+    if (gridSize === 1) {
+      // small canvas
+      canvasJSON = JSON.stringify(smallCanvas);
+    } else if (gridSize === 2) {
+      // medium canvas
+      canvasJSON = JSON.stringify(mediumCanvas);
+    } else if (gridSize === 3) {
+      // small canvas
+      canvasJSON = JSON.stringify(largeCanvas);
+    }
+    if (canvasJSON && userAddress) {
+      const timestamp = Date.now();
+      const IPFSObject: IPFSObject = {
+        canvas: canvasJSON,
+        size: gridSize as number,
+        createdOn: timestamp,
+        author: userAddress as string,
+        name: artName,
+        artistName: showArtistName ? artistName : ""
+      };
+    }
   };
 
   useEffect(() => {

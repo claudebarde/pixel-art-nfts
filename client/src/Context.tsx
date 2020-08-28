@@ -25,6 +25,11 @@ type State = {
 
 export const Context = React.createContext<Partial<State>>({});
 
+const network =
+  process.env.NODE_ENV === "development"
+    ? "http://localhost:8732"
+    : "https://carthagenet.smartpy.io";
+
 export const Provider: React.FC = props => {
   const [view, setView] = useState(View.CANVAS);
   const [gridSize, setGridSize] = useState(GridSize.Small);
@@ -38,10 +43,7 @@ export const Provider: React.FC = props => {
     Tezos,
     userAddress,
     setUserAddress,
-    network:
-      process.env.NODE_ENV === "development"
-        ? "http://localhost:8732"
-        : "https://carthagenet.smartpy.io"
+    network
   };
 
   useEffect(() => {

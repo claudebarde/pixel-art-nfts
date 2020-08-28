@@ -1,5 +1,4 @@
-import React, { useContext } from "react";
-import styles from "./styles.module.scss";
+import React from "react";
 
 const LeftColumn: React.FC = () => {
   return <aside></aside>;
