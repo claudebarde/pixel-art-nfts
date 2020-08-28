@@ -1,18 +1,17 @@
 import React, { useContext, useEffect, useState, useRef } from "react";
 import Pickr from "@simonwep/pickr";
 import "@simonwep/pickr/dist/themes/classic.min.css";
+import { MichelsonMap } from "@taquito/taquito";
 import styles from "./canvas.module.scss";
 import { Context, GridSize } from "../../../Context";
-import { State as ModalState, ModalProps, Modal } from "../../Modal/Modal";
-
-interface IPFSObject {
-  canvas: string;
-  size: number;
-  createdOn: number;
-  author: string;
-  name: string;
-  artistName?: string;
-}
+import {
+  State as ModalState,
+  ModalProps,
+  ModalType,
+  Modal
+} from "../../Modal/Modal";
+import config from "../../../config";
+import { IPFSObject, TokenMetadata } from "../../../types";
 
 const [blockNumberSmall, blockNumberMedium, blockNumberLarge]: number[] = [
   12,
@@ -36,7 +35,7 @@ const defaultLargeCanvas = (): string[][] =>
     .map(el => Array(blockNumberLarge).fill(bgColor));
 
 const Canvas: React.FC = () => {
-  const { gridSize, setGridSize, userAddress } = useContext(Context);
+  const { gridSize, setGridSize, userAddress, contract } = useContext(Context);
   const [smallCanvas, setSmallCanvas] = useState(defaultSmallCanvas());
   const [mediumCanvas, setMediumCanvas] = useState(defaultMediumCanvas());
   const [largeCanvas, setLargeCanvas] = useState(defaultLargeCanvas());
@@ -49,14 +48,9 @@ const Canvas: React.FC = () => {
   const activeMediumCanvas = useRef([...mediumCanvas]);
   const activeLargeCanvas = useRef([...largeCanvas]);
   const activeGridSize = useRef(GridSize.Small);
-  const [showArtName, setShowArtName] = useState(false);
-  const [showPrice, setShowPrice] = useState(false);
-  const [showArtistName, setShowArtistName] = useState(false);
-  const [artName, setArtName] = useState("masterpiece");
-  const [price, setPrice] = useState(3);
-  const [artistName, setArtistName] = useState("Claude B.");
   const [modalState, setModalState] = useState<ModalProps>({
     state: ModalState.CLOSED,
+    type: ModalType.CLOSED,
     header: "",
     body: "",
     confirm: undefined,
@@ -92,8 +86,8 @@ const Canvas: React.FC = () => {
     return newCanvas;
   };
 
-  const upload = (emptyCanvas: boolean) => {
-    if (!artName || !price || !artistName) return;
+  const upload = async (emptyCanvas: boolean) => {
+    if (!userAddress) return;
 
     if (gridSize === GridSize.Small) {
       // for the small canvas
@@ -108,6 +102,7 @@ const Canvas: React.FC = () => {
         // canvas is made of the same color
         setModalState({
           state: ModalState.OPEN,
+          type: ModalType.EMPTY_CANVAS,
           header: "Empty canvas",
           body:
             "Your canvas appears to be empty, are you sure you want to upload it?",
@@ -115,6 +110,7 @@ const Canvas: React.FC = () => {
           close: () =>
             setModalState({
               state: ModalState.CLOSED,
+              type: ModalType.CLOSED,
               header: "",
               body: "",
               confirm: undefined,
@@ -136,6 +132,7 @@ const Canvas: React.FC = () => {
         // canvas is made of the same color
         setModalState({
           state: ModalState.OPEN,
+          type: ModalType.EMPTY_CANVAS,
           header: "Empty canvas",
           body:
             "Your canvas appears to be empty, are you sure you want to upload it?",
@@ -143,6 +140,7 @@ const Canvas: React.FC = () => {
           close: () =>
             setModalState({
               state: ModalState.CLOSED,
+              type: ModalType.CLOSED,
               header: "",
               body: "",
               confirm: undefined,
@@ -164,6 +162,7 @@ const Canvas: React.FC = () => {
         // canvas is made of the same color
         setModalState({
           state: ModalState.OPEN,
+          type: ModalType.EMPTY_CANVAS,
           header: "Empty canvas",
           body:
             "Your canvas appears to be empty, are you sure you want to upload it?",
@@ -171,6 +170,7 @@ const Canvas: React.FC = () => {
           close: () =>
             setModalState({
               state: ModalState.CLOSED,
+              type: ModalType.CLOSED,
               header: "",
               body: "",
               confirm: undefined,
@@ -180,28 +180,85 @@ const Canvas: React.FC = () => {
         return;
       }
     }
-    let canvasJSON: string = "";
-    if (gridSize === 1) {
+
+    setModalState({
+      state: ModalState.OPEN,
+      type: ModalType.CONFIRM_NEW_TOKEN,
+      header: "Confirm new tokenized pixel art",
+      body: "",
+      confirm: tkmt => createNewToken(tkmt),
+      close: () =>
+        setModalState({
+          state: ModalState.CLOSED,
+          type: ModalType.CLOSED,
+          header: "",
+          body: "",
+          confirm: undefined,
+          close: undefined
+        })
+    });
+  };
+
+  const createNewToken = async (
+    tkmt: Omit<TokenMetadata, "token_id, decimals, extras">
+  ) => {
+    console.log(tkmt);
+    /*let canvas: string[][];
+    if (gridSize === GridSize.Small) {
       // small canvas
-      canvasJSON = JSON.stringify(smallCanvas);
-    } else if (gridSize === 2) {
+      canvas = smallCanvas;
+    } else if (gridSize === GridSize.Medium) {
       // medium canvas
-      canvasJSON = JSON.stringify(mediumCanvas);
-    } else if (gridSize === 3) {
+      canvas = mediumCanvas;
+    } else if (gridSize === GridSize.Large) {
       // small canvas
-      canvasJSON = JSON.stringify(largeCanvas);
+      canvas = largeCanvas;
+    } else {
+      canvas = [[""]];
     }
-    if (canvasJSON && userAddress) {
-      const timestamp = Date.now();
+    if (canvas && canvas.length > 1 && userAddress) {
       const IPFSObject: IPFSObject = {
-        canvas: canvasJSON,
+        canvas,
         size: gridSize as number,
-        createdOn: timestamp,
         author: userAddress as string,
-        name: artName,
-        artistName: showArtistName ? artistName : ""
+        name: tokenMetadata.name,
+        artistName: tokenMetadata.artistName
       };
-    }
+
+      const PinPixelArt =
+        process.env.NODE_ENV === "development"
+          ? `http://localhost:${config.NETLIFY_PORT}/pinPixelArt`
+          : "https://pixel-art-nfts.netlify.app/.netlify/functions/pinPixelArt";
+
+      try {
+        const data = await fetch(PinPixelArt, {
+          body: JSON.stringify(IPFSObject),
+          method: "POST"
+        });
+
+        const response: {
+          hash: string;
+          timestamp: number;
+          ipfsHash: string;
+        } = await data.json();
+        if (response.ipfsHash && contract) {
+          try {
+            const op = await contract.methods
+              .mint_tokens(userAddress, ...Object.values(tokenMetadata))
+              .send();
+            await op.confirmation();
+          } catch (error) {
+            console.log(error);
+          }
+          // includes token in the blockchain
+          //const op = await contract.methods.mint_tokens;
+        } else {
+          throw "NO_IPFS_HASH";
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    }*/
   };
 
   useEffect(() => {
@@ -428,51 +485,10 @@ const Canvas: React.FC = () => {
           </div>
           <p className={styles.menu_title}>Upload</p>
           <div className={styles.menu_list}>
-            <div onClick={() => setShowArtName(!showArtName)}>
-              <i className="fas fa-chevron-down"></i> Give it a name
-            </div>
-            {showArtName && (
-              <div>
-                <input
-                  type="text"
-                  placeholder="Name of your piece"
-                  onChange={e => setArtName(e.target.value)}
-                  value={artName}
-                />
-              </div>
-            )}
-            <div onClick={() => setShowPrice(!showPrice)}>
-              <i className="fas fa-chevron-down"></i> Add a price
-            </div>
-            {showPrice && (
-              <div>
-                <input
-                  type="number"
-                  placeholder="Price in XTZ"
-                  onChange={e => setPrice(+e.target.value)}
-                  value={price}
-                />
-              </div>
-            )}
-            <div onClick={() => setShowArtistName(!showArtistName)}>
-              <i className="fas fa-chevron-down"></i> Add your name (optional)
-            </div>
-            {showArtistName && (
-              <div>
-                <input
-                  type="text"
-                  placeholder="Your name"
-                  onChange={e => setArtistName(e.target.value)}
-                  value={artistName}
-                />
-              </div>
-            )}
-            <div>
+            <div className="buttons">
               <button
-                disabled={!artName || !price || !artistName}
-                className={`button ${
-                  artName && price && artistName ? "info" : "disabled"
-                }`}
+                disabled={!userAddress}
+                className={`button ${userAddress ? "info" : "disabled"}`}
                 onClick={() => upload(false)}
               >
                 <i className="fas fa-file-upload"></i> Upload
