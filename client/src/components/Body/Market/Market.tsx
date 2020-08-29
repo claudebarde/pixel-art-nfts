@@ -33,29 +33,26 @@ const Market: React.FC = () => {
           artPieces
         );
         // patches missing information from the blockchain
-        const artList = [...resultEntries]
-          .map(async el => {
-            const tkmt = (await storage?.token_metadata.get(
-              el.ipfsHash
-            )) as TokenMetadata;
-            if (tkmt) {
-              const createdOn = await tkmt.extras.get("createdOn");
-              const canvasHash = await tkmt.extras.get("canvasHash");
-              if (tkmt.market && canvasHash === el.hash) {
-                const price = (tkmt.price as BigNumber).toNumber();
-                return {
-                  ...el,
-                  timestamp: createdOn,
-                  price
-                };
-              }
+        const artList = [...resultEntries].map(async el => {
+          const tkmt = (await storage?.token_metadata.get(
+            el.ipfsHash
+          )) as TokenMetadata;
+          if (tkmt) {
+            const createdOn = await tkmt.extras.get("createdOn");
+            const canvasHash = await tkmt.extras.get("canvasHash");
+            if (tkmt.market && canvasHash === el.hash) {
+              const price = (tkmt.price as BigNumber).toNumber();
+              return {
+                ...el,
+                timestamp: createdOn,
+                price
+              };
             }
-          })
-          .filter(el => el);
+          }
+        });
         const list = await Promise.all(artList);
-        setArtworkList([...list, ...list] as ArtworkListElement[]);
+        setArtworkList(list.filter(el => el) as ArtworkListElement[]);
         console.log([list]);
-        //setArtworkList(artList);
         /*
         // builds a list of IPFS hashes to query from the IPFS
         const list: string[] = entries.map(entry => entry.data.key.value);
@@ -83,19 +80,43 @@ const Market: React.FC = () => {
     <main>
       {artworkList.length > 0 ? (
         <>
-          <h2>Available Artwork to Purchase</h2>
+          <h2>Available Artworks to Purchase</h2>
           <p></p>
           <div className={styles.grid}>
-            <div className={styles.grid__header}>Artwork</div>
-            <div className={styles.grid__header}>Name</div>
-            <div className={styles.grid__header}>Author</div>
-            <div className={styles.grid__header}>Creation Date</div>
-            <div className={styles.grid__header}>Price</div>
-            <div></div>
+            <div className={styles.grid__header}>
+              <div>Artwork</div>
+              <div>Name</div>
+              <div>Artist</div>
+              <div>Creation Date</div>
+              <div>Price</div>
+              <div></div>
+            </div>
             {artworkList.map((artwork, i) => {
               return (
-                <React.Fragment key={i + "-" + artwork.hash}>
-                  <div>Image</div>
+                <div className={styles.grid__row} key={i + "-" + artwork.hash}>
+                  {artwork.size === 1 && (
+                    <div
+                      className={styles.pixelGridSmall}
+                      style={{
+                        borderBottom: "none",
+                        borderRight: "none"
+                      }}
+                    >
+                      {artwork.canvas.map((row, i1) =>
+                        row.map((bgColor, i2) => (
+                          <div
+                            key={i1.toString() + i2.toString()}
+                            className={styles.pixel}
+                            style={{
+                              backgroundColor: bgColor,
+                              borderTop: "none",
+                              borderLeft: "none"
+                            }}
+                          ></div>
+                        ))
+                      )}
+                    </div>
+                  )}
                   <div>
                     <em>{artwork.name}</em>
                   </div>
@@ -108,9 +129,9 @@ const Market: React.FC = () => {
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      {artwork.author.slice(0, 10) +
+                      {artwork.author.slice(0, 5) +
                         "..." +
-                        artwork.author.slice(-10)}
+                        artwork.author.slice(-5)}
                     </a>
                   </div>
                   <div>
@@ -118,9 +139,9 @@ const Market: React.FC = () => {
                   </div>
                   <div>ꜩ {artwork.price / 1000000}</div>
                   <div>
-                    <button className="button">Buy</button>
+                    <button className="button info">Buy</button>
                   </div>
-                </React.Fragment>
+                </div>
               );
             })}
           </div>

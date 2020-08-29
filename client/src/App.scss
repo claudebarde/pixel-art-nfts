@@ -66,13 +66,14 @@ h2 {
   border: none;
   outline: none;
   border-radius: 5px;
-  margin: 10px;
-  transition: 0.1s;
+  margin: 10px 10px 14px 10px;
+  transition: 0.2s;
 
   &.disabled {
     background-color: #e2e8f0;
 
-    &:active {
+    &:active,
+    &:hover {
       background-color: darken(#e2e8f0, 10);
     }
   }
@@ -81,7 +82,8 @@ h2 {
     background-color: #68d391;
     color: white;
 
-    &:active {
+    &:active,
+    &:hover {
       background-color: darken(#68d391, 10);
     }
   }
@@ -90,7 +92,8 @@ h2 {
     background-color: #63b3ed;
     color: white;
 
-    &:active {
+    &:active,
+    &:hover {
       background-color: darken(#63b3ed, 10);
     }
   }
@@ -99,9 +102,14 @@ h2 {
     background-color: #fc8181;
     color: white;
 
-    &:active {
+    &:active,
+    &:hover {
       background-color: darken(#fc8181, 10);
     }
+  }
+
+  &:active {
+    margin: 14px 10px 10px 10px;
   }
 }
 
