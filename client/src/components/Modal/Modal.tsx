@@ -147,10 +147,11 @@ export const Modal: React.FC<ModalProps> = ({
                   }`}
                   onClick={() => {
                     confirm({
-                      price: +price,
+                      price: parseInt(price) * 1000000,
                       artistName,
                       name: artName,
-                      market: availableOnMarket
+                      market: availableOnMarket,
+                      symbol: "PXNFT"
                     } as Omit<TokenMetadata, "token_id, decimals, extras">);
                     close();
                   }}

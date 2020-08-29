@@ -1,15 +1,23 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { LedgerSigner, DerivationType } from "@taquito/ledger-signer";
 import TransportU2F from "@ledgerhq/hw-transport-u2f";
 import { BeaconWallet } from "@taquito/beacon-wallet";
+import { TezBridgeWallet } from "@taquito/tezbridge-wallet";
 import { NetworkType } from "@airgap/beacon-sdk";
 import styles from "./header.module.scss";
-import line1 from "./templates/template-line-1";
-import line2 from "./templates/template-line-2";
-import line3 from "./templates/template-line-3";
-import line4 from "./templates/template-line-4";
-import line5 from "./templates/template-line-5";
 import { Context, View } from "../../Context";
+import config from "../../config";
+import ztext from "./ztext-custom";
+
+const titleColors = [
+  "red",
+  "yellow",
+  "green",
+  "blue",
+  "turquoise",
+  "grey",
+  "orange"
+];
 
 const Header: React.FC = () => {
   const {
@@ -20,6 +28,41 @@ const Header: React.FC = () => {
     setUserAddress,
     network
   } = useContext(Context);
+  const title = useRef(null);
+  const [zTextTitle, setZTextTitle] = useState(
+    [
+      "P",
+      "I",
+      "X",
+      "E",
+      "L",
+      "&nbsp;",
+      "A",
+      "R",
+      "T",
+      "&nbsp;",
+      "N",
+      "F",
+      "T",
+      "s"
+    ]
+      .map(char => {
+        const color =
+          titleColors[Math.floor(Math.random() * titleColors.length)];
+        return `<span data-z class=${color}>${char}</span>`;
+      })
+      .join("")
+  );
+
+  const connectTezBridge = async () => {
+    if (!Tezos || !setUserAddress)
+      throw new Error("Undefined Tezos or setUserAddress");
+
+    const wallet = new TezBridgeWallet();
+    Tezos.setWalletProvider(wallet);
+    const keyHash = await wallet.getPKH();
+    setUserAddress(keyHash);
+  };
 
   const connectWallet = async () => {
     try {
@@ -59,10 +102,17 @@ const Header: React.FC = () => {
       Tezos.setWalletProvider(wallet);
       await wallet.requestPermissions({
         network: {
-          type: NetworkType.CARTHAGENET,
+          type:
+            config.ENV === "dev"
+              ? NetworkType.CUSTOM
+              : config.ENV === "carthagenet"
+              ? NetworkType.CARTHAGENET
+              : NetworkType.MAINNET,
           rpcUrl: network
         }
       });
+      //await wallet.client.removeAllPeers();
+      //await wallet.client.removeAllAccounts();
       // gets user's address
       const keyHash = await wallet.getPKH();
       setUserAddress(keyHash);
@@ -99,85 +149,27 @@ const Header: React.FC = () => {
     }
   };
 
+  useEffect(() => {
+    if (ztext) {
+      ztext(title.current, "[data-z]", {
+        depth: "1rem",
+        direction: "both",
+        event: "pointer",
+        eventRotation: "40deg",
+        eventDirection: "default",
+        fade: false,
+        layers: 10,
+        perspective: "500px",
+        z: true
+      });
+    }
+  }, []);
+
   return (
     <header>
       <div></div>
-      <div className={styles.grid}>
-        {Array(76)
-          .fill("0")
-          .map((pos, i) => (
-            <div key={"pixel-" + i} className={styles.pixel}></div>
-          ))}
-        {line1.map((pos, i) => {
-          if (pos === "0") {
-            return <div key={"pixel-" + i} className={styles.pixel}></div>;
-          } else {
-            return (
-              <div
-                className={styles.pixel}
-                key={"pixel-" + i}
-                style={{ backgroundColor: pos }}
-              ></div>
-            );
-          }
-        })}
-        {line2.map((pos, i) => {
-          if (pos === "0") {
-            return <div key={"pixel-" + i} className={styles.pixel}></div>;
-          } else {
-            return (
-              <div
-                className={styles.pixel}
-                key={"pixel-" + i}
-                style={{ backgroundColor: pos }}
-              ></div>
-            );
-          }
-        })}
-        {line3.map((pos, i) => {
-          if (pos === "0") {
-            return <div key={"pixel-" + i} className={styles.pixel}></div>;
-          } else {
-            return (
-              <div
-                className={styles.pixel}
-                key={"pixel-" + i}
-                style={{ backgroundColor: pos }}
-              ></div>
-            );
-          }
-        })}
-        {line4.map((pos, i) => {
-          if (pos === "0") {
-            return <div key={"pixel-" + i} className={styles.pixel}></div>;
-          } else {
-            return (
-              <div
-                className={styles.pixel}
-                key={"pixel-" + i}
-                style={{ backgroundColor: pos }}
-              ></div>
-            );
-          }
-        })}
-        {line5.map((pos, i) => {
-          if (pos === "0") {
-            return <div key={"pixel-" + i} className={styles.pixel}></div>;
-          } else {
-            return (
-              <div
-                className={styles.pixel}
-                key={"pixel-" + i}
-                style={{ backgroundColor: pos }}
-              ></div>
-            );
-          }
-        })}
-        {Array(76)
-          .fill("0")
-          .map((pos, i) => (
-            <div key={"pixel-" + i} className={styles.pixel}></div>
-          ))}
+      <div className="title">
+        <h1 ref={title} dangerouslySetInnerHTML={{ __html: zTextTitle }}></h1>
       </div>
       <div className={styles.nav}>
         <div
@@ -218,6 +210,9 @@ const Header: React.FC = () => {
                   </p>
                   <p onClick={connectLedger}>
                     <i className="fab fa-usb"></i> Nano Ledger
+                  </p>
+                  <p onClick={connectTezBridge}>
+                    <i className="fab fa-dev"></i> TezBridge
                   </p>
                 </div>
               </div>

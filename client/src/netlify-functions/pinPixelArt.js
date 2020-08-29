@@ -26,7 +26,8 @@ exports.handler = async (event, context) => {
             origin: "pixel-art-nfts",
             size,
             author,
-            artistName
+            artistName,
+            timestamp
           }
         },
         pinataContent: {
@@ -48,7 +49,11 @@ exports.handler = async (event, context) => {
     //console.log("axios response:", response.data);
     return {
       statusCode: 200,
-      body: JSON.stringify({ hash, timestamp, ipfsHash: response.data }),
+      body: JSON.stringify({
+        hash,
+        timestamp,
+        ipfsHash: response.data.IpfsHash
+      }),
       headers: {
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Headers": "Content-Type",

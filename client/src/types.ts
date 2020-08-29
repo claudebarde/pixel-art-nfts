@@ -18,3 +18,11 @@ export interface TokenMetadata {
   artistName: string;
   extras: MichelsonMap<MichelsonMapKey, any>;
 }
+
+export interface ArtworkListElement {
+  canvas: string[][];
+  name: string;
+  author: string;
+  timestamp: number;
+  price: number;
+}

@@ -1,7 +1,14 @@
 export default {
-  NETLIFY_PORT: 62847,
-  CONTRACT:
-    process.env.NODE_ENV === "development"
-      ? "KT19T89LoroCRbNWGDF4XyVeYTX9BUPcAv44"
-      : "unknown"
+  ENV: "dev", // dev | carthagenet | mainnet
+  NETLIFY_PORT: 59259,
+  CONTRACT: {
+    dev: "KT19T89LoroCRbNWGDF4XyVeYTX9BUPcAv44",
+    carthagenet: "KT1PJnTttEsEFFaHeLnbKJmzwfxuVvEBkq1b",
+    mainnet: ""
+  },
+  NETWORK: {
+    dev: "http://localhost:8732",
+    carthagenet: "https://carthagenet.smartpy.io",
+    mainnet: "https://mainnet.smartpy.io"
+  }
 };

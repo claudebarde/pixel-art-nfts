@@ -35,7 +35,9 @@ const defaultLargeCanvas = (): string[][] =>
     .map(el => Array(blockNumberLarge).fill(bgColor));
 
 const Canvas: React.FC = () => {
-  const { gridSize, setGridSize, userAddress, contract } = useContext(Context);
+  const { gridSize, setGridSize, userAddress, contract, network } = useContext(
+    Context
+  );
   const [smallCanvas, setSmallCanvas] = useState(defaultSmallCanvas());
   const [mediumCanvas, setMediumCanvas] = useState(defaultMediumCanvas());
   const [largeCanvas, setLargeCanvas] = useState(defaultLargeCanvas());
@@ -56,6 +58,7 @@ const Canvas: React.FC = () => {
     confirm: undefined,
     close: undefined
   });
+  const [loadingNewToken, setLoadingNewToken] = useState(false);
 
   const resetCanvas = () => {
     if (colorPicker && bgColorPicker) {
@@ -202,8 +205,9 @@ const Canvas: React.FC = () => {
   const createNewToken = async (
     tkmt: Omit<TokenMetadata, "token_id, decimals, extras">
   ) => {
-    console.log(tkmt);
-    /*let canvas: string[][];
+    setLoadingNewToken(true);
+
+    let canvas: string[][];
     if (gridSize === GridSize.Small) {
       // small canvas
       canvas = smallCanvas;
@@ -221,8 +225,8 @@ const Canvas: React.FC = () => {
         canvas,
         size: gridSize as number,
         author: userAddress as string,
-        name: tokenMetadata.name,
-        artistName: tokenMetadata.artistName
+        name: tkmt.name,
+        artistName: tkmt.artistName
       };
 
       const PinPixelArt =
@@ -231,7 +235,7 @@ const Canvas: React.FC = () => {
           : "https://pixel-art-nfts.netlify.app/.netlify/functions/pinPixelArt";
 
       try {
-        const data = await fetch(PinPixelArt, {
+        /*const data = await fetch(PinPixelArt, {
           body: JSON.stringify(IPFSObject),
           method: "POST"
         });
@@ -240,25 +244,50 @@ const Canvas: React.FC = () => {
           hash: string;
           timestamp: number;
           ipfsHash: string;
-        } = await data.json();
+        } = await data.json();*/
+        const response = { ipfsHash: "test" };
         if (response.ipfsHash && contract) {
-          try {
-            const op = await contract.methods
-              .mint_tokens(userAddress, ...Object.values(tokenMetadata))
-              .send();
-            await op.confirmation();
-          } catch (error) {
-            console.log(error);
-          }
+          console.log("IPFS hash:", response.ipfsHash);
+          /*const tokenMetadata: TokenMetadata = {
+            ...tkmt,
+            token_id: response.ipfsHash,
+            decimals: 0,
+            extras: MichelsonMap.fromLiteral({
+              canvasHash: response.hash,
+              createdOn: response.timestamp.toString()
+            })
+          };*/
+          console.log(network);
+          const tokenMetadata = JSON.parse(
+            '{"price":3000000,"artistName":"Claude B.","name":"masterpiece","market":true,"symbol":"PXNFT","token_id":"QmQwB3aBkK5qBfLnx2cntG8jG3ZvahxMRTxzUTFhThE4sR","decimals":0}'
+          );
+          tokenMetadata.extras = new MichelsonMap();
+
           // includes token in the blockchain
-          //const op = await contract.methods.mint_tokens;
+          const op = await contract.methods
+            .mint_tokens(
+              userAddress,
+              tokenMetadata.token_id,
+              tokenMetadata.symbol,
+              tokenMetadata.name,
+              tokenMetadata.decimals,
+              tokenMetadata.price,
+              tokenMetadata.market,
+              tokenMetadata.extras
+            )
+            .send();
+          console.log(op.opHash);
+          await op.confirmation();
         } else {
           throw "NO_IPFS_HASH";
         }
       } catch (error) {
         console.error(error);
+      } finally {
+        setLoadingNewToken(false);
       }
-    }*/
+    }
+    setLoadingNewToken(false);
   };
 
   useEffect(() => {
@@ -486,13 +515,19 @@ const Canvas: React.FC = () => {
           <p className={styles.menu_title}>Upload</p>
           <div className={styles.menu_list}>
             <div className="buttons">
-              <button
-                disabled={!userAddress}
-                className={`button ${userAddress ? "info" : "disabled"}`}
-                onClick={() => upload(false)}
-              >
-                <i className="fas fa-file-upload"></i> Upload
-              </button>
+              {loadingNewToken ? (
+                <button className="button info">
+                  <i className="fas fa-spinner fa-spin"></i> Processing...
+                </button>
+              ) : (
+                <button
+                  disabled={!userAddress}
+                  className={`button ${userAddress ? "info" : "disabled"}`}
+                  onClick={() => upload(false)}
+                >
+                  <i className="fas fa-file-upload"></i> Upload
+                </button>
+              )}
             </div>
           </div>
         </div>

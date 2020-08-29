@@ -9,7 +9,7 @@ body,
 
 .grid {
   display: grid;
-  grid-template-columns: 5fr 1fr;
+  grid-template-columns: 1fr;
   grid-template-rows: 10% 85% 5%;
   grid-gap: 0px;
   height: 100%;
@@ -136,6 +136,88 @@ h2 {
 
   input[type="checkbox"] {
     cursor: pointer;
+  }
+}
+
+.title {
+  display: flex;
+  flex-direction: row;
+
+  h1 {
+    font: bold 4em "Comic Sans MS", serif;
+  }
+
+  .red {
+    .z-layer {
+      color: #f44336;
+    }
+    .z-layer:not(:first-child) {
+      color: darken(#f44336, 30);
+    }
+  }
+
+  .yellow {
+    .z-layer {
+      color: #ffc107;
+    }
+    .z-layer:not(:first-child) {
+      color: darken(#ffc107, 30);
+    }
+  }
+
+  .green {
+    .z-layer {
+      color: #8bc34a;
+    }
+    .z-layer:not(:first-child) {
+      color: darken(#8bc34a, 30);
+    }
+  }
+
+  .blue {
+    .z-layer {
+      color: #03a9f4;
+    }
+    .z-layer:not(:first-child) {
+      color: darken(#03a9f4, 30);
+    }
+  }
+
+  .grey {
+    .z-layer {
+      color: #607d8b;
+    }
+    .z-layer:not(:first-child) {
+      color: darken(#607d8b, 30);
+    }
+  }
+
+  .turquoise {
+    .z-layer {
+      color: #009688;
+    }
+    .z-layer:not(:first-child) {
+      color: darken(#009688, 30);
+    }
+  }
+
+  .orange {
+    .z-layer {
+      color: #ff9800;
+    }
+    .z-layer:not(:first-child) {
+      color: darken(#ff9800, 30);
+    }
+  }
+
+  .z-text {
+    /* Tip: Apply CSS transforms here */
+    /* rotateX() == up/down */
+    /* rotateY() == left/right */
+  }
+
+  .z-layer:not(:first-child) {
+    color: #455a64;
   }
 }
 

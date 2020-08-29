@@ -32,11 +32,6 @@ type State = {
 
 export const Context = React.createContext<Partial<State>>({});
 
-const network =
-  process.env.NODE_ENV === "development"
-    ? "http://localhost:8732"
-    : "https://carthagenet.smartpy.io";
-
 export const Provider: React.FC = props => {
   const [view, setView] = useState(View.CANVAS);
   const [gridSize, setGridSize] = useState(GridSize.Small);
@@ -51,7 +46,7 @@ export const Provider: React.FC = props => {
     Tezos,
     userAddress,
     setUserAddress,
-    network,
+    network: config.NETWORK[config.ENV],
     contract
   };
 
@@ -60,7 +55,7 @@ export const Provider: React.FC = props => {
       Tezos.setRpcProvider(state.network);
       // creates contract instance
       const newInstance: ContractAbstraction<Wallet> = await Tezos.wallet.at(
-        config.CONTRACT
+        config.CONTRACT[config.ENV]
       );
       setContract(newInstance);
     })();
