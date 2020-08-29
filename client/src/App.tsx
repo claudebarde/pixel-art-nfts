@@ -1,7 +1,8 @@
 import React, { useContext } from "react";
 import "./App.scss";
 import Header from "./components/Header/Header";
-import { Context, View } from "./Context";
+import { Context } from "./Context";
+import { View } from "./types";
 import Canvas from "./components/Body/Canvas/Canvas";
 import Market from "./components/Body/Market/Market";
 import Footer from "./components/Footer/Footer";

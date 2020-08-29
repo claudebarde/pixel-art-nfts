@@ -5,7 +5,8 @@ import { BeaconWallet } from "@taquito/beacon-wallet";
 import { TezBridgeWallet } from "@taquito/tezbridge-wallet";
 import { NetworkType } from "@airgap/beacon-sdk";
 import styles from "./header.module.scss";
-import { Context, View } from "../../Context";
+import { Context } from "../../Context";
+import { View } from "../../types";
 import config from "../../config";
 import ztext from "./ztext-custom";
 

@@ -3,7 +3,8 @@ import Pickr from "@simonwep/pickr";
 import "@simonwep/pickr/dist/themes/classic.min.css";
 import { MichelsonMap } from "@taquito/taquito";
 import styles from "./canvas.module.scss";
-import { Context, GridSize } from "../../../Context";
+import { Context } from "../../../Context";
+import { GridSize } from "../../../types";
 import {
   State as ModalState,
   ModalProps,
@@ -235,7 +236,7 @@ const Canvas: React.FC = () => {
           : "https://pixel-art-nfts.netlify.app/.netlify/functions/pinPixelArt";
 
       try {
-        /*const data = await fetch(PinPixelArt, {
+        const data = await fetch(PinPixelArt, {
           body: JSON.stringify(IPFSObject),
           method: "POST"
         });
@@ -244,11 +245,11 @@ const Canvas: React.FC = () => {
           hash: string;
           timestamp: number;
           ipfsHash: string;
-        } = await data.json();*/
-        const response = { ipfsHash: "test" };
+        } = await data.json();
+        //const response = { ipfsHash: "test" };
         if (response.ipfsHash && contract) {
           console.log("IPFS hash:", response.ipfsHash);
-          /*const tokenMetadata: TokenMetadata = {
+          const tokenMetadata: TokenMetadata = {
             ...tkmt,
             token_id: response.ipfsHash,
             decimals: 0,
@@ -256,12 +257,12 @@ const Canvas: React.FC = () => {
               canvasHash: response.hash,
               createdOn: response.timestamp.toString()
             })
-          };*/
+          };
           console.log(network);
-          const tokenMetadata = JSON.parse(
+          /*const tokenMetadata = JSON.parse(
             '{"price":3000000,"artistName":"Claude B.","name":"masterpiece","market":true,"symbol":"PXNFT","token_id":"QmQwB3aBkK5qBfLnx2cntG8jG3ZvahxMRTxzUTFhThE4sR","decimals":0}'
           );
-          tokenMetadata.extras = new MichelsonMap();
+          tokenMetadata.extras = new MichelsonMap();*/
 
           // includes token in the blockchain
           const op = await contract.methods

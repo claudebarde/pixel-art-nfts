@@ -1,34 +1,7 @@
 import React, { useState, useEffect } from "react";
-import {
-  Tezos,
-  TezosToolkit,
-  ContractAbstraction,
-  Wallet
-} from "@taquito/taquito";
+import { Tezos, ContractAbstraction, Wallet } from "@taquito/taquito";
 import config from "./config";
-
-export enum View {
-  CANVAS = "canvas",
-  MARKET = "market"
-}
-
-export enum GridSize {
-  Small = 1,
-  Medium = 2,
-  Large = 3
-}
-
-type State = {
-  view: View;
-  setView: React.Dispatch<React.SetStateAction<View>>;
-  gridSize: GridSize;
-  setGridSize: React.Dispatch<React.SetStateAction<GridSize>>;
-  Tezos: TezosToolkit;
-  userAddress: string;
-  setUserAddress: React.Dispatch<React.SetStateAction<string>>;
-  network: string;
-  contract: ContractAbstraction<Wallet> | undefined;
-};
+import { Storage, State, View, GridSize } from "./types";
 
 export const Context = React.createContext<Partial<State>>({});
 
@@ -37,6 +10,7 @@ export const Provider: React.FC = props => {
   const [gridSize, setGridSize] = useState(GridSize.Small);
   const [userAddress, setUserAddress] = useState<string>("");
   const [contract, setContract] = useState<ContractAbstraction<Wallet>>();
+  const [storage, setStorage] = useState<Storage | undefined>();
 
   const state: State = {
     view,
@@ -47,7 +21,9 @@ export const Provider: React.FC = props => {
     userAddress,
     setUserAddress,
     network: config.NETWORK[config.ENV],
-    contract
+    contract,
+    storage,
+    setStorage
   };
 
   useEffect(() => {
@@ -58,6 +34,8 @@ export const Provider: React.FC = props => {
         config.CONTRACT[config.ENV]
       );
       setContract(newInstance);
+      const newStorage: Storage = await newInstance.storage();
+      setStorage(newStorage);
     })();
   }, []);
 
