@@ -6,7 +6,7 @@ import { Storage, State, View, GridSize } from "./types";
 export const Context = React.createContext<Partial<State>>({});
 
 export const Provider: React.FC = props => {
-  const [view, setView] = useState(View.CANVAS);
+  const [view, setView] = useState(View.MARKET);
   const [gridSize, setGridSize] = useState(GridSize.Small);
   const [userAddress, setUserAddress] = useState<string>("");
   const [contract, setContract] = useState<ContractAbstraction<Wallet>>();

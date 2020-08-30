@@ -61,7 +61,8 @@ const Market: React.FC = () => {
         });
         const list = await Promise.all(artList);
         setArtworkList(list.filter(el => el) as ArtworkListElement[]);
-        console.log([list]);
+        console.log(list.filter(el => el));
+        setLoadingMarket(false);
         /*
         // builds a list of IPFS hashes to query from the IPFS
         const list: string[] = entries.map(entry => entry.data.key.value);
@@ -81,8 +82,9 @@ const Market: React.FC = () => {
         }: { count: number; rows: any[] } = await response.json();
         setNumberOfArtwork(count);
         console.log(rows);*/
+      } else {
+        setLoadingMarket(false);
       }
-      setLoadingMarket(false);
     })();
   }, [storage]);
 
@@ -94,7 +96,78 @@ const Market: React.FC = () => {
         <>
           <h2>Available Artworks to Purchase</h2>
           <p></p>
-          <div className={styles.grid}>
+          <div className={styles.cards}>
+            {artworkList.map((artwork, i) => {
+              return (
+                <div className={styles.card} key={i + "-" + artwork.hash}>
+                  <div className={styles.card__price}>
+                    ꜩ {artwork.price / 1000000}
+                  </div>
+                  <div className={styles.card__image}>
+                    {artwork.size === 1 && (
+                      <div
+                        className={styles.pixelGridSmall}
+                        style={{
+                          borderBottom: "none",
+                          borderRight: "none"
+                        }}
+                      >
+                        {artwork.canvas.map((row, i1) =>
+                          row.map((bgColor, i2) => (
+                            <div
+                              key={i1.toString() + i2.toString()}
+                              className={styles.pixel}
+                              style={{
+                                backgroundColor: bgColor,
+                                borderTop: "none",
+                                borderLeft: "none"
+                              }}
+                            ></div>
+                          ))
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  <div className={styles.card__header}>{artwork.name}</div>
+                  <div className={styles.card__body}>
+                    <p>
+                      Created on{" "}
+                      {moment
+                        .unix(artwork.timestamp / 1000)
+                        .format("MM/DD/YYYY")}
+                    </p>
+                    <p>
+                      Sold by{" "}
+                      <a
+                        className={styles.author}
+                        href={`https://${
+                          config.ENV === "carthagenet" && "carthage."
+                        }tzkt.io/${artwork.author}/operations`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {displayAuthorName(artwork.author, artwork.artistName)}
+                      </a>
+                    </p>
+                    <p>
+                      <a
+                        href={`https://gateway.pinata.cloud/ipfs/${artwork.ipfsHash}`}
+                        className={styles.tokenData}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Token data
+                      </a>
+                    </p>
+                    <p>
+                      <button className={styles.card__button}>Buy</button>
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          {/*<div className={styles.grid}>
             <div className={styles.grid__header}>
               <div>Artwork</div>
               <div>Name</div>
@@ -154,7 +227,7 @@ const Market: React.FC = () => {
                 </div>
               );
             })}
-          </div>
+          </div>*/}
         </>
       ) : (
         <div>

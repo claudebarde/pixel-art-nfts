@@ -522,6 +522,9 @@ const Canvas: React.FC = () => {
                       key={i + "-" + color}
                       className={styles.palette}
                       style={{ backgroundColor: color }}
+                      onClick={() => {
+                        if (colorPicker) colorPicker.setColor(color);
+                      }}
                     >
                       &nbsp;
                     </div>

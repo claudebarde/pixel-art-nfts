@@ -74,6 +74,9 @@ h2 {
   margin: 10px 10px 14px 10px;
   transition: 0.2s;
   font-size: 1.2rem;
+  -moz-box-shadow: 1px 8px 10px -5px #ccc;
+  -webkit-box-shadow: 1px 8px 10px -5px #ccc;
+  box-shadow: 1px 8px 10px -5px #ccc;
 
   &.disabled {
     background-color: #e2e8f0;
@@ -101,6 +104,10 @@ h2 {
     &:active,
     &:hover {
       background-color: darken(#63b3ed, 10);
+    }
+
+    &:active {
+      box-shadow: none;
     }
   }
 
@@ -233,6 +240,16 @@ h2 {
 
   .z-layer:not(:first-child) {
     color: #455a64;
+  }
+}
+
+footer a {
+  text-decoration: none;
+  color: #455a64;
+  font-weight: bold;
+
+  &:hover {
+    font-style: italic;
   }
 }
 
