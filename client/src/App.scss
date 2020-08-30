@@ -1,3 +1,8 @@
+@font-face {
+  font-family: "Freshman";
+  src: url("./Freshman-POdx.ttf");
+}
+
 html,
 body,
 #root {
@@ -61,13 +66,14 @@ h2 {
 }
 
 .button {
-  padding: 10px 15px;
+  padding: 10px 20px;
   cursor: pointer;
   border: none;
   outline: none;
   border-radius: 5px;
   margin: 10px 10px 14px 10px;
   transition: 0.2s;
+  font-size: 1.2rem;
 
   &.disabled {
     background-color: #e2e8f0;
@@ -152,7 +158,7 @@ h2 {
   flex-direction: row;
 
   h1 {
-    font: bold 4em "Comic Sans MS", serif;
+    font: bold 4em "Freshman", serif;
   }
 
   .red {
@@ -222,6 +228,7 @@ h2 {
     /* Tip: Apply CSS transforms here */
     /* rotateX() == up/down */
     /* rotateY() == left/right */
+    transform: rotateX(-20deg);
   }
 
   .z-layer:not(:first-child) {

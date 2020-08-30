@@ -8,8 +8,17 @@ import moment from "moment";
 
 const Market: React.FC = () => {
   const { storage } = useContext(Context);
+  const [loadingMarket, setLoadingMarket] = useState(true);
   const [artworkList, setArtworkList] = useState<ArtworkListElement[]>([]);
   const [numberOfArtwork, setNumberOfArtwork] = useState<number>(0);
+
+  const displayAuthorName = (address: string, name: string): string => {
+    if (name && name !== "unknown") {
+      return name;
+    } else {
+      return address.slice(0, 5) + "..." + address.slice(-5);
+    }
+  };
 
   useEffect(() => {
     (async () => {
@@ -73,12 +82,15 @@ const Market: React.FC = () => {
         setNumberOfArtwork(count);
         console.log(rows);*/
       }
+      setLoadingMarket(false);
     })();
   }, [storage]);
 
   return (
     <main>
-      {artworkList.length > 0 ? (
+      {loadingMarket ? (
+        <div>Loading</div>
+      ) : artworkList.length > 0 ? (
         <>
           <h2>Available Artworks to Purchase</h2>
           <p></p>
@@ -86,7 +98,7 @@ const Market: React.FC = () => {
             <div className={styles.grid__header}>
               <div>Artwork</div>
               <div>Name</div>
-              <div>Artist</div>
+              <div>Seller</div>
               <div>Creation Date</div>
               <div>Price</div>
               <div></div>
@@ -129,9 +141,7 @@ const Market: React.FC = () => {
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      {artwork.author.slice(0, 5) +
-                        "..." +
-                        artwork.author.slice(-5)}
+                      {displayAuthorName(artwork.author, artwork.artistName)}
                     </a>
                   </div>
                   <div>

@@ -22,6 +22,7 @@ const [blockNumberSmall, blockNumberMedium, blockNumberLarge]: number[] = [
 
 const bgColor = "#f7fafc";
 const brushColor = "#42445a";
+const defaultPalette = ["#42445a", "#f7fafc", "#ffffff"];
 const defaultSmallCanvas = (): string[][] =>
   Array(blockNumberSmall)
     .fill("")
@@ -60,6 +61,8 @@ const Canvas: React.FC = () => {
     close: undefined
   });
   const [loadingNewToken, setLoadingNewToken] = useState(false);
+  const [lastUsedColors, setLastUsedColors] = useState(defaultPalette);
+  const activeLastUsedColors = useRef(defaultPalette);
 
   const resetCanvas = () => {
     if (colorPicker && bgColorPicker) {
@@ -255,7 +258,8 @@ const Canvas: React.FC = () => {
             decimals: 0,
             extras: MichelsonMap.fromLiteral({
               canvasHash: response.hash,
-              createdOn: response.timestamp.toString()
+              createdOn: response.timestamp.toString(),
+              createdBy: userAddress
             })
           };
           console.log(network);
@@ -336,6 +340,12 @@ const Canvas: React.FC = () => {
       if (color) {
         const newColor = color.toHEXA().toString().toLowerCase();
         activeBrushColor.current = newColor;
+        // updates last used color palette
+        let newPalette = [...activeLastUsedColors.current];
+        newPalette.pop();
+        newPalette = [newColor, ...newPalette];
+        setLastUsedColors(newPalette);
+        activeLastUsedColors.current = newPalette;
       }
       pickr.hide();
     });
@@ -501,6 +511,22 @@ const Canvas: React.FC = () => {
               <div id="bg-color-picker" className={styles.colorpicker}></div>
               <div>
                 <em>Background color</em>
+              </div>
+            </div>
+            <div className={styles.lastColorsUsed}>
+              <div>Last colors used:</div>
+              <div className={styles.lastUsedColorsPalette}>
+                {lastUsedColors.map((color, i) => {
+                  return (
+                    <div
+                      key={i + "-" + color}
+                      className={styles.palette}
+                      style={{ backgroundColor: color }}
+                    >
+                      &nbsp;
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>

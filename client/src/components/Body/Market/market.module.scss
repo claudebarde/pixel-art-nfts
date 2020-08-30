@@ -26,12 +26,14 @@ $large-grid-blocks: 48;
   text-align: center;
   font-weight: bold;
   grid-template-rows: 60px;
+  font-size: 1.3rem;
 }
 
 .grid__row {
   @include grid;
   grid-template-rows: 100px;
   border-top: solid 1px #a0aec0;
+  font-size: 1.1rem;
 }
 
 .author {
