@@ -1,4 +1,5 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { LedgerSigner, DerivationType } from "@taquito/ledger-signer";
 import TransportU2F from "@ledgerhq/hw-transport-u2f";
 import { BeaconWallet } from "@taquito/beacon-wallet";
@@ -30,7 +31,7 @@ const Header: React.FC = () => {
     network
   } = useContext(Context);
   const title = useRef(null);
-  const [zTextTitle, setZTextTitle] = useState(
+  const [zTextTitle] = useState(
     [
       "P",
       "I",
@@ -54,6 +55,7 @@ const Header: React.FC = () => {
       })
       .join("")
   );
+  const location = useLocation();
 
   const connectTezBridge = async () => {
     if (!Tezos || !setUserAddress)
@@ -173,30 +175,26 @@ const Header: React.FC = () => {
         <h1 ref={title} dangerouslySetInnerHTML={{ __html: zTextTitle }}></h1>
       </div>
       <div className={styles.nav}>
-        <div
-          onClick={() => {
-            if (setView) setView(View.CANVAS);
-          }}
-        >
+        <Link to="/">
           <i
             className="fas fa-palette fa-lg"
             style={
-              view === View.CANVAS ? { color: "#4fd1c5" } : { color: "black" }
+              location.pathname === "/"
+                ? { color: "#4fd1c5" }
+                : { color: "black" }
             }
           ></i>
-        </div>
-        <div
-          onClick={() => {
-            if (setView) setView(View.MARKET);
-          }}
-        >
+        </Link>
+        <Link to="/market">
           <i
             className="fas fa-store fa-lg"
             style={
-              view === View.MARKET ? { color: "#4fd1c5" } : { color: "black" }
+              location.pathname === "/market"
+                ? { color: "#4fd1c5" }
+                : { color: "black" }
             }
           ></i>
-        </div>
+        </Link>
         <div className={styles.wallet_button}>
           {userAddress ? (
             <i className="fas fa-user-check fa-lg"></i>

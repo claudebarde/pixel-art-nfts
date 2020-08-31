@@ -8,7 +8,14 @@ const Footer: React.FC = () => {
         target="_blank"
         rel="noopener noreferrer"
       >
-        Contract
+        <i className="far fa-file-code"></i>
+      </a>
+      <a
+        href="https://github.com/claudebarde/pixel-art-nfts"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <i className="fab fa-github"></i>
       </a>
     </footer>
   );

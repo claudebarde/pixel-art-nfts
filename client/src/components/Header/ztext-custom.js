@@ -47,7 +47,7 @@ export default (container, selector, options) => {
         const fade = options.fade || z_default.fade;
         const layers = options.layers || z_default.layers;
         const perspective = options.perspective || z_default.perspective;
-        const transform = options.transform || z_default.transform;
+        //const transform = options.transform || z_default.transform;
 
         // Grab the text and replace it with a new structure
         const text = z.innerHTML;
@@ -132,7 +132,7 @@ export default (container, selector, options) => {
         function tilt(x_pct, y_pct) {
           // Switch neg/pos values if eventDirection is reversed
           let event_direction_adj;
-          if (event_direction == "reverse") {
+          if (event_direction === "reverse") {
             event_direction_adj = -1;
           } else {
             event_direction_adj = 1;
@@ -143,8 +143,8 @@ export default (container, selector, options) => {
           const y_tilt = -y_pct * event_rotation_numeral * event_direction_adj;
 
           // Keep values in bounds [-1, 1]
-          const x_clamped = Math.min(Math.max(x_tilt, -1), 1);
-          const y_clamped = Math.min(Math.max(y_tilt, -1), 1);
+          //const x_clamped = Math.min(Math.max(x_tilt, -1), 1);
+          //const y_clamped = Math.min(Math.max(y_tilt, -1), 1);
 
           // Add unit to transform value
           const unit = event_rotation_unit;
@@ -184,7 +184,7 @@ export default (container, selector, options) => {
         }
 
         // Capture scroll event and rotate .z-layers
-        if (event == "scroll") {
+        if (event === "scroll") {
           function zScroll() {
             const bounds = z.getBoundingClientRect();
 
@@ -203,7 +203,7 @@ export default (container, selector, options) => {
           window.addEventListener("scroll", zScroll, false);
         }
 
-        if (event == "scrollY") {
+        if (event === "scrollY") {
           function zScrollY() {
             const bounds = z.getBoundingClientRect();
 
@@ -219,7 +219,7 @@ export default (container, selector, options) => {
           window.addEventListener("scroll", zScrollY, false);
         }
 
-        if (event == "scrollX") {
+        if (event === "scrollX") {
           function zScrollX() {
             const bounds = z.getBoundingClientRect();
 

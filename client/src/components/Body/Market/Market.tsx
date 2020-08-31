@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useContext } from "react";
+import { NavLink } from "react-router-dom";
 import styles from "./market.module.scss";
 import { ArtworkListElement, TokenMetadata } from "../../../types";
 import config from "../../../config";
@@ -28,7 +29,7 @@ const Market: React.FC = () => {
       );
       const entries: any[] = await response.json();
       setNumberOfArtwork(entries.length);
-      if (entries.length > 0) {
+      if (entries.length > 0 && storage) {
         const artPieces: Promise<any>[] = [];
         entries.forEach(async entry => {
           // gets info for each piece from the IPFS
@@ -42,24 +43,25 @@ const Market: React.FC = () => {
           artPieces
         );
         // patches missing information from the blockchain
-        const artList = [...resultEntries].map(async el => {
-          const tkmt = (await storage?.token_metadata.get(
-            el.ipfsHash
-          )) as TokenMetadata;
-          if (tkmt) {
-            const createdOn = await tkmt.extras.get("createdOn");
-            const canvasHash = await tkmt.extras.get("canvasHash");
-            if (tkmt.market && canvasHash === el.hash) {
-              const price = (tkmt.price as BigNumber).toNumber();
-              return {
-                ...el,
-                timestamp: createdOn,
-                price
-              };
+        const list = await Promise.all(
+          [...resultEntries].map(async el => {
+            const tkmt = (await storage?.token_metadata.get(
+              el.ipfsHash
+            )) as TokenMetadata;
+            if (tkmt) {
+              const createdOn = await tkmt.extras.get("createdOn");
+              const canvasHash = await tkmt.extras.get("canvasHash");
+              if (tkmt.market && canvasHash === el.hash) {
+                const price = (tkmt.price as BigNumber).toNumber();
+                return {
+                  ...el,
+                  timestamp: createdOn,
+                  price
+                };
+              }
             }
-          }
-        });
-        const list = await Promise.all(artList);
+          })
+        );
         setArtworkList(list.filter(el => el) as ArtworkListElement[]);
         console.log(list.filter(el => el));
         setLoadingMarket(false);
@@ -82,8 +84,6 @@ const Market: React.FC = () => {
         }: { count: number; rows: any[] } = await response.json();
         setNumberOfArtwork(count);
         console.log(rows);*/
-      } else {
-        setLoadingMarket(false);
       }
     })();
   }, [storage]);
@@ -91,10 +91,18 @@ const Market: React.FC = () => {
   return (
     <main>
       {loadingMarket ? (
-        <div>Loading</div>
+        <div className={styles.loader}>
+          <div>Loading the market place</div>
+          <div className={styles.pulsate_fwd}>
+            <i className="fas fa-store fa-lg"></i>
+          </div>
+        </div>
       ) : artworkList.length > 0 ? (
         <>
-          <h2>Available Artworks to Purchase</h2>
+          <h2>
+            {numberOfArtwork} Artwork{numberOfArtwork > 1 ? "s" : ""} Available
+            for Purchase
+          </h2>
           <p></p>
           <div className={styles.cards}>
             {artworkList.map((artwork, i) => {
@@ -135,16 +143,12 @@ const Market: React.FC = () => {
                     </p>
                     <p>
                       Sold by{" "}
-                      <a
-                        className={styles.author}
-                        href={`https://${
-                          config.ENV === "carthagenet" && "carthage."
-                        }tzkt.io/${artwork.author}/operations`}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                      <NavLink
+                        to={`/profile/${artwork.author}`}
+                        className={styles.card__link}
                       >
                         {displayAuthorName(artwork.author, artwork.artistName)}
-                      </a>
+                      </NavLink>
                     </p>
                     <p>
                       <button className={styles.card__button}>Buy</button>
@@ -160,6 +164,9 @@ const Market: React.FC = () => {
                       >
                         <i className="fas fa-cube"></i>
                       </a>
+                    </div>
+                    <div>
+                      <i className="fas fa-share-alt"></i>
                     </div>
                     <div>ꜩ {artwork.price / 1000000}</div>
                   </div>

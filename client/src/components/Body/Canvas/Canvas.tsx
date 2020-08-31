@@ -284,7 +284,7 @@ const Canvas: React.FC = () => {
           console.log(op.opHash);
           await op.confirmation();
         } else {
-          throw "NO_IPFS_HASH";
+          throw new Error("NO_IPFS_HASH");
         }
       } catch (error) {
         console.error(error);

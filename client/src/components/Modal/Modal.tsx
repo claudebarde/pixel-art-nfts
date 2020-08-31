@@ -2,7 +2,6 @@ import React, { useState, useContext } from "react";
 import styles from "./modal.module.scss";
 import { Context } from "../../Context";
 import { TokenMetadata } from "../../types";
-import BigNumber from "bignumber.js";
 
 export enum State {
   OPEN,

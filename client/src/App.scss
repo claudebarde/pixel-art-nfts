@@ -10,6 +10,12 @@ body,
   width: 100%;
   margin: 0px;
   padding: 0px;
+  background: rgb(255, 255, 229);
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 229, 1) 0%,
+    rgba(255, 255, 255, 1) 100%
+  );
 }
 
 .grid {
@@ -247,9 +253,10 @@ footer a {
   text-decoration: none;
   color: #455a64;
   font-weight: bold;
+  margin: 0px 5px;
 
   &:hover {
-    font-style: italic;
+    color: royalblue;
   }
 }
 
