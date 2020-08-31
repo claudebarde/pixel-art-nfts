@@ -100,9 +100,6 @@ const Market: React.FC = () => {
             {artworkList.map((artwork, i) => {
               return (
                 <div className={styles.card} key={i + "-" + artwork.hash}>
-                  <div className={styles.card__price}>
-                    ꜩ {artwork.price / 1000000}
-                  </div>
                   <div className={styles.card__image}>
                     {artwork.size === 1 && (
                       <div
@@ -150,18 +147,21 @@ const Market: React.FC = () => {
                       </a>
                     </p>
                     <p>
+                      <button className={styles.card__button}>Buy</button>
+                    </p>
+                  </div>
+                  <div className={styles.card__footer}>
+                    <div>
                       <a
                         href={`https://gateway.pinata.cloud/ipfs/${artwork.ipfsHash}`}
                         className={styles.tokenData}
                         target="_blank"
                         rel="noopener noreferrer"
                       >
-                        Token data
+                        <i className="fas fa-cube"></i>
                       </a>
-                    </p>
-                    <p>
-                      <button className={styles.card__button}>Buy</button>
-                    </p>
+                    </div>
+                    <div>ꜩ {artwork.price / 1000000}</div>
                   </div>
                 </div>
               );

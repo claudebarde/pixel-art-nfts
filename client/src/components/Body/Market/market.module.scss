@@ -37,8 +37,8 @@ $large-grid-blocks: 48;
 }
 
 .author {
-  text-decoration: none;
-  color: #2c7a7b;
+  text-decoration: underline;
+  color: white;
 
   &:hover {
     font-style: italic;
@@ -95,8 +95,13 @@ $large-grid-blocks: 48;
   box-shadow: 1px 8px 10px -5px #ccc;
   /*background-color: #8ec5fc;
   background-image: linear-gradient(62deg, #8ec5fc 0%, #e0c3fc 100%);*/
-  background-color: #fbab7e;
-  background-image: linear-gradient(62deg, #fbab7e 0%, #f7ce68 100%);
+  background: rgb(238, 190, 152);
+  background: linear-gradient(
+    180deg,
+    rgba(238, 190, 152, 1) 0%,
+    rgba(250, 129, 113, 1) 100%
+  );
+  color: white;
 }
 
 .card__header {
@@ -114,16 +119,6 @@ $large-grid-blocks: 48;
   align-items: center;
 }
 
-.card__price {
-  position: absolute;
-  top: -20px;
-  right: -15px;
-  padding: 15px;
-  background-color: #fbab7e;
-  background-image: linear-gradient(62deg, #fbab7e 0%, #f7ce68 100%);
-  border-radius: 50px;
-}
-
 .card__body {
 }
 
@@ -137,7 +132,7 @@ $large-grid-blocks: 48;
   transition: 0.2s;
   font-size: 1.2rem;
   color: white;
-  background-image: linear-gradient(to right, #f83600 0%, #fe8c00 100%);
+  background: #eebe98;
   transition: 0.2s;
 
   &:active {
@@ -145,12 +140,16 @@ $large-grid-blocks: 48;
   }
 }
 
-.card__button:hover {
-  background-image: linear-gradient(to left, #f83600 0%, #fe8c00 100%);
-}
+.card__footer {
+  margin: 0px;
+  padding: 5px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  width: 100%;
 
-.tokenData {
-  text-decoration: none;
-  font-size: 0.8rem;
-  color: #4a5568;
+  a {
+    text-decoration: none;
+    color: white;
+  }
 }

@@ -36,7 +36,8 @@ exports.handler = async (event, context) => {
           author,
           canvas,
           size,
-          artistName
+          artistName,
+          createdOn: timestamp
         }
       },
       {
