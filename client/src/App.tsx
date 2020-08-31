@@ -4,7 +4,7 @@ import "./App.scss";
 import Header from "./components/Header/Header";
 import Canvas from "./components/Body/Canvas/Canvas";
 import Market from "./components/Body/Market/Market";
-import User from "./components/User/User";
+import User from "./components/Body/User/User";
 import Footer from "./components/Footer/Footer";
 
 function App() {

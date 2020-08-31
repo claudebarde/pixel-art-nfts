@@ -25,7 +25,7 @@ const Market: React.FC = () => {
     (async () => {
       // fetches IPFS hashes from big map
       const response = await fetch(
-        `https://api.better-call.dev/v1/bigmap/${config.ENV}/15409/keys`
+        `https://api.better-call.dev/v1/bigmap/${config.ENV}/${config.LEDGER_ID}/keys`
       );
       const entries: any[] = await response.json();
       setNumberOfArtwork(entries.length);

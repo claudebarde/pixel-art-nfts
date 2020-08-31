@@ -10,5 +10,7 @@ export default {
     dev: "http://localhost:8732",
     carthagenet: "https://carthagenet.smartpy.io",
     mainnet: "https://mainnet.smartpy.io"
-  }
+  },
+  LEDGER_ID: 15409,
+  TOKEN_METADATA_ID: 15412
 };
