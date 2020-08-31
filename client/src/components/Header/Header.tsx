@@ -197,7 +197,16 @@ const Header: React.FC = () => {
         </Link>
         <div className={styles.wallet_button}>
           {userAddress ? (
-            <i className="fas fa-user-check fa-lg"></i>
+            <Link to={`/profile/${userAddress}`}>
+              <i
+                className="fas fa-user-check fa-lg"
+                style={
+                  location.pathname.includes("/profile")
+                    ? { color: "#4fd1c5" }
+                    : { color: "black" }
+                }
+              ></i>
+            </Link>
           ) : (
             <>
               <i className="fas fa-wallet fa-lg"></i>

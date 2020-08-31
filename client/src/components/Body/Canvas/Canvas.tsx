@@ -37,9 +37,14 @@ const defaultLargeCanvas = (): string[][] =>
     .map(el => Array(blockNumberLarge).fill(bgColor));
 
 const Canvas: React.FC = () => {
-  const { gridSize, setGridSize, userAddress, contract, network } = useContext(
-    Context
-  );
+  const {
+    gridSize,
+    setGridSize,
+    userAddress,
+    contract,
+    network,
+    setStorage
+  } = useContext(Context);
   const [smallCanvas, setSmallCanvas] = useState(defaultSmallCanvas());
   const [mediumCanvas, setMediumCanvas] = useState(defaultMediumCanvas());
   const [largeCanvas, setLargeCanvas] = useState(defaultLargeCanvas());
@@ -283,6 +288,8 @@ const Canvas: React.FC = () => {
             .send();
           console.log(op.opHash);
           await op.confirmation();
+          const newStorage: any = await contract.storage();
+          if (setStorage) setStorage(newStorage);
         } else {
           throw new Error("NO_IPFS_HASH");
         }

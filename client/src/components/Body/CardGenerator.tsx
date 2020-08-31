@@ -1,13 +1,17 @@
-import React from "react";
+import React, { useContext } from "react";
 import moment from "moment";
 import { NavLink } from "react-router-dom";
 import { View } from "../../types";
+import { Context } from "../../Context";
 
 interface CardProps {
   artwork: any;
   i: number;
   styles: any;
   view: View;
+  userAddress?: string;
+  address?: string;
+  location?: string;
 }
 
 const displayAuthorName = (address: string, name: string): string => {
@@ -18,7 +22,18 @@ const displayAuthorName = (address: string, name: string): string => {
   }
 };
 
-const CardGenerator: React.FC<CardProps> = ({ artwork, i, styles, view }) => {
+const CardGenerator: React.FC<CardProps> = ({
+  artwork,
+  i,
+  styles,
+  view,
+  userAddress,
+  address,
+  location
+}) => {
+  const isOwnerConnected =
+    location?.includes("/profile") && userAddress && userAddress === address;
+
   return (
     <div className={styles.card} key={i + "-" + artwork.hash}>
       <div className={styles.card__image}>
@@ -71,6 +86,8 @@ const CardGenerator: React.FC<CardProps> = ({ artwork, i, styles, view }) => {
         <p>
           {artwork.market ? (
             <button className={styles.card__button}>Buy</button>
+          ) : isOwnerConnected ? (
+            <button className={styles.card__button}>Set On Sale</button>
           ) : (
             <button className={styles.card__button}>Not For Sale</button>
           )}
@@ -90,6 +107,11 @@ const CardGenerator: React.FC<CardProps> = ({ artwork, i, styles, view }) => {
         <div>
           <i className="fas fa-share-alt"></i>
         </div>
+        {isOwnerConnected && (
+          <div>
+            <i className="fas fa-exchange-alt"></i>
+          </div>
+        )}
         <div>ꜩ {artwork.price / 1000000}</div>
       </div>
     </div>

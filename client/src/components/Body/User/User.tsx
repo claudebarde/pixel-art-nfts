@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import config from "../../../config";
 import { Context } from "../../../Context";
 import styles from "./user.module.scss";
@@ -7,10 +7,11 @@ import CardGenerator from "../CardGenerator";
 import { View } from "../../../types";
 
 const User: React.FC = () => {
-  const { storage } = useContext(Context);
+  const { storage, userAddress } = useContext(Context);
   const [loading, setLoading] = useState(true);
   const [tokens, setTokens] = useState<any[]>([]);
   let { address } = useParams();
+  const location = useLocation();
 
   useEffect(() => {
     (async () => {
@@ -105,14 +106,20 @@ const User: React.FC = () => {
     <div>
       {loading ? (
         <div className="loader">
-          <div>Loading the user profile</div>
+          <div>
+            Loading{" "}
+            {userAddress && userAddress === address ? "your" : "the user's"}{" "}
+            profile
+          </div>
           <div className="pulsate-fwd">
             <i className="fas fa-user fa-lg"></i>
           </div>
         </div>
       ) : (
         <>
-          <h2>User Profile</h2>
+          <h2>
+            {userAddress && userAddress === address ? "Your" : "User"} Profile
+          </h2>
           <h3 className={styles.user_address}>
             <a
               href={`https://${
@@ -127,7 +134,15 @@ const User: React.FC = () => {
           <div className={styles.cards}>
             {tokens.length > 0
               ? tokens.map((tk, i) =>
-                  CardGenerator({ artwork: tk, i, styles, view: View.PROFILE })
+                  CardGenerator({
+                    artwork: tk,
+                    i,
+                    styles,
+                    view: View.PROFILE,
+                    userAddress,
+                    address,
+                    location: location.pathname
+                  })
                 )
               : "No token for this user"}
           </div>
