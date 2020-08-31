@@ -7,7 +7,7 @@ import { BigNumber } from "bignumber.js";
 import CardGenerator from "../CardGenerator";
 
 const Market: React.FC = () => {
-  const { storage } = useContext(Context);
+  const { storage, cart, setCart, userAddress } = useContext(Context);
   const [loadingMarket, setLoadingMarket] = useState(true);
   const [artworkList, setArtworkList] = useState<ArtworkListElement[]>([]);
   const [numberOfArtwork, setNumberOfArtwork] = useState<number>(0);
@@ -98,7 +98,15 @@ const Market: React.FC = () => {
           </h4>
           <div className={styles.cards}>
             {artworkList.map((artwork, i) => {
-              return CardGenerator({ artwork, i, styles, view: View.MARKET });
+              return CardGenerator({
+                artwork,
+                i,
+                styles,
+                view: View.MARKET,
+                userAddress,
+                cart,
+                setCart
+              });
             })}
           </div>
           {/*<div className={styles.grid}>

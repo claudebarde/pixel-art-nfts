@@ -11,6 +11,7 @@ export const Provider: React.FC = props => {
   const [userAddress, setUserAddress] = useState<string>("");
   const [contract, setContract] = useState<ContractAbstraction<Wallet>>();
   const [storage, setStorage] = useState<Storage | undefined>();
+  const [cart, setCart] = useState<string[]>([]);
 
   const state: State = {
     view,
@@ -23,7 +24,9 @@ export const Provider: React.FC = props => {
     network: config.NETWORK[config.ENV],
     contract,
     storage,
-    setStorage
+    setStorage,
+    cart,
+    setCart
   };
 
   useEffect(() => {

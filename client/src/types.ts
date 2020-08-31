@@ -72,4 +72,6 @@ export interface State {
   contract: ContractAbstraction<Wallet> | undefined;
   storage: Storage | undefined;
   setStorage: React.Dispatch<React.SetStateAction<Storage | undefined>>;
+  cart: string[];
+  setCart: React.Dispatch<React.SetStateAction<string[]>>;
 }

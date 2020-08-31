@@ -28,7 +28,8 @@ const Header: React.FC = () => {
     Tezos,
     userAddress,
     setUserAddress,
-    network
+    network,
+    cart
   } = useContext(Context);
   const title = useRef(null);
   const [zTextTitle] = useState(
@@ -227,6 +228,22 @@ const Header: React.FC = () => {
             </>
           )}
         </div>
+        {userAddress && (
+          <div>
+            <Link to="/cart">
+              <i
+                className={`fas ${
+                  cart && cart.length > 0 ? "fa-cart-plus" : "fa-shopping-cart"
+                } fa-lg`}
+                style={
+                  location.pathname === "/cart"
+                    ? { color: "#4fd1c5" }
+                    : { color: "black" }
+                }
+              ></i>
+            </Link>
+          </div>
+        )}
       </div>
     </header>
   );

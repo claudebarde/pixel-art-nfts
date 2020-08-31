@@ -1,8 +1,7 @@
-import React, { useContext } from "react";
+import React from "react";
 import moment from "moment";
 import { NavLink } from "react-router-dom";
 import { View } from "../../types";
-import { Context } from "../../Context";
 
 interface CardProps {
   artwork: any;
@@ -12,6 +11,8 @@ interface CardProps {
   userAddress?: string;
   address?: string;
   location?: string;
+  cart?: string[];
+  setCart?: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
 const displayAuthorName = (address: string, name: string): string => {
@@ -29,10 +30,18 @@ const CardGenerator: React.FC<CardProps> = ({
   view,
   userAddress,
   address,
-  location
+  location,
+  cart,
+  setCart
 }) => {
   const isOwnerConnected =
     location?.includes("/profile") && userAddress && userAddress === address;
+
+  const buy = (tokenId: string) => {
+    if (userAddress && setCart && cart) {
+      setCart([...cart, tokenId]);
+    }
+  };
 
   return (
     <div className={styles.card} key={i + "-" + artwork.hash}>
@@ -85,7 +94,12 @@ const CardGenerator: React.FC<CardProps> = ({
         )}
         <p>
           {artwork.market ? (
-            <button className={styles.card__button}>Buy</button>
+            <button
+              className={styles.card__button}
+              onClick={() => buy(artwork.ipfsHash)}
+            >
+              Buy
+            </button>
           ) : isOwnerConnected ? (
             <button className={styles.card__button}>Set On Sale</button>
           ) : (
