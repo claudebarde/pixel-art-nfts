@@ -3,6 +3,8 @@ import { useParams } from "react-router-dom";
 import config from "../../../config";
 import { Context } from "../../../Context";
 import styles from "./user.module.scss";
+import CardGenerator from "../CardGenerator";
+import { View } from "../../../types";
 
 const User: React.FC = () => {
   const { storage } = useContext(Context);
@@ -30,48 +32,70 @@ const User: React.FC = () => {
         const tokensMetadata: any[] = entries.filter(el =>
           IPFSHashes.includes(el.data.key.value)
         );
-        const tokens: any[] = tokensMetadata.map(el => {
+        const canvasList = await Promise.all(
+          tokensMetadata.map(async tk => {
+            // gets canvas code
+            const response = await fetch(
+              `https://gateway.pinata.cloud/ipfs/${tk.data.key_string}`
+            );
+            const canvas = await response.json();
+            return { ...canvas, ipfsHash: tk.data.key_string };
+          })
+        );
+        const tokensPromise: any[] = tokensMetadata.map(async el => {
           const children = [...el.data.value.children];
           const token = {};
-          children.forEach(async child => {
-            if (child.name === "extras") {
-              // extras map is not returned by the API request
-              const _token: any = await storage?.token_metadata.get(
-                el.data.key_string
-              );
-              const extras: string[][] = Array.from(_token.extras.entries());
-              // TODO: remove this hack
-              // first token created didn't have a createdBy prop
-              if (
-                el.data.key_string ===
-                "QmT3o46MhGfA7DQKFipkbkBw4UTc2M4E63V9B2F7WkJbGp"
-              )
-                extras.push([
-                  "createdBy",
-                  "tz1NhNv9g7rtcjyNsH8Zqu79giY5aTqDDrzB"
-                ]);
+          await Promise.all(
+            children.map(async child => {
+              if (child.name === "extras") {
+                // extras map is not returned by the API request
+                const _token: any = await storage?.token_metadata.get(
+                  el.data.key_string
+                );
+                const extras: string[][] = Array.from(_token.extras.entries());
+                // TODO: remove this hack
+                // first token created didn't have a createdBy prop
+                if (
+                  el.data.key_string ===
+                  "QmT3o46MhGfA7DQKFipkbkBw4UTc2M4E63V9B2F7WkJbGp"
+                )
+                  extras.push([
+                    "createdBy",
+                    "tz1NhNv9g7rtcjyNsH8Zqu79giY5aTqDDrzB"
+                  ]);
 
-              token[child.name] = {
-                canvasHash: extras.filter(
-                  (arr: string[]) => arr[0] === "canvasHash"
-                )[0][1],
-                createdBy:
-                  extras.filter(
-                    (arr: string[]) => arr[0] === "createdBy"
-                  )[0][1] || null,
-                createdOn: extras.filter(
-                  (arr: string[]) => arr[0] === "createdOn"
-                )[0][1]
-              };
-            } else {
-              token[child.name] = child.value;
-            }
-          });
+                token[child.name] = {
+                  canvasHash: extras.filter(
+                    (arr: string[]) => arr[0] === "canvasHash"
+                  )[0][1],
+                  createdBy:
+                    extras.filter(
+                      (arr: string[]) => arr[0] === "createdBy"
+                    )[0][1] || null,
+                  createdOn: extras.filter(
+                    (arr: string[]) => arr[0] === "createdOn"
+                  )[0][1]
+                };
+              } else {
+                token[child.name] = child.value;
+              }
+            })
+          );
 
           return token;
         });
-
-        console.log(tokens);
+        let tokens = await Promise.all(tokensPromise);
+        // adds canvas code for each token
+        tokens = tokens
+          .map(tk => {
+            return {
+              ...tk,
+              ...canvasList.filter(cv => cv.ipfsHash === tk.token_id)[0]
+            };
+          })
+          .map(tk => ({ ...tk, timestamp: tk.extras.createdOn }));
+        // exposes timestamp property
+        //tokens = tokens.map(tk => ({ ...tk, timestamp: tk.extras.createdOn }));
         setTokens(tokens);
         setLoading(false);
       }
@@ -80,13 +104,34 @@ const User: React.FC = () => {
   return (
     <div>
       {loading ? (
-        <div>Loading</div>
-      ) : (
-        <div className={styles.cards}>
-          {tokens.length > 0
-            ? tokens.map(tk => <div key={tk.token_id}>Token</div>)
-            : "No token for this user"}
+        <div className="loader">
+          <div>Loading the user profile</div>
+          <div className="pulsate-fwd">
+            <i className="fas fa-user fa-lg"></i>
+          </div>
         </div>
+      ) : (
+        <>
+          <h2>User Profile</h2>
+          <h3 className={styles.user_address}>
+            <a
+              href={`https://${
+                config.ENV === "carthagenet" && "carthage."
+              }tzkt.io/${address}/operations`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {address}
+            </a>
+          </h3>
+          <div className={styles.cards}>
+            {tokens.length > 0
+              ? tokens.map((tk, i) =>
+                  CardGenerator({ artwork: tk, i, styles, view: View.PROFILE })
+                )
+              : "No token for this user"}
+          </div>
+        </>
       )}
     </div>
   );

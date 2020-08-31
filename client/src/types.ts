@@ -41,7 +41,8 @@ export interface ArtworkListElement {
 
 export enum View {
   CANVAS = "canvas",
-  MARKET = "market"
+  MARKET = "market",
+  PROFILE = "profile"
 }
 
 export enum GridSize {
