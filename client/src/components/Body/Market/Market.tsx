@@ -91,10 +91,11 @@ const Market: React.FC = () => {
         </div>
       ) : artworkList.length > 0 ? (
         <>
-          <h2>
-            {numberOfArtwork} Artwork{numberOfArtwork > 1 ? "s" : ""} Available
-            for Purchase
-          </h2>
+          <h2>Artwork Marketplace</h2>
+          <h4>
+            {numberOfArtwork} piece{numberOfArtwork > 1 ? "s" : ""} of pixel art
+            have been created on this platform
+          </h4>
           <div className={styles.cards}>
             {artworkList.map((artwork, i) => {
               return CardGenerator({ artwork, i, styles, view: View.MARKET });
