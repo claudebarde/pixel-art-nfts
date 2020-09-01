@@ -7,7 +7,14 @@ import CardGenerator from "../CardGenerator";
 import { View, Canvas } from "../../../types";
 
 const User: React.FC = () => {
-  const { storage, userAddress, cart, setCart } = useContext(Context);
+  const {
+    storage,
+    userAddress,
+    cart,
+    setCart,
+    setStorage,
+    contract
+  } = useContext(Context);
   const [loading, setLoading] = useState(true);
   const [tokens, setTokens] = useState<any[]>([]);
   let { address } = useParams();
@@ -143,7 +150,9 @@ const User: React.FC = () => {
                     address,
                     location: location.pathname,
                     cart,
-                    setCart
+                    setCart,
+                    setStorage,
+                    contract
                   })
                 )
               : "No token for this user"}

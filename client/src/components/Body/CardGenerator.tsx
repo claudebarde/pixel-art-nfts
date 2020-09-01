@@ -1,19 +1,7 @@
 import React from "react";
 import moment from "moment";
 import { NavLink } from "react-router-dom";
-import { View, CartItem } from "../../types";
-
-interface CardProps {
-  artwork: any;
-  i: number;
-  styles: any;
-  view: View;
-  userAddress?: string;
-  address?: string;
-  location?: string;
-  cart?: CartItem[];
-  setCart?: React.Dispatch<React.SetStateAction<CartItem[]>>;
-}
+import { View, CartItem, CardProps } from "../../types";
 
 const displayAuthorName = (address: string, name: string): string => {
   if (name && name !== "unknown") {
@@ -32,7 +20,9 @@ const CardGenerator: React.FC<CardProps> = ({
   address,
   location,
   cart,
-  setCart
+  setCart,
+  setStorage,
+  contract
 }) => {
   const isOwnerConnected =
     location?.includes("/profile") && userAddress && userAddress === address;
@@ -40,6 +30,20 @@ const CardGenerator: React.FC<CardProps> = ({
   const buy = (cartItem: CartItem) => {
     if (userAddress && setCart && cart) {
       setCart([...cart, cartItem]);
+    }
+  };
+
+  const setOnSale = async () => {
+    try {
+      const op = await contract?.methods
+        .update_token_status(artwork.ipfsHash, true)
+        .send();
+      await op?.confirmation();
+      if (setStorage) {
+        setStorage(await contract?.storage());
+      }
+    } catch (error) {
+      console.log(error);
     }
   };
 
@@ -82,15 +86,26 @@ const CardGenerator: React.FC<CardProps> = ({
           {moment.unix(artwork.timestamp / 1000).format("MM/DD/YYYY")}
         </p>
         {view === View.MARKET && (
-          <p>
-            Sold by{" "}
-            <NavLink
-              to={`/profile/${artwork.author}`}
-              className={styles.card__link}
-            >
-              {displayAuthorName(artwork.author, artwork.artistName)}
-            </NavLink>
-          </p>
+          <>
+            <p>
+              Artist:{" "}
+              <NavLink
+                to={`/profile/${artwork.author}`}
+                className={styles.card__link}
+              >
+                {displayAuthorName(artwork.author, artwork.artistName)}
+              </NavLink>
+            </p>
+            <p>
+              Sold by{" "}
+              <NavLink
+                to={`/profile/${artwork.seller}`}
+                className={styles.card__link}
+              >
+                {displayAuthorName(artwork.seller, "")}
+              </NavLink>
+            </p>
+          </>
         )}
         <p>
           {artwork.market ? (
@@ -115,7 +130,9 @@ const CardGenerator: React.FC<CardProps> = ({
                 : "Buy"}
             </button>
           ) : isOwnerConnected ? (
-            <button className={styles.card__button}>Set On Sale</button>
+            <button className={styles.card__button} onClick={setOnSale}>
+              Set On Sale
+            </button>
           ) : (
             <button className={styles.card__button}>Not For Sale</button>
           )}

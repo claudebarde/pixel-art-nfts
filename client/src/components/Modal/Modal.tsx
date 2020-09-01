@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useContext } from "react";
 import styles from "./modal.module.scss";
 import { Context } from "../../Context";
 import { TokenMetadata, GridSize } from "../../types";
@@ -37,6 +37,7 @@ export const Modal: React.FC<ModalProps> = ({
   const [price, setPrice] = useState("3");
   const [artistName, setArtistName] = useState("Claude B.");
   const [availableOnMarket, setAvailableOnMarket] = useState(true);
+  const [confirmBuy, setConfirmBuy] = useState(false);
 
   if (state === State.CLOSED) {
     return null;
@@ -245,10 +246,24 @@ export const Modal: React.FC<ModalProps> = ({
                   className={`button ${
                     cart && cart.length > 0 ? "info" : "disabled"
                   }`}
+                  onClick={() => {
+                    setConfirmBuy(true);
+                    confirm(cart, setCart);
+                  }}
                 >
-                  Confirm
+                  {confirmBuy ? (
+                    <span>
+                      <i className="fas fa-spinner fa-spin"></i> Processing...
+                    </span>
+                  ) : (
+                    <span>Confirm</span>
+                  )}
                 </button>
-                <button className="button error" onClick={close}>
+                <button
+                  className="button error"
+                  onClick={close}
+                  disabled={confirmBuy}
+                >
                   Close
                 </button>
               </div>

@@ -85,3 +85,17 @@ export interface State {
   cart: CartItem[];
   setCart: React.Dispatch<React.SetStateAction<CartItem[]>>;
 }
+
+export interface CardProps {
+  artwork: any;
+  i: number;
+  styles: any;
+  view: View;
+  userAddress?: string;
+  address?: string;
+  location?: string;
+  cart?: CartItem[];
+  setCart?: React.Dispatch<React.SetStateAction<CartItem[]>>;
+  setStorage?: React.Dispatch<React.SetStateAction<Storage | undefined>>;
+  contract?: ContractAbstraction<Wallet>;
+}

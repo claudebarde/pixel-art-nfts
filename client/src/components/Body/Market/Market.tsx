@@ -27,7 +27,11 @@ const Market: React.FC = () => {
           artPieces.push(
             fetch(`https://gateway.pinata.cloud/ipfs/${entry.data.key.value}`)
               .then(response => response.json())
-              .then(result => ({ ...result, ipfsHash: entry.data.key.value }))
+              .then(result => ({
+                ...result,
+                ipfsHash: entry.data.key.value,
+                seller: entry.data.value.value
+              }))
           );
         });
         const resultEntries: ArtworkListElement[] = await Promise.all(
@@ -109,67 +113,6 @@ const Market: React.FC = () => {
               });
             })}
           </div>
-          {/*<div className={styles.grid}>
-            <div className={styles.grid__header}>
-              <div>Artwork</div>
-              <div>Name</div>
-              <div>Seller</div>
-              <div>Creation Date</div>
-              <div>Price</div>
-              <div></div>
-            </div>
-            {artworkList.map((artwork, i) => {
-              return (
-                <div className={styles.grid__row} key={i + "-" + artwork.hash}>
-                  {artwork.size === 1 && (
-                    <div
-                      className={styles.pixelGridSmall}
-                      style={{
-                        borderBottom: "none",
-                        borderRight: "none"
-                      }}
-                    >
-                      {artwork.canvas.map((row, i1) =>
-                        row.map((bgColor, i2) => (
-                          <div
-                            key={i1.toString() + i2.toString()}
-                            className={styles.pixel}
-                            style={{
-                              backgroundColor: bgColor,
-                              borderTop: "none",
-                              borderLeft: "none"
-                            }}
-                          ></div>
-                        ))
-                      )}
-                    </div>
-                  )}
-                  <div>
-                    <em>{artwork.name}</em>
-                  </div>
-                  <div>
-                    <a
-                      className={styles.author}
-                      href={`https://${
-                        config.ENV === "carthagenet" && "carthage."
-                      }tzkt.io/${artwork.author}/operations`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      {displayAuthorName(artwork.author, artwork.artistName)}
-                    </a>
-                  </div>
-                  <div>
-                    {moment.unix(artwork.timestamp / 1000).format("MM/DD/YYYY")}
-                  </div>
-                  <div>ꜩ {artwork.price / 1000000}</div>
-                  <div>
-                    <button className="button info">Buy</button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>*/}
         </>
       ) : (
         <div>

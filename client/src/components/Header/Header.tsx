@@ -27,9 +27,16 @@ const titleColors = [
 ];
 
 const Header: React.FC = () => {
-  const { Tezos, userAddress, setUserAddress, network, cart } = useContext(
-    Context
-  );
+  const {
+    Tezos,
+    userAddress,
+    setUserAddress,
+    network,
+    cart,
+    setCart,
+    contract,
+    setStorage
+  } = useContext(Context);
   const title = useRef(null);
   const [zTextTitle] = useState(
     [
@@ -86,26 +93,31 @@ const Header: React.FC = () => {
           P2P_LISTEN_FOR_CHANNEL_OPEN: {
             handler: async data => {
               console.log("Listening to P2P channel:", data);
-              //setBeaconConnection(BeaconConnection.LISTENING);
-              //setPublicToken(data.publicKey);
             }
           },
           P2P_CHANNEL_CONNECT_SUCCESS: {
             handler: async data => {
               console.log("Channel connected:", data);
-              //setBeaconConnection(BeaconConnection.CONNECTED);
             }
           },
           PERMISSION_REQUEST_SENT: {
             handler: async data => {
               console.log("Permission request sent:", data);
-              //setBeaconConnection(BeaconConnection.PERMISSION_REQUEST_SENT);
             }
           },
           PERMISSION_REQUEST_SUCCESS: {
             handler: async data => {
               console.log("Wallet is connected:", data);
-              //setBeaconConnection(BeaconConnection.PERMISSION_REQUEST_SUCCESS);
+            }
+          },
+          OPERATION_REQUEST_SENT: {
+            handler: async data => {
+              console.log("Request broadcast:", data);
+            }
+          },
+          OPERATION_REQUEST_SUCCESS: {
+            handler: async data => {
+              console.log("Request broadcast success:", data);
             }
           }
         }
@@ -157,6 +169,36 @@ const Header: React.FC = () => {
       }
     } catch (error) {
       console.log("Error!", error);
+    }
+  };
+
+  const confirmBuy = async (cart, setCart) => {
+    const tokens = cart?.map(item => item.ipfsHash);
+    const price = cart?.map(item => item.price).reduce((a, b) => a + b);
+    // starts transaction
+    try {
+      const op = await contract?.methods
+        .buy_tokens(tokens)
+        .send({ amount: price, mutez: true });
+      await op?.confirmation();
+      // empties the cart
+      if (setCart && setStorage) {
+        setCart([]);
+        // refreshes the storage
+        setStorage(await contract?.storage());
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      // closes the modal
+      setModalState({
+        state: ModalState.CLOSED,
+        type: ModalType.CLOSED,
+        header: "",
+        body: "",
+        confirm: undefined,
+        close: undefined
+      });
     }
   };
 
@@ -243,7 +285,7 @@ const Header: React.FC = () => {
                 type: ModalType.CONFIRM_CART,
                 header: "Confirm purchases",
                 body: "",
-                confirm: () => console.log("confirmed!"),
+                confirm: confirmBuy,
                 close: () => {
                   setModalState({
                     state: ModalState.CLOSED,
