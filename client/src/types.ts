@@ -8,8 +8,10 @@ import {
 import BigNumber from "bignumber.js";
 import React from "react";
 
+export type Canvas = string[][];
+
 export interface IPFSObject {
-  canvas: string[][];
+  canvas: Canvas;
   size: number;
   author: string;
   name: string;
@@ -29,7 +31,7 @@ export interface TokenMetadata {
 
 export interface ArtworkListElement {
   ipfsHash: string;
-  canvas: string[][];
+  canvas: Canvas;
   name: string;
   author: string;
   timestamp: number;

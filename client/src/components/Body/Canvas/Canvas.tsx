@@ -4,7 +4,7 @@ import "@simonwep/pickr/dist/themes/classic.min.css";
 import { MichelsonMap } from "@taquito/taquito";
 import styles from "./canvas.module.scss";
 import { Context } from "../../../Context";
-import { GridSize } from "../../../types";
+import { GridSize, Canvas } from "../../../types";
 import {
   State as ModalState,
   ModalProps,
@@ -13,6 +13,7 @@ import {
 } from "../../Modal/Modal";
 import config from "../../../config";
 import { IPFSObject, TokenMetadata } from "../../../types";
+import { saveCanvas, loadCanvas } from "./localCanvas";
 
 const [blockNumberSmall, blockNumberMedium, blockNumberLarge]: number[] = [
   12,
@@ -23,20 +24,20 @@ const [blockNumberSmall, blockNumberMedium, blockNumberLarge]: number[] = [
 const bgColor = "#f7fafc";
 const brushColor = "#42445a";
 const defaultPalette = ["#42445a", "#f7fafc", "#ffffff"];
-const defaultSmallCanvas = (): string[][] =>
+const defaultSmallCanvas = (): Canvas =>
   Array(blockNumberSmall)
     .fill("")
     .map(el => Array(blockNumberSmall).fill(bgColor));
-const defaultMediumCanvas = (): string[][] =>
+const defaultMediumCanvas = (): Canvas =>
   Array(blockNumberMedium)
     .fill("")
     .map(el => Array(blockNumberMedium).fill(bgColor));
-const defaultLargeCanvas = (): string[][] =>
+const defaultLargeCanvas = (): Canvas =>
   Array(blockNumberLarge)
     .fill("")
     .map(el => Array(blockNumberLarge).fill(bgColor));
 
-const Canvas: React.FC = () => {
+const CanvasPainting: React.FC = () => {
   const {
     gridSize,
     setGridSize,
@@ -68,6 +69,7 @@ const Canvas: React.FC = () => {
   const [loadingNewToken, setLoadingNewToken] = useState(false);
   const [lastUsedColors, setLastUsedColors] = useState(defaultPalette);
   const activeLastUsedColors = useRef(defaultPalette);
+  const [savedCanvas, setSavedCanvas] = useState<boolean>(false);
 
   const resetCanvas = () => {
     if (colorPicker && bgColorPicker) {
@@ -82,13 +84,9 @@ const Canvas: React.FC = () => {
     }
   };
 
-  const updateCanvas = (
-    pos1: number,
-    pos2: number,
-    canvas: string[][]
-  ): string[][] => {
+  const updateCanvas = (pos1: number, pos2: number, canvas: Canvas): Canvas => {
     // updates color in `smallCanvas` variable
-    const newCanvas: string[][] = [...canvas];
+    const newCanvas: Canvas = [...canvas];
     if (newCanvas[pos1][pos2] === activeBrushColor.current) {
       // user clicks on a block with the same color as the brush
       newCanvas[pos1][pos2] = activeBgColor.current;
@@ -216,7 +214,7 @@ const Canvas: React.FC = () => {
   ) => {
     setLoadingNewToken(true);
 
-    let canvas: string[][];
+    let canvas: Canvas;
     if (gridSize === GridSize.Small) {
       // small canvas
       canvas = smallCanvas;
@@ -548,6 +546,25 @@ const Canvas: React.FC = () => {
               <p onClick={() => setDisplayGrid(true)}>Show the grid</p>
             )}
             <p onClick={resetCanvas}>Reset the grid</p>
+            <p
+              onClick={() => {
+                const savedCanvas = loadCanvas(gridSize as GridSize);
+                if (savedCanvas) {
+                  if (gridSize === GridSize.Small) {
+                    setSmallCanvas(savedCanvas.canvas);
+                    activeSmallCanvas.current = savedCanvas.canvas;
+                  } else if (gridSize === GridSize.Medium) {
+                    setMediumCanvas(savedCanvas.canvas);
+                    activeMediumCanvas.current = savedCanvas.canvas;
+                  } else if (gridSize === GridSize.Large) {
+                    setLargeCanvas(savedCanvas.canvas);
+                    activeLargeCanvas.current = savedCanvas.canvas;
+                  }
+                }
+              }}
+            >
+              Load saved grid
+            </p>
           </div>
           <p className={styles.menu_title}>Upload</p>
           <div className={styles.menu_list}>
@@ -595,17 +612,26 @@ const Canvas: React.FC = () => {
                       onMouseDown={() => {
                         //console.log(`row: ${i1} ; column: ${i2}`);
                         // updates color in `smallCanvas` variable
-                        const newCanvas: string[][] = updateCanvas(i1, i2, [
+                        const newCanvas: Canvas = updateCanvas(i1, i2, [
                           ...smallCanvas
                         ]);
                         setSmallCanvas(newCanvas);
                         activeSmallCanvas.current = newCanvas;
                       }}
+                      onMouseUp={() => {
+                        // saves update in local storage
+                        setSavedCanvas(false);
+                        const isSaved = saveCanvas(smallCanvas, GridSize.Small);
+                        if (isSaved) {
+                          setSavedCanvas(true);
+                          setTimeout(() => setSavedCanvas(false), 2000);
+                        }
+                      }}
                       onMouseEnter={event => {
                         // draw as user drags the mouse
                         if (event.buttons === 1) {
                           // updates color in `smallCanvas` variable
-                          const newCanvas: string[][] = updateCanvas(i1, i2, [
+                          const newCanvas: Canvas = updateCanvas(i1, i2, [
                             ...smallCanvas
                           ]);
                           setSmallCanvas(newCanvas);
@@ -638,17 +664,29 @@ const Canvas: React.FC = () => {
                       }}
                       onMouseDown={() => {
                         // updates color in `smallCanvas` variable
-                        const newCanvas: string[][] = updateCanvas(i1, i2, [
+                        const newCanvas: Canvas = updateCanvas(i1, i2, [
                           ...mediumCanvas
                         ]);
                         setMediumCanvas(newCanvas);
                         activeMediumCanvas.current = newCanvas;
                       }}
+                      onMouseUp={() => {
+                        // saves update in local storage
+                        setSavedCanvas(false);
+                        const isSaved = saveCanvas(
+                          mediumCanvas,
+                          GridSize.Medium
+                        );
+                        if (isSaved) {
+                          setSavedCanvas(true);
+                          setTimeout(() => setSavedCanvas(false), 2000);
+                        }
+                      }}
                       onMouseEnter={event => {
                         // draw as user drags the mouse
                         if (event.buttons === 1) {
                           // updates color in `smallCanvas` variable
-                          const newCanvas: string[][] = updateCanvas(i1, i2, [
+                          const newCanvas: Canvas = updateCanvas(i1, i2, [
                             ...mediumCanvas
                           ]);
                           setSmallCanvas(newCanvas);
@@ -681,17 +719,26 @@ const Canvas: React.FC = () => {
                       }}
                       onMouseDown={() => {
                         // updates color in `smallCanvas` variable
-                        const newCanvas: string[][] = updateCanvas(i1, i2, [
+                        const newCanvas: Canvas = updateCanvas(i1, i2, [
                           ...largeCanvas
                         ]);
                         setLargeCanvas(newCanvas);
                         activeLargeCanvas.current = newCanvas;
                       }}
+                      onMouseUp={() => {
+                        // saves update in local storage
+                        setSavedCanvas(false);
+                        const isSaved = saveCanvas(largeCanvas, GridSize.Large);
+                        if (isSaved) {
+                          setSavedCanvas(true);
+                          setTimeout(() => setSavedCanvas(false), 2000);
+                        }
+                      }}
                       onMouseEnter={event => {
                         // draw as user drags the mouse
                         if (event.buttons === 1) {
                           // updates color in `smallCanvas` variable
-                          const newCanvas: string[][] = updateCanvas(i1, i2, [
+                          const newCanvas: Canvas = updateCanvas(i1, i2, [
                             ...largeCanvas
                           ]);
                           setSmallCanvas(newCanvas);
@@ -703,6 +750,7 @@ const Canvas: React.FC = () => {
                 )}
               </div>
             )}
+            {savedCanvas ? <p>Saved</p> : <p>&nbsp;</p>}
           </div>
           <div></div>
         </div>
@@ -712,4 +760,4 @@ const Canvas: React.FC = () => {
   );
 };
 
-export default Canvas;
+export default CanvasPainting;

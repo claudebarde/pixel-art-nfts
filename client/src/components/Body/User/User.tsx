@@ -4,7 +4,7 @@ import config from "../../../config";
 import { Context } from "../../../Context";
 import styles from "./user.module.scss";
 import CardGenerator from "../CardGenerator";
-import { View } from "../../../types";
+import { View, Canvas } from "../../../types";
 
 const User: React.FC = () => {
   const { storage, userAddress, cart, setCart } = useContext(Context);
@@ -53,7 +53,7 @@ const User: React.FC = () => {
                 const _token: any = await storage?.token_metadata.get(
                   el.data.key_string
                 );
-                const extras: string[][] = Array.from(_token.extras.entries());
+                const extras: Canvas = Array.from(_token.extras.entries());
                 // TODO: remove this hack
                 // first token created didn't have a createdBy prop
                 if (
