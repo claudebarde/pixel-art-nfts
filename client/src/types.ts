@@ -62,6 +62,14 @@ export interface Storage {
   token_metadata: BigMapAbstraction;
 }
 
+export interface CartItem {
+  ipfsHash: string;
+  seller: string;
+  canvas: Canvas;
+  price: number;
+  size: GridSize;
+}
+
 export interface State {
   view: View;
   setView: React.Dispatch<React.SetStateAction<View>>;
@@ -74,6 +82,6 @@ export interface State {
   contract: ContractAbstraction<Wallet> | undefined;
   storage: Storage | undefined;
   setStorage: React.Dispatch<React.SetStateAction<Storage | undefined>>;
-  cart: string[];
-  setCart: React.Dispatch<React.SetStateAction<string[]>>;
+  cart: CartItem[];
+  setCart: React.Dispatch<React.SetStateAction<CartItem[]>>;
 }

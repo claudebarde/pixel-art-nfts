@@ -1,7 +1,7 @@
 import React from "react";
 import moment from "moment";
 import { NavLink } from "react-router-dom";
-import { View } from "../../types";
+import { View, CartItem } from "../../types";
 
 interface CardProps {
   artwork: any;
@@ -11,8 +11,8 @@ interface CardProps {
   userAddress?: string;
   address?: string;
   location?: string;
-  cart?: string[];
-  setCart?: React.Dispatch<React.SetStateAction<string[]>>;
+  cart?: CartItem[];
+  setCart?: React.Dispatch<React.SetStateAction<CartItem[]>>;
 }
 
 const displayAuthorName = (address: string, name: string): string => {
@@ -37,9 +37,9 @@ const CardGenerator: React.FC<CardProps> = ({
   const isOwnerConnected =
     location?.includes("/profile") && userAddress && userAddress === address;
 
-  const buy = (tokenId: string) => {
+  const buy = (cartItem: CartItem) => {
     if (userAddress && setCart && cart) {
-      setCart([...cart, tokenId]);
+      setCart([...cart, cartItem]);
     }
   };
 
@@ -96,9 +96,23 @@ const CardGenerator: React.FC<CardProps> = ({
           {artwork.market ? (
             <button
               className={styles.card__button}
-              onClick={() => buy(artwork.ipfsHash)}
+              onClick={
+                !cart?.includes(artwork.ipfsHash)
+                  ? () =>
+                      buy({
+                        ipfsHash: artwork.ipfsHash,
+                        seller: artwork.author,
+                        canvas: artwork.canvas,
+                        price: artwork.price,
+                        size: artwork.size
+                      })
+                  : () => null
+              }
             >
-              Buy
+              {cart &&
+              cart.filter(el => el.ipfsHash === artwork.ipfsHash).length > 0
+                ? "Added to cart"
+                : "Buy"}
             </button>
           ) : isOwnerConnected ? (
             <button className={styles.card__button}>Set On Sale</button>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Tezos, ContractAbstraction, Wallet } from "@taquito/taquito";
 import config from "./config";
-import { Storage, State, View, GridSize } from "./types";
+import { Storage, State, View, GridSize, CartItem } from "./types";
 
 export const Context = React.createContext<Partial<State>>({});
 
@@ -11,7 +11,7 @@ export const Provider: React.FC = props => {
   const [userAddress, setUserAddress] = useState<string>("");
   const [contract, setContract] = useState<ContractAbstraction<Wallet>>();
   const [storage, setStorage] = useState<Storage | undefined>();
-  const [cart, setCart] = useState<string[]>([]);
+  const [cart, setCart] = useState<CartItem[]>([]);
 
   const state: State = {
     view,

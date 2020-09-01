@@ -13,7 +13,7 @@
 }
 
 .nav {
-  min-width: 120px;
+  min-width: 150px;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
@@ -49,10 +49,10 @@
 
 .wallet_tooltip {
   display: none;
-  background-color: white;
-  border: solid 1px black;
-  border-radius: 5px;
-  padding: 0px;
+  background-color: #fefcbf;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 0px;
   width: 160px;
   font-size: 1rem;
   transition: 0.3s;

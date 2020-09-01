@@ -7,9 +7,14 @@ import { TezBridgeWallet } from "@taquito/tezbridge-wallet";
 import { NetworkType } from "@airgap/beacon-sdk";
 import styles from "./header.module.scss";
 import { Context } from "../../Context";
-import { View } from "../../types";
 import config from "../../config";
 import ztext from "./ztext-custom";
+import {
+  State as ModalState,
+  ModalProps,
+  ModalType,
+  Modal
+} from "../Modal/Modal";
 
 const titleColors = [
   "red",
@@ -22,15 +27,9 @@ const titleColors = [
 ];
 
 const Header: React.FC = () => {
-  const {
-    view,
-    setView,
-    Tezos,
-    userAddress,
-    setUserAddress,
-    network,
-    cart
-  } = useContext(Context);
+  const { Tezos, userAddress, setUserAddress, network, cart } = useContext(
+    Context
+  );
   const title = useRef(null);
   const [zTextTitle] = useState(
     [
@@ -57,6 +56,14 @@ const Header: React.FC = () => {
       .join("")
   );
   const location = useLocation();
+  const [modalState, setModalState] = useState<ModalProps>({
+    state: ModalState.CLOSED,
+    type: ModalType.CLOSED,
+    header: "",
+    body: "",
+    confirm: undefined,
+    close: undefined
+  });
 
   const connectTezBridge = async () => {
     if (!Tezos || !setUserAddress)
@@ -171,7 +178,7 @@ const Header: React.FC = () => {
 
   return (
     <header>
-      <div></div>
+      <div className={styles.nav}></div>
       <div className="title">
         <h1 ref={title} dangerouslySetInnerHTML={{ __html: zTextTitle }}></h1>
       </div>
@@ -229,22 +236,36 @@ const Header: React.FC = () => {
           )}
         </div>
         {userAddress && (
-          <div>
-            <Link to="/cart">
-              <i
-                className={`fas ${
-                  cart && cart.length > 0 ? "fa-cart-plus" : "fa-shopping-cart"
-                } fa-lg`}
-                style={
-                  location.pathname === "/cart"
-                    ? { color: "#4fd1c5" }
-                    : { color: "black" }
+          <div
+            onClick={() =>
+              setModalState({
+                state: ModalState.OPEN,
+                type: ModalType.CONFIRM_CART,
+                header: "Confirm purchases",
+                body: "",
+                confirm: () => console.log("confirmed!"),
+                close: () => {
+                  setModalState({
+                    state: ModalState.CLOSED,
+                    type: ModalType.CLOSED,
+                    header: "",
+                    body: "",
+                    confirm: undefined,
+                    close: undefined
+                  });
                 }
-              ></i>
-            </Link>
+              })
+            }
+          >
+            <i
+              className={`fas ${
+                cart && cart.length > 0 ? "fa-cart-plus" : "fa-shopping-cart"
+              } fa-lg`}
+            ></i>
           </div>
         )}
       </div>
+      <Modal {...modalState} />
     </header>
   );
 };
