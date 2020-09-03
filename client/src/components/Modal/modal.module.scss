@@ -37,6 +37,13 @@
     flex-direction: row;
     justify-content: flex-end;
   }
+
+  .modal__input_text {
+    padding: 10px;
+    width: 70%;
+    font-size: 1rem;
+    margin: 0px 20px;
+  }
 }
 
 .cartItems {

@@ -99,4 +99,5 @@ export interface CardProps {
   setStorage?: React.Dispatch<React.SetStateAction<Storage | undefined>>;
   contract?: ContractAbstraction<Wallet>;
   token_id?: string;
+  confirmTransfer?: (ipfsHash: string) => any;
 }

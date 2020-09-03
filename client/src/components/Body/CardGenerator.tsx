@@ -23,12 +23,11 @@ const CardGenerator: React.FC<CardProps> = ({
   setCart,
   setStorage,
   contract,
-  token_id
+  token_id,
+  confirmTransfer
 }) => {
   const isOwnerConnected =
     location?.includes("/profile") && userAddress && userAddress === address;
-
-  console.log(token_id);
 
   const buy = (cartItem: CartItem) => {
     if (userAddress && setCart && cart) {
@@ -163,7 +162,12 @@ const CardGenerator: React.FC<CardProps> = ({
           </NavLink>
         </div>
         {isOwnerConnected && (
-          <div>
+          <div
+            onClick={() => {
+              if (confirmTransfer) confirmTransfer(artwork.ipfsHash);
+            }}
+            style={{ cursor: "pointer" }}
+          >
             <i className="fas fa-exchange-alt"></i>
           </div>
         )}

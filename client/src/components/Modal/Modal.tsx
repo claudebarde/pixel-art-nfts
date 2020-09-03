@@ -2,6 +2,7 @@ import React, { useState, useContext } from "react";
 import styles from "./modal.module.scss";
 import { Context } from "../../Context";
 import { TokenMetadata, GridSize } from "../../types";
+import { validateAddress } from "@taquito/utils";
 
 export enum State {
   OPEN,
@@ -12,7 +13,8 @@ export enum ModalType {
   CLOSED,
   EMPTY_CANVAS,
   CONFIRM_NEW_TOKEN,
-  CONFIRM_CART
+  CONFIRM_CART,
+  CONFIRM_TRANSFER
 }
 
 export type ModalProps = {
@@ -38,6 +40,8 @@ export const Modal: React.FC<ModalProps> = ({
   const [artistName, setArtistName] = useState("Claude B.");
   const [availableOnMarket, setAvailableOnMarket] = useState(true);
   const [confirmBuy, setConfirmBuy] = useState(false);
+  const [transferRecipient, setTransferRecipient] = useState<string>("");
+  const [loadingTransfer, setLoadingTransfer] = useState(false);
 
   if (state === State.CLOSED) {
     return null;
@@ -275,6 +279,59 @@ export const Modal: React.FC<ModalProps> = ({
                   className="button error"
                   onClick={close}
                   disabled={confirmBuy}
+                >
+                  Close
+                </button>
+              </div>
+            </>
+          )}
+          {/* CONFIRM TOKEN TRANSFER */}
+          {type === ModalType.CONFIRM_TRANSFER && (
+            <>
+              <div className={styles.modal__body}>
+                <p>
+                  You are about to transfer this token. Please enter the
+                  recipient's address below:
+                </p>
+                <p>
+                  <i className="fas fa-user-friends fa-lg"></i>
+                  <input
+                    type="text"
+                    className={styles.modal__input_text}
+                    value={transferRecipient}
+                    onChange={event => setTransferRecipient(event.target.value)}
+                  />
+                </p>
+                {validateAddress(transferRecipient) === 3 ? (
+                  <p>Are you sure you want to proceed with the transfer?</p>
+                ) : (
+                  <p>&nbsp;</p>
+                )}
+              </div>
+              <div className={styles.modal__buttons}>
+                <button
+                  className={`button ${
+                    validateAddress(transferRecipient) === 3
+                      ? "info"
+                      : "disabled"
+                  }`}
+                  onClick={() => {
+                    if (!loadingTransfer) confirm(transferRecipient);
+                    setLoadingTransfer(true);
+                  }}
+                >
+                  {loadingTransfer ? (
+                    <span>
+                      <i className="fas fa-spinner fa-spin"></i> Processing...
+                    </span>
+                  ) : (
+                    <span>Confirm</span>
+                  )}
+                </button>
+                <button
+                  className="button error"
+                  onClick={close}
+                  disabled={loadingTransfer}
                 >
                   Close
                 </button>

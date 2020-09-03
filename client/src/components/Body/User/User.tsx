@@ -5,6 +5,12 @@ import { Context } from "../../../Context";
 import styles from "./user.module.scss";
 import CardGenerator from "../CardGenerator";
 import { View, Canvas } from "../../../types";
+import {
+  State as ModalState,
+  ModalProps,
+  ModalType,
+  Modal
+} from "../../Modal/Modal";
 
 const User: React.FC = () => {
   const {
@@ -17,8 +23,61 @@ const User: React.FC = () => {
   } = useContext(Context);
   const [loading, setLoading] = useState(true);
   const [tokens, setTokens] = useState<any[]>([]);
+  const [modalState, setModalState] = useState<ModalProps>({
+    state: ModalState.CLOSED,
+    type: ModalType.CLOSED,
+    header: "",
+    body: "",
+    confirm: undefined,
+    close: undefined
+  });
   let { address } = useParams();
   const location = useLocation();
+
+  const confirmTransfer = ipfsHash => {
+    setModalState({
+      state: ModalState.OPEN,
+      type: ModalType.CONFIRM_TRANSFER,
+      header: "Confirm token transfer",
+      body: "",
+      confirm: (recipient: string) => transfer(ipfsHash, recipient),
+      close: () =>
+        setModalState({
+          state: ModalState.CLOSED,
+          type: ModalType.CLOSED,
+          header: "",
+          body: "",
+          confirm: undefined,
+          close: undefined
+        })
+    });
+  };
+
+  const transfer = async (ipfsHash: string, recipient: string) => {
+    if (ipfsHash && recipient) {
+      try {
+        const op = await contract?.methods
+          .transfer([
+            {
+              from_: userAddress,
+              txs: [{ to_: recipient, token_id: ipfsHash, amount: 1 }]
+            }
+          ])
+          .send();
+        await op?.confirmation();
+        setModalState({
+          state: ModalState.CLOSED,
+          type: ModalType.CLOSED,
+          header: "",
+          body: "",
+          confirm: undefined,
+          close: undefined
+        });
+      } catch (error) {
+        console.log(error);
+      }
+    }
+  };
 
   useEffect(() => {
     (async () => {
@@ -152,13 +211,15 @@ const User: React.FC = () => {
                     cart,
                     setCart,
                     setStorage,
-                    contract
+                    contract,
+                    confirmTransfer
                   })
                 )
               : "No token for this user"}
           </div>
         </>
       )}
+      <Modal {...modalState} />
     </div>
   );
 };
