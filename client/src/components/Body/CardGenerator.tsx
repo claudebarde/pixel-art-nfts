@@ -84,7 +84,7 @@ const CardGenerator: React.FC<CardProps> = ({
       <div className={styles.card__header}>{artwork.name}</div>
       <div className={styles.card__body}>
         <p>
-          {artwork.size === 1 && "8x8"}
+          {artwork.size === 1 && "12x12"}
           {artwork.size === 2 && "32x32"}
           {artwork.size === 3 && "64x64"}
         </p>

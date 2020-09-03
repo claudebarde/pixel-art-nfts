@@ -34,10 +34,10 @@ $large-grid-blocks: 48;
 }
 
 .cards {
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
+  width: 100vw;
+  display: grid;
+  grid-template: auto / 1fr 1fr 1fr 1fr;
+  place-items: center;
   overflow: auto;
 }
 

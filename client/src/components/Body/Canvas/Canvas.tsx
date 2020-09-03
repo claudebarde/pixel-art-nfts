@@ -266,10 +266,6 @@ const CanvasPainting: React.FC = () => {
             })
           };
           console.log(network);
-          /*const tokenMetadata = JSON.parse(
-            '{"price":3000000,"artistName":"Claude B.","name":"masterpiece","market":true,"symbol":"PXNFT","token_id":"QmQwB3aBkK5qBfLnx2cntG8jG3ZvahxMRTxzUTFhThE4sR","decimals":0}'
-          );
-          tokenMetadata.extras = new MichelsonMap();*/
 
           // includes token in the blockchain
           const op = await contract.methods

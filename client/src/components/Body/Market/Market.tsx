@@ -53,7 +53,7 @@ const Market: React.FC = () => {
                   const price = (tkmt.price as BigNumber).toNumber();
                   return {
                     ...el,
-                    timestamp: createdOn,
+                    timestamp: +createdOn,
                     price,
                     market: true
                   };
@@ -62,6 +62,10 @@ const Market: React.FC = () => {
             })
           )
         ).filter(el => el) as ArtworkListElement[];
+        // sorts list by timestamp
+        list.sort((a, b) =>
+          a.timestamp > b.timestamp ? -1 : b.timestamp > a.timestamp ? 1 : 0
+        );
         // if token id is provided in URL parameters
         if (token_id) {
           const token = list.filter(
@@ -115,10 +119,6 @@ const Market: React.FC = () => {
       ) : artworkList.length > 0 ? (
         <>
           <h2>Artwork Marketplace</h2>
-          <h4>
-            {numberOfArtwork} piece{numberOfArtwork > 1 ? "s" : ""} of pixel art
-            have been created on this platform
-          </h4>
           <div className={styles.cards}>
             {artworkList.map((artwork, i) => {
               return CardGenerator({

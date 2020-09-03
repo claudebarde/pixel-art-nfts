@@ -4,7 +4,7 @@ import config from "../../../config";
 import { Context } from "../../../Context";
 import styles from "./user.module.scss";
 import CardGenerator from "../CardGenerator";
-import { View, Canvas } from "../../../types";
+import { View, Canvas, ArtworkListElement } from "../../../types";
 import {
   State as ModalState,
   ModalProps,
@@ -22,7 +22,7 @@ const User: React.FC = () => {
     contract
   } = useContext(Context);
   const [loading, setLoading] = useState(true);
-  const [tokens, setTokens] = useState<any[]>([]);
+  const [tokens, setTokens] = useState<ArtworkListElement[]>([]);
   const [modalState, setModalState] = useState<ModalProps>({
     state: ModalState.CLOSED,
     type: ModalType.CLOSED,
@@ -161,8 +161,10 @@ const User: React.FC = () => {
             };
           })
           .map(tk => ({ ...tk, timestamp: tk.extras.createdOn }));
-        // exposes timestamp property
-        //tokens = tokens.map(tk => ({ ...tk, timestamp: tk.extras.createdOn }));
+        // sorts list by timestamp
+        tokens.sort((a, b) =>
+          a.timestamp > b.timestamp ? -1 : b.timestamp > a.timestamp ? 1 : 0
+        );
         setTokens(tokens);
         setLoading(false);
       }
