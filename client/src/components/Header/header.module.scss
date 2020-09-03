@@ -41,6 +41,7 @@
   padding-top: 30px;
   width: 60px;
   background-color: transparent;
+  z-index: 100;
 
   :hover .wallet_tooltip {
     display: block;

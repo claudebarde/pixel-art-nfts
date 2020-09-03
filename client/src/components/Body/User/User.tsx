@@ -171,7 +171,7 @@ const User: React.FC = () => {
     })();
   }, [storage]);
   return (
-    <div>
+    <main>
       {loading ? (
         <div className="loader">
           <div>
@@ -222,7 +222,7 @@ const User: React.FC = () => {
         </>
       )}
       <Modal {...modalState} />
-    </div>
+    </main>
   );
 };
 

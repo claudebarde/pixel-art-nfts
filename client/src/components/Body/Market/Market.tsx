@@ -83,7 +83,6 @@ const Market: React.FC = () => {
           setArtworkList(list as ArtworkListElement[]);
         }
         setLoadingMarket(false);
-        console.log(artworkList);
         /*
         // builds a list of IPFS hashes to query from the IPFS
         const list: string[] = entries.map(entry => entry.data.key.value);
