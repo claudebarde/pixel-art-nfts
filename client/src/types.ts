@@ -98,4 +98,5 @@ export interface CardProps {
   setCart?: React.Dispatch<React.SetStateAction<CartItem[]>>;
   setStorage?: React.Dispatch<React.SetStateAction<Storage | undefined>>;
   contract?: ContractAbstraction<Wallet>;
+  token_id?: string;
 }

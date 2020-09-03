@@ -546,27 +546,32 @@ const CanvasPainting: React.FC = () => {
               <p onClick={() => setDisplayGrid(true)}>Show the grid</p>
             )}
             <p onClick={resetCanvas}>Reset the grid</p>
-            <p
-              onClick={() => {
-                const savedCanvas = loadCanvas(gridSize as GridSize);
-                if (savedCanvas) {
-                  if (gridSize === GridSize.Small) {
-                    setSmallCanvas(savedCanvas.canvas);
-                    activeSmallCanvas.current = savedCanvas.canvas;
-                  } else if (gridSize === GridSize.Medium) {
-                    setMediumCanvas(savedCanvas.canvas);
-                    activeMediumCanvas.current = savedCanvas.canvas;
-                  } else if (gridSize === GridSize.Large) {
-                    setLargeCanvas(savedCanvas.canvas);
-                    activeLargeCanvas.current = savedCanvas.canvas;
+            {window.localStorage &&
+            window.localStorage.getItem("pixel-art-nfts") ? (
+              <p
+                onClick={() => {
+                  const savedCanvas = loadCanvas(gridSize as GridSize);
+                  if (savedCanvas) {
+                    if (gridSize === GridSize.Small) {
+                      setSmallCanvas(savedCanvas.canvas);
+                      activeSmallCanvas.current = savedCanvas.canvas;
+                    } else if (gridSize === GridSize.Medium) {
+                      setMediumCanvas(savedCanvas.canvas);
+                      activeMediumCanvas.current = savedCanvas.canvas;
+                    } else if (gridSize === GridSize.Large) {
+                      setLargeCanvas(savedCanvas.canvas);
+                      activeLargeCanvas.current = savedCanvas.canvas;
+                    }
                   }
-                }
-              }}
-            >
-              Load saved grid
-            </p>
+                }}
+              >
+                Load saved grid
+              </p>
+            ) : (
+              <p>No saved grid</p>
+            )}
           </div>
-          <p className={styles.menu_title}>Upload</p>
+          <p className={styles.menu_title}>Tokenize your pixel art</p>
           <div className={styles.menu_list}>
             <div className="buttons">
               {loadingNewToken ? (
@@ -579,7 +584,7 @@ const CanvasPainting: React.FC = () => {
                   className={`button ${userAddress ? "info" : "disabled"}`}
                   onClick={() => upload(false)}
                 >
-                  <i className="fas fa-file-upload"></i> Upload
+                  <i className="fas fa-file-upload"></i> Save to Blockchain
                 </button>
               )}
             </div>

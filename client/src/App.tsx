@@ -13,7 +13,7 @@ function App() {
       <Router>
         <Header />
         <Switch>
-          <Route path="/market">
+          <Route path="/market/:token_id?">
             <Market />
           </Route>
           <Route path="/profile/:address">

@@ -22,10 +22,13 @@ const CardGenerator: React.FC<CardProps> = ({
   cart,
   setCart,
   setStorage,
-  contract
+  contract,
+  token_id
 }) => {
   const isOwnerConnected =
     location?.includes("/profile") && userAddress && userAddress === address;
+
+  console.log(token_id);
 
   const buy = (cartItem: CartItem) => {
     if (userAddress && setCart && cart) {
@@ -48,7 +51,12 @@ const CardGenerator: React.FC<CardProps> = ({
   };
 
   return (
-    <div className={styles.card} key={i + "-" + artwork.hash}>
+    <div
+      className={
+        token_id === artwork.ipfsHash ? styles.card_highlight : styles.card
+      }
+      key={i + "-" + artwork.hash}
+    >
       <div className={styles.card__image}>
         {artwork.size === 1 && (
           <div
@@ -150,7 +158,9 @@ const CardGenerator: React.FC<CardProps> = ({
           </a>
         </div>
         <div>
-          <i className="fas fa-share-alt"></i>
+          <NavLink to={`/market/${artwork.ipfsHash}`}>
+            <i className="fas fa-share-alt"></i>
+          </NavLink>
         </div>
         {isOwnerConnected && (
           <div>

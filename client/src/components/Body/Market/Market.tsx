@@ -5,12 +5,14 @@ import config from "../../../config";
 import { Context } from "../../../Context";
 import { BigNumber } from "bignumber.js";
 import CardGenerator from "../CardGenerator";
+import { useParams } from "react-router-dom";
 
 const Market: React.FC = () => {
   const { storage, cart, setCart, userAddress } = useContext(Context);
   const [loadingMarket, setLoadingMarket] = useState(true);
   const [artworkList, setArtworkList] = useState<ArtworkListElement[]>([]);
   const [numberOfArtwork, setNumberOfArtwork] = useState<number>(0);
+  const { token_id } = useParams();
 
   useEffect(() => {
     (async () => {
@@ -38,29 +40,46 @@ const Market: React.FC = () => {
           artPieces
         );
         // patches missing information from the blockchain
-        const list = await Promise.all(
-          [...resultEntries].map(async el => {
-            const tkmt = (await storage?.token_metadata.get(
-              el.ipfsHash
-            )) as TokenMetadata;
-            if (tkmt) {
-              const createdOn = await tkmt.extras.get("createdOn");
-              const canvasHash = await tkmt.extras.get("canvasHash");
-              if (tkmt.market && canvasHash === el.hash) {
-                const price = (tkmt.price as BigNumber).toNumber();
-                return {
-                  ...el,
-                  timestamp: createdOn,
-                  price,
-                  market: true
-                };
+        const list = (
+          await Promise.all(
+            [...resultEntries].map(async el => {
+              const tkmt = (await storage?.token_metadata.get(
+                el.ipfsHash
+              )) as TokenMetadata;
+              if (tkmt) {
+                const createdOn = await tkmt.extras.get("createdOn");
+                const canvasHash = await tkmt.extras.get("canvasHash");
+                if (tkmt.market && canvasHash === el.hash) {
+                  const price = (tkmt.price as BigNumber).toNumber();
+                  return {
+                    ...el,
+                    timestamp: createdOn,
+                    price,
+                    market: true
+                  };
+                }
               }
-            }
-          })
-        );
-        setArtworkList(list.filter(el => el) as ArtworkListElement[]);
-        console.log(list.filter(el => el));
+            })
+          )
+        ).filter(el => el) as ArtworkListElement[];
+        // if token id is provided in URL parameters
+        if (token_id) {
+          const token = list.filter(
+            el => el.ipfsHash === token_id
+          )[0] as ArtworkListElement;
+          if (token) {
+            const filteredList = list.filter(
+              el => el.ipfsHash !== token_id
+            ) as ArtworkListElement[];
+            setArtworkList([token, ...filteredList]);
+          } else {
+            setArtworkList(list as ArtworkListElement[]);
+          }
+        } else {
+          setArtworkList(list as ArtworkListElement[]);
+        }
         setLoadingMarket(false);
+        console.log(artworkList);
         /*
         // builds a list of IPFS hashes to query from the IPFS
         const list: string[] = entries.map(entry => entry.data.key.value);
@@ -82,7 +101,7 @@ const Market: React.FC = () => {
         console.log(rows);*/
       }
     })();
-  }, [storage]);
+  }, [storage, token_id]);
 
   return (
     <main>
@@ -109,7 +128,8 @@ const Market: React.FC = () => {
                 view: View.MARKET,
                 userAddress,
                 cart,
-                setCart
+                setCart,
+                token_id
               });
             })}
           </div>

@@ -70,6 +70,18 @@ export const Modal: React.FC<ModalProps> = ({
           {type === ModalType.CONFIRM_NEW_TOKEN && (
             <>
               <div className={styles.modal__body}>
+                <div>
+                  <p>
+                    You are about to save your pixel art to the blockchain!
+                    After this step, it won't be possible to edit it or delete
+                    it.
+                  </p>
+                  <p>
+                    Please fill in the information below to complete the
+                    tokenization process:
+                  </p>
+                </div>
+                <br />
                 <div className="form">
                   <div className="form__row">
                     <div>

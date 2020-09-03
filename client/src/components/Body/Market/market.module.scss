@@ -21,3 +21,10 @@
   );
   color: white;
 }
+
+.card_highlight {
+  @include card;
+  background-color: #fad961;
+  background-image: linear-gradient(190deg, #fad961 0%, #f76b1c 100%);
+  color: white;
+}
