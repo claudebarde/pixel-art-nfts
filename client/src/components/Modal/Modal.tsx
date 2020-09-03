@@ -1,8 +1,10 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import styles from "./modal.module.scss";
 import { Context } from "../../Context";
 import { TokenMetadata, GridSize } from "../../types";
 import { validateAddress } from "@taquito/utils";
+import { LedgerSigner, DerivationType } from "@taquito/ledger-signer";
+import TransportU2F from "@ledgerhq/hw-transport-u2f";
 
 export enum State {
   OPEN,
@@ -14,7 +16,8 @@ export enum ModalType {
   EMPTY_CANVAS,
   CONFIRM_NEW_TOKEN,
   CONFIRM_CART,
-  CONFIRM_TRANSFER
+  CONFIRM_TRANSFER,
+  CONNECT_LEDGER
 }
 
 export type ModalProps = {
@@ -34,7 +37,14 @@ export const Modal: React.FC<ModalProps> = ({
   close,
   confirm
 }) => {
-  const { userAddress, cart, storage, setCart } = useContext(Context);
+  const {
+    userAddress,
+    cart,
+    storage,
+    setCart,
+    Tezos,
+    setUserAddress
+  } = useContext(Context);
   const [artName, setArtName] = useState("masterpiece");
   const [price, setPrice] = useState("3");
   const [artistName, setArtistName] = useState("Claude B.");
@@ -42,6 +52,42 @@ export const Modal: React.FC<ModalProps> = ({
   const [confirmBuy, setConfirmBuy] = useState(false);
   const [transferRecipient, setTransferRecipient] = useState<string>("");
   const [loadingTransfer, setLoadingTransfer] = useState(false);
+  const [derivationPath, setDerivationPath] = useState<string>(
+    "44'/1729'/0'/0'"
+  );
+  const [derivationType, setDerivationType] = useState<DerivationType>(
+    DerivationType.tz1
+  );
+  const [addressFromLedger, setAddressFromLedger] = useState("");
+  const [ledgerSigner, setLedgerSigner] = useState<LedgerSigner>();
+
+  useEffect(() => {
+    if (type === ModalType.CONNECT_LEDGER) {
+      (async () => {
+        try {
+          if (Tezos && setUserAddress) {
+            setAddressFromLedger("");
+            const transport = await TransportU2F.create();
+            const signer = new LedgerSigner(
+              transport,
+              derivationPath,
+              true,
+              derivationType
+            );
+            const pkh = await signer.publicKeyHash();
+            if (pkh) {
+              setAddressFromLedger(pkh);
+              setLedgerSigner(signer);
+            }
+          } else {
+            throw new Error("Undefined Tezos or setPublicKeyHash");
+          }
+        } catch (error) {
+          console.log("Error!", error);
+        }
+      })();
+    }
+  }, [type, derivationPath, derivationType]);
 
   if (state === State.CLOSED) {
     return null;
@@ -333,6 +379,75 @@ export const Modal: React.FC<ModalProps> = ({
                   onClick={close}
                   disabled={loadingTransfer}
                 >
+                  Close
+                </button>
+              </div>
+            </>
+          )}
+          {/* CONNECT LEDGER */}
+          {type === ModalType.CONNECT_LEDGER && (
+            <>
+              <div className={styles.modal__body}>
+                <p>Derivation path:</p>
+                <p>
+                  <select
+                    className={styles.modal__select}
+                    onChange={e => setDerivationPath(e.target.value)}
+                  >
+                    <option value="44'/1729'/0'/0'">44'/1729'/0'/0'</option>
+                    <option value="44'/1729'/0'">44'/1729'/0'</option>
+                  </select>
+                </p>
+                <p>Address type:</p>
+                <div>
+                  <label>
+                    <input
+                      type="radio"
+                      value={DerivationType.tz1}
+                      checked={derivationType === DerivationType.tz1}
+                      onChange={e => setDerivationType(DerivationType.tz1)}
+                    />{" "}
+                    tz1 address
+                  </label>
+                  <label>
+                    <input
+                      type="radio"
+                      value={DerivationType.tz2}
+                      checked={derivationType === DerivationType.tz2}
+                      onChange={e => setDerivationType(DerivationType.tz2)}
+                    />{" "}
+                    tz2 address
+                  </label>
+                  <label>
+                    <input
+                      type="radio"
+                      value={DerivationType.tz3}
+                      checked={derivationType === DerivationType.tz3}
+                      onChange={e => setDerivationType(DerivationType.tz3)}
+                    />{" "}
+                    tz3 address
+                  </label>
+                </div>
+                <p>
+                  Your address:{" "}
+                  {addressFromLedger
+                    ? addressFromLedger
+                    : "Please confirm your address on your device"}
+                </p>
+              </div>
+              <div className={styles.modal__buttons}>
+                <button
+                  className="button info"
+                  onClick={() => {
+                    if (addressFromLedger) {
+                      confirm(ledgerSigner, addressFromLedger);
+                      close();
+                    }
+                  }}
+                >
+                  {addressFromLedger ? "Confirm" : "Find your address"}
+                </button>
+                <button className="button error" onClick={close}>
                   Close
                 </button>
               </div>

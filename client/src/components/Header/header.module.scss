@@ -82,3 +82,27 @@
     background-color: #edf2f7;
   }
 }
+
+#nano_ledger_connect {
+  margin: 0px;
+  padding: 0px;
+  &:hover #nano_ledger_type {
+    display: block;
+  }
+}
+
+#nano_ledger_type {
+  display: none;
+  margin: 0px;
+  padding: 0px;
+
+  :hover {
+    display: block;
+  }
+
+  p {
+    font-size: 0.9rem;
+    text-align: left;
+    padding-left: 30px;
+  }
+}

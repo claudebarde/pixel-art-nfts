@@ -42,9 +42,14 @@ header {
 footer {
   display: flex;
   flex-direction: row;
-  justify-content: flex-end;
+  justify-content: space-between;
   align-items: center;
   padding: 5px 10px;
+
+  .address-display {
+    font-style: italic;
+    font-size: 0.8rem;
+  }
 }
 
 main {

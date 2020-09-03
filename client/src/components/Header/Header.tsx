@@ -1,7 +1,6 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { LedgerSigner, DerivationType } from "@taquito/ledger-signer";
-import TransportU2F from "@ledgerhq/hw-transport-u2f";
+import { LedgerSigner } from "@taquito/ledger-signer";
 import { BeaconWallet } from "@taquito/beacon-wallet";
 import { TezBridgeWallet } from "@taquito/tezbridge-wallet";
 import { NetworkType } from "@airgap/beacon-sdk";
@@ -33,7 +32,6 @@ const Header: React.FC = () => {
     setUserAddress,
     network,
     cart,
-    setCart,
     contract,
     setStorage
   } = useContext(Context);
@@ -147,7 +145,29 @@ const Header: React.FC = () => {
   };
 
   const connectLedger = async () => {
-    try {
+    setModalState({
+      state: ModalState.OPEN,
+      type: ModalType.CONNECT_LEDGER,
+      header: "Connect your Nano Ledger",
+      body: "",
+      confirm: (ledgerSigner: LedgerSigner, keyHash: string) => {
+        if (Tezos && setUserAddress) {
+          Tezos.setProvider({ signer: ledgerSigner });
+          setUserAddress(keyHash);
+        }
+      },
+      close: () => {
+        setModalState({
+          state: ModalState.CLOSED,
+          type: ModalType.CLOSED,
+          header: "",
+          body: "",
+          confirm: undefined,
+          close: undefined
+        });
+      }
+    });
+    /*try {
       if (Tezos && setUserAddress) {
         const transport = await TransportU2F.create();
         const ledgerSigner = new LedgerSigner(
@@ -169,7 +189,7 @@ const Header: React.FC = () => {
       }
     } catch (error) {
       console.log("Error!", error);
-    }
+    }*/
   };
 
   const confirmBuy = async (cart, setCart) => {
@@ -269,9 +289,11 @@ const Header: React.FC = () => {
                   <p onClick={connectLedger}>
                     <i className="fab fa-usb"></i> Nano Ledger
                   </p>
-                  <p onClick={connectTezBridge}>
-                    <i className="fab fa-dev"></i> TezBridge
-                  </p>
+                  {process.env.NODE_ENV === "development" && (
+                    <p onClick={connectTezBridge}>
+                      <i className="fab fa-dev"></i> TezBridge
+                    </p>
+                  )}
                 </div>
               </div>
             </>
