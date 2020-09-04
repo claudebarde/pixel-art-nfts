@@ -107,12 +107,14 @@ type fa2_entry_points =
   | Balance_of of balance_of_param_michelson
   | Update_operators of update_operator_michelson list
   | Token_metadata_registry of address contract
-  | Mint_tokens of address * token_metadata_michelson
+  | Mint_token of address * token_metadata_michelson
+  | Burn_token of token_id
   | Buy_tokens of token_id list
   | Update_market_fee of tez
   | Update_token_price of token_id * tez
   | Update_token_status of token_id * bool
   | Withdraw_revenue of unit
+  | Withdraw_revenue_from_fee of unit
 
 
 type fa2_token_metadata =
@@ -291,6 +293,8 @@ tools.
 
 
 # 1 "ligo/src/fa2_interface.mligo" 1
+
+
 
 
 
@@ -810,12 +814,13 @@ type collection_storage = {
   token_metadata : token_metadata_storage;
   revenues: (address, tez) big_map;
   market_fee: tez;
+  revenue_from_fee: tez;
   admin: address;
 }
 
 
-# 1 "ligo/src/fa2_mint_tokens.mligo" 1
-let mint_tokens ((user, metadata, storage) : address * token_metadata_michelson * collection_storage)
+# 1 "ligo/src/fa2_mint_burn_tokens.mligo" 1
+let mint_token ((user, metadata, storage) : address * token_metadata_michelson * collection_storage)
  : collection_storage = 
     if Tezos.amount = storage.market_fee
     then
@@ -827,9 +832,21 @@ let mint_tokens ((user, metadata, storage) : address * token_metadata_michelson 
         (* Adds token metadata in storage *)
         let new_token_metadata: token_metadata_storage = 
             Big_map.add token_metadata.token_id metadata storage.token_metadata in
-        { storage with ledger = new_ledger ; token_metadata = new_token_metadata }
-    else (failwith "INSUFFICIENT_MARKET_FEE": collection_storage)
-# 31 "ligo/src/fa2_fixed_collection_token.mligo" 2
+        { storage with ledger = new_ledger ; token_metadata = new_token_metadata ; revenue_from_fee = storage.revenue_from_fee + Tezos.amount }
+    else (failwith "WRONG_MARKET_FEE": collection_storage)
+
+let burn_token ((token_id, storage): token_id * collection_storage): collection_storage = 
+    (* Only owner and admin can burn tokens *)
+    let owner: address = match Big_map.find_opt token_id storage.ledger with
+        | None -> (failwith "UNKNOWN_TOKEN": address)
+        | Some owner -> owner in
+    if Tezos.sender = owner || Tezos.sender = storage.admin
+    then
+        (* Removes token from ledger big map and token metadata big map *)
+        { storage with ledger = Big_map.remove token_id storage.ledger ; token_metadata = Big_map.remove token_id storage.token_metadata }
+    else
+        (failwith "UNAUTHORIZED OPERATION": collection_storage) 
+# 32 "ligo/src/fa2_fixed_collection_token.mligo" 2
 
 # 1 "ligo/src/fa2_buy_tokens.mligo" 1
 let buy_tokens ((list_of_token_id, storage) : token_id list * collection_storage)
@@ -871,7 +888,7 @@ let buy_tokens ((list_of_token_id, storage) : token_id list * collection_storage
     ) in
         
     List.fold buy_token list_of_token_id storage
-# 32 "ligo/src/fa2_fixed_collection_token.mligo" 2
+# 33 "ligo/src/fa2_fixed_collection_token.mligo" 2
 
 # 1 "ligo/src/fa2_maintenance.mligo" 1
 (* Admin updates market fee *)
@@ -931,8 +948,23 @@ let withdraw_revenue (storage: collection_storage): operation list * collection_
    let payment: operation = Tezos.transaction unit revenue account in
    (* Set revenue for artist to 0 and returns transaction *)
    ([payment], { storage with revenues = Big_map.update Tezos.source (Some 0tez) storage.revenues })
-# 33 "ligo/src/fa2_fixed_collection_token.mligo" 2
 
+(* Admin withdraws generated revenues *)
+let withdraw_revenue_from_fee (storage: collection_storage): operation list * collection_storage =
+   if Tezos.source = storage.admin
+   then
+      (* Gets amount to be sent *)
+      let revenue: tez = storage.revenue_from_fee in
+      (* Prepares transaction to be sent *)
+      let account: unit contract = match (Tezos.get_contract_opt storage.admin : unit contract option) with
+         | Some contract -> contract
+         | None -> (failwith "NO_CONTRACT" : unit contract) in
+      let payment: operation = Tezos.transaction unit revenue account in
+      (* Set revenue from fee to 0 and returns transaction *)
+      ([payment], { storage with revenue_from_fee = 0mutez })
+   else
+      (failwith "UNAUTHORIZED_OPERATION": operation list * collection_storage) 
+# 34 "ligo/src/fa2_fixed_collection_token.mligo" 2
 
 (**
 Update leger balances according to the specified transfers. Fails if any of the
@@ -1008,8 +1040,12 @@ let main (param, storage : fa2_entry_points * collection_storage)
     let callback_op = Operation.transaction Tezos.self_address 0mutez callback in
     [callback_op], storage
 
-  | Mint_tokens params ->
-    let new_storage = mint_tokens ((params.0, params.1, storage)) in
+  | Mint_token params ->
+    let new_storage = mint_token ((params.0, params.1, storage)) in
+    ([] : operation list), new_storage
+
+  | Burn_token param ->
+    let new_storage = burn_token ((param, storage)) in
     ([] : operation list), new_storage
 
   | Buy_tokens params ->
@@ -1028,6 +1064,10 @@ let main (param, storage : fa2_entry_points * collection_storage)
     let new_storage = update_token_status ((params.0, params.1, storage)) in
     ([]: operation list), new_storage
 
-  | Withdraw_revenue params ->
+  | Withdraw_revenue param ->
     let (operations, new_storage) = withdraw_revenue (storage) in
+    operations, new_storage
+
+  | Withdraw_revenue_from_fee param ->
+    let (operations, new_storage) = withdraw_revenue_from_fee (storage) in
     operations, new_storage

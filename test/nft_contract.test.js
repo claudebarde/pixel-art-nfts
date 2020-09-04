@@ -1,4 +1,4 @@
-const { MichelsonMap } = require("@taquito/taquito");
+const { MichelsonMap, Tezos } = require("@taquito/taquito");
 const { alice, bob } = require("../scripts/sandbox/accounts");
 const setup = require("./setup");
 
@@ -17,6 +17,7 @@ contract("Pixel Art NFT Contract", () => {
     fa2_address = config.fa2_address;
     fa2_instance = config.fa2_instance;
     signerFactory = config.signerFactory;
+    Tezos.setRpcProvider("http://localhost:8732");
   });
 
   it("Alice should be the admin", async () => {
@@ -36,8 +37,8 @@ contract("Pixel Art NFT Contract", () => {
 
     try {
       const op = await fa2_instance.methods
-        .mint_tokens(alice.pkh, ...Object.values(tokenMetadata))
-        .send();
+        .mint_token(alice.pkh, ...Object.values(tokenMetadata))
+        .send({ amount: storage.market_fee.toNumber(), mutez: true });
       await op.confirmation();
     } catch (error) {
       console.log(error);
@@ -201,8 +202,8 @@ contract("Pixel Art NFT Contract", () => {
 
     try {
       const op = await fa2_instance.methods
-        .mint_tokens(alice.pkh, ...Object.values(tokenMetadata))
-        .send();
+        .mint_token(alice.pkh, ...Object.values(tokenMetadata))
+        .send({ amount: storage.market_fee.toNumber(), mutez: true });
       await op.confirmation();
     } catch (error) {
       console.log(error);
@@ -231,5 +232,95 @@ contract("Pixel Art NFT Contract", () => {
 
     assert.equal(token1owner, bob.pkh);
     assert.equal(token2owner, bob.pkh);
+  });
+
+  it("should prevent Bob from burning Alice's token", async () => {
+    // we transfer one of Bob's token to Alice
+    await signerFactory(bob.sk);
+
+    try {
+      const op = await fa2_instance.methods
+        .transfer([
+          {
+            from_: bob.pkh,
+            txs: [{ to_: alice.pkh, token_id: tokenId, amount: 1 }]
+          }
+        ])
+        .send();
+      await op.confirmation();
+    } catch (error) {
+      console.log(error);
+    }
+    storage = await fa2_instance.storage();
+    // we test the burning function
+
+    let err;
+
+    try {
+      const op = await fa2_instance.methods.burn_token(tokenId).send();
+      await op.confirmation();
+    } catch (error) {
+      err = error.message;
+    }
+
+    assert.isDefined(err);
+    assert.equal(err, "UNAUTHORIZED OPERATION");
+  });
+
+  it("should let Bob burn his own token", async () => {
+    await signerFactory(bob.sk);
+
+    // verifies the token is in the ledger
+    const account = await storage.ledger.get(tokenId2);
+    assert.equal(account, bob.pkh);
+
+    try {
+      const op = await fa2_instance.methods.burn_token(tokenId2).send();
+      await op.confirmation();
+    } catch (error) {
+      console.log(error);
+    }
+
+    storage = await fa2_instance.storage();
+    let token;
+    token = await storage.ledger.get(tokenId2);
+
+    assert.isUndefined(token);
+  });
+
+  it("should prevent Bob from withdrawing revenue from fees and let Alice", async () => {
+    assert.isAbove(storage.revenue_from_fee.toNumber(), 0);
+    const aliceBalance = await Tezos.tz.getBalance(alice.pkh);
+
+    let err;
+
+    try {
+      const op = await fa2_instance.methods
+        .withdraw_revenue_from_fee([["unit"]])
+        .send();
+      await op.confirmation();
+    } catch (error) {
+      err = error.message;
+    }
+
+    assert.isDefined(err);
+    assert.equal(err, "UNAUTHORIZED_OPERATION");
+
+    await signerFactory(alice.sk);
+
+    try {
+      const op = await fa2_instance.methods
+        .withdraw_revenue_from_fee([["unit"]])
+        .send();
+      await op.confirmation();
+    } catch (error) {
+      console.log(error);
+    }
+
+    storage = await fa2_instance.storage();
+    const aliceNewBalance = await Tezos.tz.getBalance(alice.pkh);
+
+    assert.equal(storage.revenue_from_fee.toNumber(), 0);
+    assert.isAbove(aliceNewBalance.toNumber(), aliceBalance.toNumber());
   });
 });
