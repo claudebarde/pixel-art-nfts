@@ -30,7 +30,13 @@ const CardGenerator: React.FC<CardProps> = ({
     location?.includes("/profile") && userAddress && userAddress === address;
 
   const buy = (cartItem: CartItem) => {
-    if (userAddress && setCart && cart) {
+    if (
+      userAddress &&
+      setCart &&
+      cart &&
+      cart.filter(el => el.ipfsHash === cartItem.ipfsHash).length === 0
+    ) {
+      console.log(cart);
       setCart([...cart, cartItem]);
     }
   };
@@ -47,6 +53,10 @@ const CardGenerator: React.FC<CardProps> = ({
     } catch (error) {
       console.log(error);
     }
+  };
+
+  const burnToken = () => {
+    console.log(artwork.ipfsHash);
   };
 
   return (
@@ -162,14 +172,22 @@ const CardGenerator: React.FC<CardProps> = ({
           </NavLink>
         </div>
         {isOwnerConnected && (
-          <div
-            onClick={() => {
-              if (confirmTransfer) confirmTransfer(artwork.ipfsHash);
-            }}
-            style={{ cursor: "pointer" }}
-          >
-            <i className="fas fa-exchange-alt"></i>
-          </div>
+          <>
+            <div
+              onClick={() => {
+                if (confirmTransfer) confirmTransfer(artwork.ipfsHash);
+              }}
+              style={{ cursor: "pointer" }}
+            >
+              <i className="fas fa-exchange-alt"></i>
+            </div>
+            <div>
+              <i className="far fa-edit"></i>
+            </div>
+            <div onClick={burnToken} style={{ cursor: "pointer" }}>
+              <i className="far fa-trash-alt"></i>
+            </div>
+          </>
         )}
         <div>ꜩ {artwork.price / 1000000}</div>
       </div>

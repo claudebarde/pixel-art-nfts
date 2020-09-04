@@ -10,7 +10,7 @@ import {
   ModalProps,
   ModalType,
   Modal
-} from "../../Modal/Modal";
+} from "../../Modals/Modal";
 
 const User: React.FC = () => {
   const {

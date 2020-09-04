@@ -10,8 +10,9 @@ export const Provider: React.FC = props => {
   const [gridSize, setGridSize] = useState(GridSize.Small);
   const [userAddress, setUserAddress] = useState<string>("");
   const [contract, setContract] = useState<ContractAbstraction<Wallet>>();
-  const [storage, setStorage] = useState<Storage | undefined>();
+  const [storage, setStorage] = useState<Storage>();
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [userBalance, setUserBalance] = useState<number>(0);
 
   const state: State = {
     view,
@@ -26,7 +27,9 @@ export const Provider: React.FC = props => {
     storage,
     setStorage,
     cart,
-    setCart
+    setCart,
+    userBalance,
+    setUserBalance
   };
 
   useEffect(() => {

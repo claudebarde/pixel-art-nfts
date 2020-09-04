@@ -36,9 +36,14 @@ $large-grid-blocks: 48;
 .cards {
   width: 90vw;
   display: grid;
-  grid-template: auto / repeat(auto-fit, minmax(350px, 1fr));
+  grid-template: auto / repeat(auto-fit, minmax(380px, 1fr));
   place-items: center;
   overflow: auto;
+
+  &::-webkit-scrollbar {
+    width: 0px;
+    background: transparent;
+  }
 }
 
 @mixin card {
@@ -49,7 +54,7 @@ $large-grid-blocks: 48;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  width: 250px;
+  width: 300px;
   position: relative;
   -moz-box-shadow: 1px 8px 10px -5px #ccc;
   -webkit-box-shadow: 1px 8px 10px -5px #ccc;

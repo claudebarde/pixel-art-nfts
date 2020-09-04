@@ -10,7 +10,7 @@ import {
   ModalProps,
   ModalType,
   Modal
-} from "../../Modal/Modal";
+} from "../../Modals/Modal";
 import config from "../../../config";
 import { IPFSObject, TokenMetadata } from "../../../types";
 import { saveCanvas, loadCanvas } from "./localCanvas";

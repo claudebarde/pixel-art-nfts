@@ -1,19 +1,15 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { LedgerSigner } from "@taquito/ledger-signer";
-import { BeaconWallet } from "@taquito/beacon-wallet";
-import { TezBridgeWallet } from "@taquito/tezbridge-wallet";
-import { NetworkType } from "@airgap/beacon-sdk";
 import styles from "./header.module.scss";
 import { Context } from "../../Context";
-import config from "../../config";
 import ztext from "./ztext-custom";
 import {
   State as ModalState,
   ModalProps,
   ModalType,
   Modal
-} from "../Modal/Modal";
+} from "../Modals/Modal";
+import WalletModal from "../Modals/WalletModal";
 
 const titleColors = [
   "red",
@@ -26,15 +22,7 @@ const titleColors = [
 ];
 
 const Header: React.FC = () => {
-  const {
-    Tezos,
-    userAddress,
-    setUserAddress,
-    network,
-    cart,
-    contract,
-    setStorage
-  } = useContext(Context);
+  const { userAddress, cart, contract, setStorage } = useContext(Context);
   const title = useRef(null);
   const [zTextTitle] = useState(
     [
@@ -60,6 +48,7 @@ const Header: React.FC = () => {
       })
       .join("")
   );
+  const [walletModalOpen, setWalletModalOpen] = useState(false);
   const location = useLocation();
   const [modalState, setModalState] = useState<ModalProps>({
     state: ModalState.CLOSED,
@@ -70,128 +59,6 @@ const Header: React.FC = () => {
     close: undefined
   });
 
-  const connectTezBridge = async () => {
-    if (!Tezos || !setUserAddress)
-      throw new Error("Undefined Tezos or setUserAddress");
-
-    const wallet = new TezBridgeWallet();
-    Tezos.setWalletProvider(wallet);
-    const keyHash = await wallet.getPKH();
-    setUserAddress(keyHash);
-  };
-
-  const connectWallet = async () => {
-    try {
-      if (!Tezos || !setUserAddress)
-        throw new Error("Undefined Tezos or setUserAddress");
-
-      const wallet = new BeaconWallet({
-        name: "Pixel Art NFTs",
-        eventHandlers: {
-          P2P_LISTEN_FOR_CHANNEL_OPEN: {
-            handler: async data => {
-              console.log("Listening to P2P channel:", data);
-            }
-          },
-          P2P_CHANNEL_CONNECT_SUCCESS: {
-            handler: async data => {
-              console.log("Channel connected:", data);
-            }
-          },
-          PERMISSION_REQUEST_SENT: {
-            handler: async data => {
-              console.log("Permission request sent:", data);
-            }
-          },
-          PERMISSION_REQUEST_SUCCESS: {
-            handler: async data => {
-              console.log("Wallet is connected:", data);
-            }
-          },
-          OPERATION_REQUEST_SENT: {
-            handler: async data => {
-              console.log("Request broadcast:", data);
-            }
-          },
-          OPERATION_REQUEST_SUCCESS: {
-            handler: async data => {
-              console.log("Request broadcast success:", data);
-            }
-          }
-        }
-      });
-      Tezos.setWalletProvider(wallet);
-      await wallet.requestPermissions({
-        network: {
-          type:
-            config.ENV === "dev"
-              ? NetworkType.CUSTOM
-              : config.ENV === "carthagenet"
-              ? NetworkType.CARTHAGENET
-              : NetworkType.MAINNET,
-          rpcUrl: network
-        }
-      });
-      //await wallet.client.removeAllPeers();
-      //await wallet.client.removeAllAccounts();
-      // gets user's address
-      const keyHash = await wallet.getPKH();
-      setUserAddress(keyHash);
-
-      console.log("Public key:", keyHash);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const connectLedger = async () => {
-    setModalState({
-      state: ModalState.OPEN,
-      type: ModalType.CONNECT_LEDGER,
-      header: "Connect your Nano Ledger",
-      body: "",
-      confirm: (ledgerSigner: LedgerSigner, keyHash: string) => {
-        if (Tezos && setUserAddress) {
-          Tezos.setProvider({ signer: ledgerSigner });
-          setUserAddress(keyHash);
-        }
-      },
-      close: () => {
-        setModalState({
-          state: ModalState.CLOSED,
-          type: ModalType.CLOSED,
-          header: "",
-          body: "",
-          confirm: undefined,
-          close: undefined
-        });
-      }
-    });
-    /*try {
-      if (Tezos && setUserAddress) {
-        const transport = await TransportU2F.create();
-        const ledgerSigner = new LedgerSigner(
-          transport,
-          "44'/1729'/0'/0'",
-          true,
-          DerivationType.tz1
-        );
-
-        Tezos.setProvider({ signer: ledgerSigner });
-
-        //Get the public key and the public key hash from the Ledger
-        const keyHash = await Tezos.signer.publicKeyHash();
-        setUserAddress(keyHash);
-
-        console.log("Public key:", keyHash);
-      } else {
-        throw new Error("Undefined Tezos or setPublicKeyHash");
-      }
-    } catch (error) {
-      console.log("Error!", error);
-    }*/
-  };
-
   const confirmBuy = async (cart, setCart) => {
     const tokens = cart?.map(item => item.ipfsHash);
     const price = cart?.map(item => item.price).reduce((a, b) => a + b);
@@ -200,6 +67,7 @@ const Header: React.FC = () => {
       const op = await contract?.methods
         .buy_tokens(tokens)
         .send({ amount: price, mutez: true });
+      console.log(op?.opHash);
       await op?.confirmation();
       // empties the cart
       if (setCart && setStorage) {
@@ -278,25 +146,9 @@ const Header: React.FC = () => {
               ></i>
             </Link>
           ) : (
-            <>
+            <div onClick={() => setWalletModalOpen(!walletModalOpen)}>
               <i className="fas fa-wallet fa-lg"></i>
-              <div className={styles.wallet_tooltip_container}>
-                <div className={styles.wallet_tooltip}>
-                  <div>Choose your wallet</div>
-                  <p onClick={connectWallet}>
-                    <i className="fas fa-network-wired"></i> Beacon
-                  </p>
-                  <p onClick={connectLedger}>
-                    <i className="fab fa-usb"></i> Nano Ledger
-                  </p>
-                  {process.env.NODE_ENV === "development" && (
-                    <p onClick={connectTezBridge}>
-                      <i className="fab fa-dev"></i> TezBridge
-                    </p>
-                  )}
-                </div>
-              </div>
-            </>
+            </div>
           )}
         </div>
         {userAddress && (
@@ -330,6 +182,7 @@ const Header: React.FC = () => {
         )}
       </div>
       <Modal {...modalState} />
+      {walletModalOpen && <WalletModal close={setWalletModalOpen} />}
     </header>
   );
 };

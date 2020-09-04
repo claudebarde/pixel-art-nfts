@@ -1,5 +1,6 @@
 import React, { useContext } from "react";
 import { Context } from "../../Context";
+import config from "../../config";
 
 const Footer: React.FC = () => {
   const { userAddress } = useContext(Context);
@@ -14,7 +15,9 @@ const Footer: React.FC = () => {
       </div>
       <div>
         <a
-          href="https://better-call.dev/carthagenet/KT1PJnTttEsEFFaHeLnbKJmzwfxuVvEBkq1b/operations"
+          href={`https://better-call.dev/carthagenet/${
+            config.CONTRACT[config.ENV]
+          }/operations`}
           target="_blank"
           rel="noopener noreferrer"
         >

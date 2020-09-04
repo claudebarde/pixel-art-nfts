@@ -84,6 +84,8 @@ export interface State {
   setStorage: React.Dispatch<React.SetStateAction<Storage | undefined>>;
   cart: CartItem[];
   setCart: React.Dispatch<React.SetStateAction<CartItem[]>>;
+  userBalance: number;
+  setUserBalance: React.Dispatch<React.SetStateAction<number>>;
 }
 
 export interface CardProps {

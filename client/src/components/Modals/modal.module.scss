@@ -1,0 +1,50 @@
+@import "./modal.scss";
+
+.modal {
+  @include modal;
+
+  width: 50%;
+}
+
+.cartItems {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.cartItem {
+  display: grid;
+  grid-template: 50px / 1fr 2fr 3fr 1fr 1fr 1fr;
+  place-items: center;
+  place-self: start;
+  width: 100%;
+
+  a {
+    color: royalblue;
+  }
+}
+
+.cart_grid_small {
+  display: grid;
+  grid-template-rows: repeat(12, 3px);
+  grid-template-columns: repeat(12, 3px);
+}
+
+.cart_grid_default {
+  display: grid;
+  grid-template-rows: repeat(32, 1px);
+  grid-template-columns: repeat(32, 1px);
+}
+
+.cart_total,
+.cart_balance {
+  width: 90%;
+  text-align: right;
+  padding: 20px 20px 0px 20px;
+  font-weight: bold;
+}
+
+.cart_balance {
+  font-size: 0.7rem;
+  padding: 0px 20px;
+}

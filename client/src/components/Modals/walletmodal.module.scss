@@ -1,0 +1,69 @@
+@import "./modal.scss";
+
+.modal {
+  @include modal;
+
+  width: 30%;
+
+  .modal__body {
+    .modal__body_p {
+      padding: 5px 20px;
+      font-size: 1.2rem;
+      background-color: white;
+      z-index: 100;
+    }
+
+    .ledger_options {
+      height: 0px;
+      font-size: 0.9rem;
+      text-align: center;
+      z-index: 1;
+
+      select {
+        padding: 5px;
+      }
+    }
+  }
+
+  .modal__wallet_option {
+    cursor: pointer;
+
+    input[type="checkbox"] {
+      appearance: none;
+    }
+  }
+}
+
+.slide_up {
+  -webkit-animation: slide-up 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+  animation: slide-up 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+@-webkit-keyframes slide-up {
+  0% {
+    height: 0px;
+    opacity: 0;
+  }
+  50% {
+    height: 160px;
+    opacity: 0.1;
+  }
+  100% {
+    height: 200px;
+    opacity: 1;
+  }
+}
+@keyframes slide-up {
+  0% {
+    height: 0px;
+    opacity: 0;
+  }
+  50% {
+    height: 160px;
+    opacity: 0.1;
+  }
+  100% {
+    height: 200px;
+    opacity: 1;
+  }
+}
