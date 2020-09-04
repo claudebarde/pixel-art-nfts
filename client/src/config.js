@@ -11,6 +11,6 @@ export default {
     carthagenet: "https://carthagenet.smartpy.io",
     mainnet: "https://mainnet.smartpy.io"
   },
-  LEDGER_ID: 15409,
-  TOKEN_METADATA_ID: 15412
+  LEDGER_ID: 16420,
+  TOKEN_METADATA_ID: 16423
 };

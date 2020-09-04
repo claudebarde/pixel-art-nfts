@@ -18,7 +18,7 @@ const User: React.FC = () => {
     userAddress,
     cart,
     setCart,
-    setStorage,
+    refreshStorage,
     contract
   } = useContext(Context);
   const [loading, setLoading] = useState(true);
@@ -32,30 +32,19 @@ const User: React.FC = () => {
     close: undefined
   });
   const [flippedCard, setFlippedCard] = useState<string>();
+  const [transferRecipient, setTransferRecipient] = useState<string>("");
+  const [newPrice, setNewPrice] = useState<string>("");
   let { address } = useParams();
   const location = useLocation();
 
   const confirmTransfer = ipfsHash => {
-    setModalState({
-      state: ModalState.OPEN,
-      type: ModalType.CONFIRM_TRANSFER,
-      header: "Confirm token transfer",
-      body: "",
-      confirm: (recipient: string) => transfer(ipfsHash, recipient),
-      close: () =>
-        setModalState({
-          state: ModalState.CLOSED,
-          type: ModalType.CLOSED,
-          header: "",
-          body: "",
-          confirm: undefined,
-          close: undefined
-        })
-    });
+    if (ipfsHash && transferRecipient) {
+      transfer(ipfsHash, transferRecipient);
+    }
   };
 
   const transfer = async (ipfsHash: string, recipient: string) => {
-    if (ipfsHash && recipient) {
+    if (ipfsHash && recipient && refreshStorage) {
       try {
         const op = await contract?.methods
           .transfer([
@@ -66,14 +55,27 @@ const User: React.FC = () => {
           ])
           .send();
         await op?.confirmation();
-        setModalState({
-          state: ModalState.CLOSED,
-          type: ModalType.CLOSED,
-          header: "",
-          body: "",
-          confirm: undefined,
-          close: undefined
-        });
+        setTransferRecipient("");
+        await refreshStorage();
+      } catch (error) {
+        console.log(error);
+      }
+    }
+  };
+
+  const confirmNewPrice = (ipfsHash: string) => {
+    changePrice(ipfsHash, newPrice);
+  };
+
+  const changePrice = async (ipfsHash: string, price: string) => {
+    if (ipfsHash && !isNaN(+price) && refreshStorage) {
+      try {
+        const op = await contract?.methods
+          .update_token_price(ipfsHash, +price * 1000000)
+          .send();
+        await op?.confirmation();
+        setNewPrice("");
+        await refreshStorage();
       } catch (error) {
         console.log(error);
       }
@@ -111,6 +113,9 @@ const User: React.FC = () => {
           })
         );
         const tokensPromise: any[] = tokensMetadata.map(async el => {
+          const tkmt: any = await storage.token_metadata.get(
+            el.data.key_string
+          );
           const children = [...el.data.value.children];
           const token = {};
           await Promise.all(
@@ -121,16 +126,6 @@ const User: React.FC = () => {
                   el.data.key_string
                 );
                 const extras: Canvas = Array.from(_token.extras.entries());
-                // TODO: remove this hack
-                // first token created didn't have a createdBy prop
-                if (
-                  el.data.key_string ===
-                  "QmT3o46MhGfA7DQKFipkbkBw4UTc2M4E63V9B2F7WkJbGp"
-                )
-                  extras.push([
-                    "createdBy",
-                    "tz1NhNv9g7rtcjyNsH8Zqu79giY5aTqDDrzB"
-                  ]);
 
                 token[child.name] = {
                   canvasHash: extras.filter(
@@ -145,7 +140,11 @@ const User: React.FC = () => {
                   )[0][1]
                 };
               } else {
-                token[child.name] = child.value;
+                if (tkmt.hasOwnProperty(child.name)) {
+                  token[child.name] = tkmt[child.name];
+                } else {
+                  token[child.name] = child.value;
+                }
               }
             })
           );
@@ -213,11 +212,16 @@ const User: React.FC = () => {
                     location: location.pathname,
                     cart,
                     setCart,
-                    setStorage,
+                    refreshStorage,
                     contract,
                     confirmTransfer,
                     flippedCard,
-                    setFlippedCard
+                    setFlippedCard,
+                    transferRecipient,
+                    setTransferRecipient,
+                    newPrice,
+                    setNewPrice,
+                    confirmNewPrice
                   })
                 )
               : "No token for this user"}

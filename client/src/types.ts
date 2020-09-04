@@ -81,7 +81,7 @@ export interface State {
   network: string;
   contract: ContractAbstraction<Wallet> | undefined;
   storage: Storage | undefined;
-  setStorage: React.Dispatch<React.SetStateAction<Storage | undefined>>;
+  refreshStorage: () => void;
   cart: CartItem[];
   setCart: React.Dispatch<React.SetStateAction<CartItem[]>>;
   userBalance: number;
@@ -98,10 +98,15 @@ export interface CardProps {
   location?: string;
   cart?: CartItem[];
   setCart?: React.Dispatch<React.SetStateAction<CartItem[]>>;
-  setStorage?: React.Dispatch<React.SetStateAction<Storage | undefined>>;
+  refreshStorage?: () => void;
   contract?: ContractAbstraction<Wallet>;
   token_id?: string;
   confirmTransfer?: (ipfsHash: string) => any;
   flippedCard?: string | undefined;
   setFlippedCard?: React.Dispatch<React.SetStateAction<string | undefined>>;
+  transferRecipient?: string;
+  setTransferRecipient?: React.Dispatch<React.SetStateAction<string>>;
+  newPrice?: string;
+  setNewPrice?: React.Dispatch<React.SetStateAction<string>>;
+  confirmNewPrice?: (newPrice: string) => any;
 }

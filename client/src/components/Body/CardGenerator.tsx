@@ -21,12 +21,17 @@ const CardGenerator: React.FC<CardProps> = ({
   location,
   cart,
   setCart,
-  setStorage,
+  refreshStorage,
   contract,
   token_id,
   confirmTransfer,
   flippedCard,
-  setFlippedCard
+  setFlippedCard,
+  transferRecipient,
+  setTransferRecipient,
+  newPrice,
+  setNewPrice,
+  confirmNewPrice
 }) => {
   const isOwnerConnected =
     location?.includes("/profile") && userAddress && userAddress === address;
@@ -49,8 +54,8 @@ const CardGenerator: React.FC<CardProps> = ({
         .update_token_status(artwork.ipfsHash, true)
         .send();
       await op?.confirmation();
-      if (setStorage) {
-        setStorage(await contract?.storage());
+      if (refreshStorage) {
+        await refreshStorage();
       }
     } catch (error) {
       console.log(error);
@@ -182,38 +187,13 @@ const CardGenerator: React.FC<CardProps> = ({
                   <i className="fas fa-share-alt"></i>
                 </NavLink>
               </div>
-              {/*
-              {isOwnerConnected && (
-                <>
-                  <div
-                    onClick={() => {
-                      if (confirmTransfer) confirmTransfer(artwork.ipfsHash);
-                    }}
-                    style={{ cursor: "pointer" }}
-                  >
-                    <i className="fas fa-exchange-alt"></i>
-                  </div>
-                  <div
-                    style={{ cursor: "pointer" }}
-                    onClick={() => {
-                      if (setFlippedCard) {
-                        setFlippedCard(artwork.ipfsHash);
-                      }
-                    }}
-                  >
-                    <i className="fas fa-user-cog"></i>
-                  </div>
-                  <div onClick={burnToken} style={{ cursor: "pointer" }}>
-                    <i className="far fa-trash-alt"></i>
-                  </div>
-                </>
-              )} */}
               {isOwnerConnected && (
                 <div
                   style={{ cursor: "pointer" }}
                   onClick={() => {
-                    if (setFlippedCard) {
+                    if (setFlippedCard && setTransferRecipient) {
                       setFlippedCard(artwork.ipfsHash);
+                      setTransferRecipient("");
                     }
                   }}
                 >
@@ -230,16 +210,46 @@ const CardGenerator: React.FC<CardProps> = ({
             <div className={styles.card__body}>
               <div className={styles.card__body_}>
                 <p>Manual transfer</p>
-                <input type="text" placeholder="Recipient" />
-                <button className={styles.card__button}>
+                <input
+                  type="text"
+                  placeholder="Recipient"
+                  value={transferRecipient}
+                  onChange={e => {
+                    if (setTransferRecipient) {
+                      setTransferRecipient(e.target.value);
+                    }
+                  }}
+                />
+                <button
+                  className={styles.card__button}
+                  onClick={() => {
+                    if (confirmTransfer) confirmTransfer(artwork.ipfsHash);
+                  }}
+                >
                   <i className="fas fa-exchange-alt"></i> Transfer
                 </button>
               </div>
               <div className={styles.card__separator}></div>
               <div>
                 <p>Price update</p>
-                <input type="text" placeholder="New price" />
-                <button className={styles.card__button}>
+                <input
+                  type="text"
+                  placeholder="New price"
+                  value={newPrice}
+                  onChange={e => {
+                    if (setNewPrice) {
+                      setNewPrice(e.target.value);
+                    }
+                  }}
+                />
+                <button
+                  className={styles.card__button}
+                  onClick={() => {
+                    if (confirmNewPrice) {
+                      confirmNewPrice(artwork.ipfsHash);
+                    }
+                  }}
+                >
                   <i className="fas fa-tag"></i> Confirm
                 </button>
               </div>

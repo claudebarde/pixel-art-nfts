@@ -22,7 +22,7 @@ const titleColors = [
 ];
 
 const Header: React.FC = () => {
-  const { userAddress, cart, contract, setStorage } = useContext(Context);
+  const { userAddress, cart, contract, refreshStorage } = useContext(Context);
   const title = useRef(null);
   const [zTextTitle] = useState(
     [
@@ -70,10 +70,10 @@ const Header: React.FC = () => {
       console.log(op?.opHash);
       await op?.confirmation();
       // empties the cart
-      if (setCart && setStorage) {
+      if (setCart && refreshStorage) {
         setCart([]);
         // refreshes the storage
-        setStorage(await contract?.storage());
+        await refreshStorage();
       }
     } catch (error) {
       console.log(error);

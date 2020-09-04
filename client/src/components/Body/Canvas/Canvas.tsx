@@ -44,7 +44,7 @@ const CanvasPainting: React.FC = () => {
     userAddress,
     contract,
     network,
-    setStorage
+    refreshStorage
   } = useContext(Context);
   const [smallCanvas, setSmallCanvas] = useState(defaultSmallCanvas());
   const [mediumCanvas, setMediumCanvas] = useState(defaultMediumCanvas());
@@ -282,8 +282,9 @@ const CanvasPainting: React.FC = () => {
             .send();
           console.log(op.opHash);
           await op.confirmation();
-          const newStorage: any = await contract.storage();
-          if (setStorage) setStorage(newStorage);
+          if (refreshStorage) await refreshStorage();
+          /*const newStorage: any = await contract.storage();
+          if (setStorage) setStorage(newStorage);*/
         } else {
           throw new Error("NO_IPFS_HASH");
         }

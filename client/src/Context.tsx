@@ -14,6 +14,17 @@ export const Provider: React.FC = props => {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [userBalance, setUserBalance] = useState<number>(0);
 
+  const refreshStorage = async () => {
+    if (contract) {
+      const newStorage: Storage = await contract.storage();
+      const tkmt: any = await newStorage.token_metadata.get(
+        "QmT3o46MhGfA7DQKFipkbkBw4UTc2M4E63V9B2F7WkJbGp"
+      );
+      console.log(tkmt.price.toNumber());
+      setStorage(newStorage);
+    }
+  };
+
   const state: State = {
     view,
     setView,
@@ -25,7 +36,7 @@ export const Provider: React.FC = props => {
     network: config.NETWORK[config.ENV],
     contract,
     storage,
-    setStorage,
+    refreshStorage,
     cart,
     setCart,
     userBalance,
