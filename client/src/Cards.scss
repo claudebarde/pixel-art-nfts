@@ -77,9 +77,17 @@ $large-grid-blocks: 48;
 }
 
 .card__body {
+  & > div {
+    padding: 2px;
+  }
+
+  input[type="text"] {
+    padding: 7px;
+    font-size: 1rem;
+  }
 }
 
-.card__button {
+@mixin card__button {
   padding: 10px 30px;
   cursor: pointer;
   border: none;
@@ -89,12 +97,21 @@ $large-grid-blocks: 48;
   transition: 0.2s;
   font-size: 1.2rem;
   color: white;
-  background: #eebe98;
   transition: 0.2s;
 
   &:active {
     margin: 14px 10px 10px 10px;
   }
+}
+
+.card__button {
+  @include card__button;
+  background: #eebe98;
+}
+
+.card__button_error {
+  @include card__button;
+  background: #fc8181;
 }
 
 .card__footer {
@@ -118,4 +135,11 @@ $large-grid-blocks: 48;
   &:hover {
     font-style: italic;
   }
+}
+
+.card__separator {
+  height: 0px;
+  width: 80%;
+  border-top: solid 1px white;
+  margin: 0 auto;
 }

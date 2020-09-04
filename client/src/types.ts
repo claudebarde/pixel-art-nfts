@@ -102,4 +102,6 @@ export interface CardProps {
   contract?: ContractAbstraction<Wallet>;
   token_id?: string;
   confirmTransfer?: (ipfsHash: string) => any;
+  flippedCard?: string | undefined;
+  setFlippedCard?: React.Dispatch<React.SetStateAction<string | undefined>>;
 }

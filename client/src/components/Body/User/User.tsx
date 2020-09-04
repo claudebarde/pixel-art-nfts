@@ -31,6 +31,7 @@ const User: React.FC = () => {
     confirm: undefined,
     close: undefined
   });
+  const [flippedCard, setFlippedCard] = useState<string>();
   let { address } = useParams();
   const location = useLocation();
 
@@ -214,7 +215,9 @@ const User: React.FC = () => {
                     setCart,
                     setStorage,
                     contract,
-                    confirmTransfer
+                    confirmTransfer,
+                    flippedCard,
+                    setFlippedCard
                   })
                 )
               : "No token for this user"}
