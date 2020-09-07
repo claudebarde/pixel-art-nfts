@@ -1,4 +1,10 @@
-import React, { useContext, useEffect, useState, useRef } from "react";
+import React, {
+  useContext,
+  useEffect,
+  useState,
+  useRef,
+  ReactNode
+} from "react";
 import Pickr from "@simonwep/pickr";
 import "@simonwep/pickr/dist/themes/classic.min.css";
 import { MichelsonMap } from "@taquito/taquito";
@@ -72,6 +78,8 @@ const CanvasPainting: React.FC = () => {
   const activeLastUsedColors = useRef(defaultPalette);
   const [savedCanvas, setSavedCanvas] = useState<boolean>(false);
   const [errorSavingToken, setErrorSavingToken] = useState(false);
+  const [toastText, setToastText] = useState<ReactNode>();
+  const [toastType, setToastType] = useState<ToastType>(ToastType.DEFAULT);
 
   const resetCanvas = () => {
     if (colorPicker && bgColorPicker) {
@@ -282,7 +290,19 @@ const CanvasPainting: React.FC = () => {
               tokenMetadata.extras
             )
             .send();
-          console.log(op.opHash);
+          setToastType(ToastType.INFO);
+          setToastText(
+            <span>
+              Op hash:{" "}
+              <a
+                href={`https://better-call.dev/${network}/opg/${op?.opHash}/contents`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {op?.opHash.slice(0, 7) + "..." + op?.opHash.slice(-7)}
+              </a>
+            </span>
+          );
           await op.confirmation();
           if (refreshStorage) await refreshStorage();
           // resets canvas
@@ -305,10 +325,16 @@ const CanvasPainting: React.FC = () => {
             canvas = [[""]];
           }
         } else {
-          throw new Error(await data.text());
+          throw await data.text();
         }
       } catch (error) {
         console.error(error);
+        setToastType(ToastType.ERROR);
+        if (error.includes("TOKEN_ALREADY_EXISTS")) {
+          setToastText(<span>This artwork already exists</span>);
+        } else {
+          setToastText(<span>An error has occurred</span>);
+        }
         setErrorSavingToken(true);
         setTimeout(() => setErrorSavingToken(false), 3000);
       } finally {
@@ -802,7 +828,7 @@ const CanvasPainting: React.FC = () => {
         </div>
         <Modal {...modalState} />
       </main>
-      <Toast type={ToastType.DEFAULT} text="I am a toast!" />
+      <Toast type={toastType} text={toastText} />
     </>
   );
 };

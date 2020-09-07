@@ -233,6 +233,7 @@ const CardGenerator: React.FC<CardProps> = ({
                 <input
                   id="new-price"
                   type="text"
+                  maxLength={5}
                   placeholder="New price"
                   value={newPrice}
                   onChange={e => {

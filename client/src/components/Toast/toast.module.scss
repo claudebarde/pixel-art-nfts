@@ -4,22 +4,43 @@
   left: 0;
   right: 0;
   margin: auto;
-  border-radius: 15px;
+  border-radius: 5px;
   padding: 20px 40px;
   max-width: 300px;
   text-align: center;
   opacity: 0;
+  -moz-box-shadow: 1px 8px 10px -5px #ccc;
+  -webkit-box-shadow: 1px 8px 10px -5px #ccc;
+  box-shadow: 1px 8px 10px -5px #ccc;
+  z-index: 100;
+
+  a {
+    text-decoration: none;
+  }
 }
 
 .toast_default {
   @include toast;
-  background-color: #e2e8f0;
+  background-color: #edf2f7;
+  color: #718096;
 }
 
 .toast_info {
   @include toast;
-  background-color: #90cdf4;
-  color: white;
+  background-color: #bee3f8;
+  color: #3182ce;
+}
+
+.toast_success {
+  @include toast;
+  background-color: #c6f6d5;
+  color: #38a169;
+}
+
+.toast_error {
+  @include toast;
+  background-color: #fed7d7;
+  color: #e53e3e;
 }
 
 .show {

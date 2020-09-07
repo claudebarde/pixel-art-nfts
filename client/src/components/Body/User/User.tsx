@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, ReactNode } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import config from "../../../config";
 import { Context } from "../../../Context";
@@ -20,7 +20,8 @@ const User: React.FC = () => {
     cart,
     setCart,
     refreshStorage,
-    contract
+    contract,
+    network
   } = useContext(Context);
   const [loading, setLoading] = useState(true);
   const [tokens, setTokens] = useState<ArtworkListElement[]>([]);
@@ -35,7 +36,8 @@ const User: React.FC = () => {
   const [flippedCard, setFlippedCard] = useState<string>();
   const [transferRecipient, setTransferRecipient] = useState<string>("");
   const [newPrice, setNewPrice] = useState<string>("");
-  const [toastText, setToastText] = useState("");
+  const [toastText, setToastText] = useState<ReactNode>();
+  const [toastType, setToastType] = useState<ToastType>(ToastType.DEFAULT);
   let { address } = useParams();
   const location = useLocation();
 
@@ -75,14 +77,28 @@ const User: React.FC = () => {
         const op = await contract?.methods
           .update_token_price(ipfsHash, Math.round(parseFloat(price) * 1000000))
           .send();
+        setToastType(ToastType.INFO);
         setToastText(
-          `Op hash: ${op?.opHash.slice(0, 7) + "..." + op?.opHash.slice(-7)}`
+          <span>
+            Op hash:{" "}
+            <a
+              href={`https://better-call.dev/${network}/opg/${op?.opHash}/contents`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {op?.opHash.slice(0, 7) + "..." + op?.opHash.slice(-7)}
+            </a>
+          </span>
         );
         await op?.confirmation();
         setNewPrice("");
         await refreshStorage();
+        setToastType(ToastType.SUCCESS);
+        setToastText(<span>Price successfully changed!</span>);
       } catch (error) {
         console.log(error);
+        setToastType(ToastType.ERROR);
+        setToastText(<span>Arn error has occurred</span>);
       }
     }
   };
@@ -106,6 +122,19 @@ const User: React.FC = () => {
       }
       // remove the token from the blockchain
       const op = await contract?.methods.burn_token(tokenID).send();
+      setToastType(ToastType.INFO);
+      setToastText(
+        <span>
+          Op hash:{" "}
+          <a
+            href={`https://better-call.dev/${network}/opg/${op?.opHash}/contents`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {op?.opHash.slice(0, 7) + "..." + op?.opHash.slice(-7)}
+          </a>
+        </span>
+      );
       await op?.confirmation();
       // removes token from list
       setTokens([...tokens.filter(el => el.ipfsHash !== tokenID)]);
@@ -117,8 +146,12 @@ const User: React.FC = () => {
         confirm: undefined,
         close: undefined
       });
+      setToastType(ToastType.SUCCESS);
+      setToastText(<span>Artwork successfully deleted!</span>);
     } catch (error) {
       console.log(error);
+      setToastType(ToastType.ERROR);
+      setToastText(<span>An error occurred</span>);
     }
   };
 
@@ -292,7 +325,7 @@ const User: React.FC = () => {
         )}
         <Modal {...modalState} />
       </main>
-      <Toast type={ToastType.INFO} text={toastText} />
+      <Toast type={toastType} text={toastText} />
     </>
   );
 };

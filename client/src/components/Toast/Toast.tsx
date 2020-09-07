@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, ReactNode } from "react";
 import styles from "./toast.module.scss";
 
 export enum ToastType {
@@ -10,7 +10,7 @@ export enum ToastType {
 
 export interface ToastProps {
   type: ToastType;
-  text: string;
+  text: ReactNode;
 }
 
 export const Toast: React.FC<ToastProps> = ({ type, text }: ToastProps) => {
@@ -18,15 +18,21 @@ export const Toast: React.FC<ToastProps> = ({ type, text }: ToastProps) => {
 
   useEffect(() => {
     if (text) {
-      setTimeout(() => setShow(true), 2000);
-      setTimeout(() => setShow(false), 5000);
+      setTimeout(() => setShow(true), 500);
+      setTimeout(() => setShow(false), 4000);
     }
   }, [type, text]);
 
   return (
     <div
       className={`${
-        type === ToastType.INFO ? styles.toast_info : styles.toast_default
+        type === ToastType.INFO
+          ? styles.toast_info
+          : type === ToastType.ERROR
+          ? styles.toast_error
+          : type === ToastType.SUCCESS
+          ? styles.toast_success
+          : styles.toast_default
       } ${show === undefined ? "" : show ? styles.show : styles.hide}`}
     >
       {text}
