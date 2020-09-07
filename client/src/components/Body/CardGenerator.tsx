@@ -31,7 +31,8 @@ const CardGenerator: React.FC<CardProps> = ({
   setTransferRecipient,
   newPrice,
   setNewPrice,
-  confirmNewPrice
+  confirmNewPrice,
+  burnTokenModal
 }) => {
   const isOwnerConnected =
     location?.includes("/profile") && userAddress && userAddress === address;
@@ -60,10 +61,6 @@ const CardGenerator: React.FC<CardProps> = ({
     } catch (error) {
       console.log(error);
     }
-  };
-
-  const burnToken = () => {
-    console.log(artwork.ipfsHash);
   };
 
   return (
@@ -211,6 +208,7 @@ const CardGenerator: React.FC<CardProps> = ({
               <div className={styles.card__body_}>
                 <p>Manual transfer</p>
                 <input
+                  id="manual-transfer"
                   type="text"
                   placeholder="Recipient"
                   value={transferRecipient}
@@ -233,6 +231,7 @@ const CardGenerator: React.FC<CardProps> = ({
               <div>
                 <p>Price update</p>
                 <input
+                  id="new-price"
                   type="text"
                   placeholder="New price"
                   value={newPrice}
@@ -255,7 +254,10 @@ const CardGenerator: React.FC<CardProps> = ({
               </div>
               <div className={styles.card__separator}></div>
               <div>
-                <button className={styles.card__button_error}>
+                <button
+                  className={styles.card__button_error}
+                  onClick={burnTokenModal}
+                >
                   <i className="far fa-trash-alt"></i> Delete token
                 </button>
               </div>

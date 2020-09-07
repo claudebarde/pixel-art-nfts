@@ -269,7 +269,7 @@ const CanvasPainting: React.FC = () => {
 
           // includes token in the blockchain
           const op = await contract.methods
-            .mint_tokens(
+            .mint_token(
               userAddress,
               tokenMetadata.token_id,
               tokenMetadata.symbol,
@@ -292,6 +292,25 @@ const CanvasPainting: React.FC = () => {
         console.error(error);
       } finally {
         setLoadingNewToken(false);
+        // resets canvas
+        if (gridSize === GridSize.Small) {
+          // small canvas
+          const newCanvas = defaultSmallCanvas();
+          setSmallCanvas(newCanvas);
+          activeSmallCanvas.current = newCanvas;
+        } else if (gridSize === GridSize.Medium) {
+          // medium canvas
+          const newCanvas = defaultMediumCanvas();
+          setMediumCanvas(newCanvas);
+          activeMediumCanvas.current = newCanvas;
+        } else if (gridSize === GridSize.Large) {
+          // large canvas
+          const newCanvas = defaultLargeCanvas();
+          setLargeCanvas(newCanvas);
+          activeLargeCanvas.current = newCanvas;
+        } else {
+          canvas = [[""]];
+        }
       }
     }
     setLoadingNewToken(false);

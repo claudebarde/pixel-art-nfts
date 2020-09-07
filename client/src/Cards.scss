@@ -81,9 +81,48 @@ $large-grid-blocks: 48;
     padding: 2px;
   }
 
+  /*input[type="text"] {
+    padding: 7px;
+    font-size: 1rem;
+    border: none;
+    border-left: solid 1px transparent;
+    outline: none;
+    background-color: transparent;
+    color: white;
+    display: block;
+    margin: 0 auto;
+    transition: 0.4s;
+    width: 200px;
+
+    &[value=""] {
+      width: 80px;
+    }
+
+    &:focus {
+      border-left: solid 1px #e2e8f0;
+      width: 200px;
+    }
+  }*/
+
   input[type="text"] {
     padding: 7px;
     font-size: 1rem;
+    border: none;
+    border-left: solid 1px transparent;
+    outline: none;
+    background-color: transparent;
+    color: white;
+    display: block;
+    margin: 0 auto;
+    transition: 0.4s;
+  }
+
+  input#manual-transfer {
+    width: 80px;
+  }
+
+  input[type="text"]#new-price {
+    width: 80px;
   }
 }
 
@@ -140,6 +179,6 @@ $large-grid-blocks: 48;
 .card__separator {
   height: 0px;
   width: 80%;
-  border-top: solid 1px white;
+  border-top: solid 1px #e2e8f0;
   margin: 0 auto;
 }

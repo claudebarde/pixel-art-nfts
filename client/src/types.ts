@@ -109,4 +109,5 @@ export interface CardProps {
   newPrice?: string;
   setNewPrice?: React.Dispatch<React.SetStateAction<string>>;
   confirmNewPrice?: (newPrice: string) => any;
+  burnTokenModal?: () => any;
 }

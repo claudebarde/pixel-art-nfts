@@ -1,6 +1,6 @@
 export default {
   ENV: "carthagenet", // dev | carthagenet | mainnet
-  NETLIFY_PORT: 57942,
+  NETLIFY_PORT: 52873,
   CONTRACT: {
     dev: "KT19T89LoroCRbNWGDF4XyVeYTX9BUPcAv44",
     carthagenet: "KT1EMMC23fiszGUvikWLemrWhLNRBSiYCFD7",

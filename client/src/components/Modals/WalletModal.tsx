@@ -4,10 +4,8 @@ import { Context } from "../../Context";
 import { LedgerSigner, DerivationType } from "@taquito/ledger-signer";
 import TransportU2F from "@ledgerhq/hw-transport-u2f";
 import { TezBridgeWallet } from "@taquito/tezbridge-wallet";
-import { BeaconWallet } from "@taquito/beacon-wallet";
-import { NetworkType } from "@airgap/beacon-sdk";
 import BigNumber from "bignumber.js";
-import config from "../../config";
+import { connectWithBeacon } from "./walletConnection";
 
 enum WalletType {
   LEDGER,
@@ -42,78 +40,33 @@ const WalletModal: React.FC<{ close: any }> = ({ close }) => {
   };
 
   const confirm = async () => {
+    if (!Tezos || !setUserAddress) return;
+
     if (walletType === WalletType.BEACON) {
       // Beacon wallet
-      try {
-        if (!Tezos || !setUserAddress)
-          throw new Error("Undefined Tezos or setUserAddress");
-
-        const wallet = new BeaconWallet({
-          name: "Pixel Art NFTs",
-          eventHandlers: {
-            P2P_LISTEN_FOR_CHANNEL_OPEN: {
-              handler: async data => {
-                console.log("Listening to P2P channel:", data);
-              }
-            },
-            P2P_CHANNEL_CONNECT_SUCCESS: {
-              handler: async data => {
-                console.log("Channel connected:", data);
-              }
-            },
-            PERMISSION_REQUEST_SENT: {
-              handler: async data => {
-                console.log("Permission request sent:", data);
-              }
-            },
-            PERMISSION_REQUEST_SUCCESS: {
-              handler: async data => {
-                console.log("Wallet is connected:", data);
-              }
-            },
-            OPERATION_REQUEST_SENT: {
-              handler: async data => {
-                console.log("Request broadcast:", data);
-              }
-            },
-            OPERATION_REQUEST_SUCCESS: {
-              handler: async data => {
-                console.log("Request broadcast success:", data);
-              }
-            }
-          }
-        });
-        Tezos.setWalletProvider(wallet);
-        await wallet.requestPermissions({
-          network: {
-            type:
-              config.ENV === "dev"
-                ? NetworkType.CUSTOM
-                : config.ENV === "carthagenet"
-                ? NetworkType.CARTHAGENET
-                : NetworkType.MAINNET,
-            rpcUrl: network
-          }
-        });
-        //await wallet.client.removeAllPeers();
-        //await wallet.client.removeAllAccounts();
-        // gets user's address
-        const keyHash = await wallet.getPKH();
-        setUserAddress(keyHash);
-        getUserBalance(keyHash);
-
-        console.log("Public key:", keyHash);
-
-        close(false);
-      } catch (error) {
-        console.log(error);
+      const pkh = await connectWithBeacon(Tezos, network as string);
+      if (pkh) {
+        setUserAddress(pkh);
+        getUserBalance(pkh);
       }
+      close(false);
     } else if (walletType === WalletType.LEDGER) {
       // Ledger wallet
       if (setUserAddress) {
         setUserAddress(addressFromLedger);
         getUserBalance(addressFromLedger);
         Tezos?.setSignerProvider(ledgerSigner);
+
+        if (window.localStorage) {
+          window.localStorage.setItem(
+            "connected-wallet",
+            JSON.stringify({
+              address: addressFromLedger,
+              connectedAt: Date.now(),
+              walletType: "ledger"
+            })
+          );
+        }
       }
       close(false);
     } else if (walletType === WalletType.TEZBRIDGE) {
@@ -126,6 +79,18 @@ const WalletModal: React.FC<{ close: any }> = ({ close }) => {
       const keyHash = await wallet.getPKH();
       setUserAddress(keyHash);
       getUserBalance(keyHash);
+
+      if (window.localStorage) {
+        window.localStorage.setItem(
+          "connected-wallet",
+          JSON.stringify({
+            address: keyHash,
+            connectedAt: Date.now(),
+            walletType: "tezbridge"
+          })
+        );
+      }
+
       close(false);
     }
   };

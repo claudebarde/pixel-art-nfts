@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Tezos, ContractAbstraction, Wallet } from "@taquito/taquito";
 import config from "./config";
 import { Storage, State, View, GridSize, CartItem } from "./types";
+import { connectWithBeacon } from "./components/Modals/walletConnection";
+import BigNumber from "bignumber.js";
 
 export const Context = React.createContext<Partial<State>>({});
 
@@ -20,7 +22,6 @@ export const Provider: React.FC = props => {
       const tkmt: any = await newStorage.token_metadata.get(
         "QmT3o46MhGfA7DQKFipkbkBw4UTc2M4E63V9B2F7WkJbGp"
       );
-      console.log(tkmt.price.toNumber());
       setStorage(newStorage);
     }
   };
@@ -53,6 +54,23 @@ export const Provider: React.FC = props => {
       setContract(newInstance);
       const newStorage: Storage = await newInstance.storage();
       setStorage(newStorage);
+
+      // checks if users connected their wallet before
+      if (window.localStorage) {
+        const connectedWallet = window.localStorage.getItem("connected-wallet");
+        if (connectedWallet) {
+          const wallet = JSON.parse(connectedWallet);
+          if (wallet.walletType === "beacon") {
+            const pkh = await connectWithBeacon(Tezos, state.network);
+            if (pkh) {
+              setUserAddress(pkh);
+              let balance: number | BigNumber = 0;
+              balance = await Tezos.tz.getBalance(pkh);
+              setUserBalance(balance.toNumber());
+            }
+          }
+        }
+      }
     })();
   }, []);
 

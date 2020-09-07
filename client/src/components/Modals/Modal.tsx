@@ -15,7 +15,8 @@ export enum ModalType {
   CONFIRM_NEW_TOKEN,
   CONFIRM_CART,
   CONFIRM_TRANSFER,
-  CONNECT_LEDGER
+  CONNECT_LEDGER,
+  BURN_TOKEN
 }
 
 export type ModalProps = {
@@ -45,6 +46,7 @@ export const Modal: React.FC<ModalProps> = ({
   const [confirmBuy, setConfirmBuy] = useState(false);
   const [transferRecipient, setTransferRecipient] = useState<string>("");
   const [loadingTransfer, setLoadingTransfer] = useState(false);
+  const [loadingBurn, setLoadingBurn] = useState(false);
 
   if (state === State.CLOSED) {
     return null;
@@ -346,6 +348,45 @@ export const Modal: React.FC<ModalProps> = ({
                 </button>
               </div>
             </>
+          )}
+          {/* CONFIRM TOKEN TRANSFER */}
+          {type === ModalType.BURN_TOKEN && (
+            <div>
+              <div className={styles.modal__body}>
+                <p>Are you sure you want to delete this token?</p>
+                <p>
+                  The token will be removed from the main smart contract and
+                  IPFS node, however, due to the nature of the IPFS, it will not
+                  be permanently removed from the network if the token data are
+                  pinned on other IPFS nodes.
+                </p>
+                <p>Do you wish to continue?</p>
+              </div>
+              <div className={styles.modal__buttons}>
+                <button
+                  className="button error"
+                  onClick={() => {
+                    if (!loadingBurn) confirm(transferRecipient);
+                    setLoadingBurn(true);
+                  }}
+                >
+                  {loadingBurn ? (
+                    <span>
+                      <i className="fas fa-spinner fa-spin"></i> Deleting...
+                    </span>
+                  ) : (
+                    <span>Confirm</span>
+                  )}
+                </button>
+                <button
+                  className="button success"
+                  onClick={close}
+                  disabled={loadingBurn}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
           )}
         </div>
       </div>

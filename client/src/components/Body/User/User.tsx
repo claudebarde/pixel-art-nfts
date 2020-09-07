@@ -82,6 +82,41 @@ const User: React.FC = () => {
     }
   };
 
+  const burnToken = async (tokenID: string) => {
+    const BurnToken =
+      process.env.NODE_ENV === "development"
+        ? `http://localhost:${config.NETLIFY_PORT}/burnPixelArt`
+        : "https://pixel-art-nfts.netlify.app/.netlify/functions/burnPixelArt";
+
+    try {
+      const data = await fetch(BurnToken, {
+        body: tokenID,
+        method: "POST"
+      });
+
+      if (data.status === 200) {
+        console.log("removed!");
+      } else {
+        throw new Error(JSON.stringify(await data.text()));
+      }
+      // remove the token from the blockchain
+      const op = await contract?.methods.burn_token(tokenID).send();
+      await op?.confirmation();
+      // removes token from list
+      setTokens([...tokens.filter(el => el.ipfsHash !== tokenID)]);
+      setModalState({
+        state: ModalState.CLOSED,
+        type: ModalType.CLOSED,
+        header: "",
+        body: "",
+        confirm: undefined,
+        close: undefined
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   useEffect(() => {
     (async () => {
       if (storage) {
@@ -91,7 +126,11 @@ const User: React.FC = () => {
           `https://api.better-call.dev/v1/bigmap/${config.ENV}/${config.LEDGER_ID}/keys`
         );
         const ledger = await responseLedger.json();
-        tokensOwned = [...ledger.filter(el => el.data.value.value === address)];
+        tokensOwned = [
+          ...ledger.filter(
+            el => el.data.value && el.data.value.value === address
+          )
+        ];
         // gets IPFS hashes of tokens owned by user
         const IPFSHashes: string[] = tokensOwned.map(el => el.data.key.value);
         // gets token metadata to find tokens created by user
@@ -221,7 +260,24 @@ const User: React.FC = () => {
                     setTransferRecipient,
                     newPrice,
                     setNewPrice,
-                    confirmNewPrice
+                    confirmNewPrice,
+                    burnTokenModal: () =>
+                      setModalState({
+                        state: ModalState.OPEN,
+                        type: ModalType.BURN_TOKEN,
+                        header: "Delete this token?",
+                        body: "",
+                        confirm: () => burnToken(tk.ipfsHash),
+                        close: () =>
+                          setModalState({
+                            state: ModalState.CLOSED,
+                            type: ModalType.CLOSED,
+                            header: "",
+                            body: "",
+                            confirm: undefined,
+                            close: undefined
+                          })
+                      })
                   })
                 )
               : "No token for this user"}
