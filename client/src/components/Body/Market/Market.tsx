@@ -25,16 +25,18 @@ const Market: React.FC = () => {
       if (entries.length > 0 && storage) {
         const artPieces: Promise<any>[] = [];
         entries.forEach(async entry => {
-          // gets info for each piece from the IPFS
-          artPieces.push(
-            fetch(`https://gateway.pinata.cloud/ipfs/${entry.data.key.value}`)
-              .then(response => response.json())
-              .then(result => ({
-                ...result,
-                ipfsHash: entry.data.key.value,
-                seller: entry.data.value.value
-              }))
-          );
+          if (entry.data.value) {
+            // gets info for each piece from the IPFS
+            artPieces.push(
+              fetch(`https://gateway.pinata.cloud/ipfs/${entry.data.key.value}`)
+                .then(response => response.json())
+                .then(result => ({
+                  ...result,
+                  ipfsHash: entry.data.key.value,
+                  seller: entry.data.value.value
+                }))
+            );
+          }
         });
         const resultEntries: ArtworkListElement[] = await Promise.all(
           artPieces
