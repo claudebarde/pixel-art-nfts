@@ -11,6 +11,7 @@ import {
   ModalType,
   Modal
 } from "../../Modals/Modal";
+import { Toast, ToastType } from "../../Toast/Toast";
 
 const User: React.FC = () => {
   const {
@@ -34,6 +35,7 @@ const User: React.FC = () => {
   const [flippedCard, setFlippedCard] = useState<string>();
   const [transferRecipient, setTransferRecipient] = useState<string>("");
   const [newPrice, setNewPrice] = useState<string>("");
+  const [toastText, setToastText] = useState("");
   let { address } = useParams();
   const location = useLocation();
 
@@ -71,8 +73,11 @@ const User: React.FC = () => {
     if (ipfsHash && !isNaN(+price) && refreshStorage) {
       try {
         const op = await contract?.methods
-          .update_token_price(ipfsHash, +price * 1000000)
+          .update_token_price(ipfsHash, Math.round(parseFloat(price) * 1000000))
           .send();
+        setToastText(
+          `Op hash: ${op?.opHash.slice(0, 7) + "..." + op?.opHash.slice(-7)}`
+        );
         await op?.confirmation();
         setNewPrice("");
         await refreshStorage();
@@ -95,7 +100,7 @@ const User: React.FC = () => {
       });
 
       if (data.status === 200) {
-        console.log("removed!");
+        console.log("IPFS hash unpinned!");
       } else {
         throw new Error(JSON.stringify(await data.text()));
       }
@@ -179,7 +184,7 @@ const User: React.FC = () => {
                   )[0][1]
                 };
               } else {
-                if (tkmt.hasOwnProperty(child.name)) {
+                if (tkmt && tkmt.hasOwnProperty(child.name)) {
                   token[child.name] = tkmt[child.name];
                 } else {
                   token[child.name] = child.value;
@@ -210,82 +215,85 @@ const User: React.FC = () => {
     })();
   }, [storage]);
   return (
-    <main>
-      {loading ? (
-        <div className="loader">
-          <div>
-            Loading{" "}
-            {userAddress && userAddress === address ? "your" : "the user's"}{" "}
-            profile
+    <>
+      <main>
+        {loading ? (
+          <div className="loader">
+            <div>
+              Loading{" "}
+              {userAddress && userAddress === address ? "your" : "the user's"}{" "}
+              profile
+            </div>
+            <div className="pulsate-fwd">
+              <i className="fas fa-user fa-lg"></i>
+            </div>
           </div>
-          <div className="pulsate-fwd">
-            <i className="fas fa-user fa-lg"></i>
-          </div>
-        </div>
-      ) : (
-        <>
-          <h2>
-            {userAddress && userAddress === address ? "Your" : "User"} Profile
-          </h2>
-          <h3 className={styles.user_address}>
-            <a
-              href={`https://${
-                config.ENV === "carthagenet" && "carthage."
-              }tzkt.io/${address}/operations`}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {address}
-            </a>
-          </h3>
-          <div className={styles.cards}>
-            {tokens.length > 0
-              ? tokens.map((tk, i) =>
-                  CardGenerator({
-                    artwork: tk,
-                    i,
-                    styles,
-                    view: View.PROFILE,
-                    userAddress,
-                    address,
-                    location: location.pathname,
-                    cart,
-                    setCart,
-                    refreshStorage,
-                    contract,
-                    confirmTransfer,
-                    flippedCard,
-                    setFlippedCard,
-                    transferRecipient,
-                    setTransferRecipient,
-                    newPrice,
-                    setNewPrice,
-                    confirmNewPrice,
-                    burnTokenModal: () =>
-                      setModalState({
-                        state: ModalState.OPEN,
-                        type: ModalType.BURN_TOKEN,
-                        header: "Delete this token?",
-                        body: "",
-                        confirm: () => burnToken(tk.ipfsHash),
-                        close: () =>
-                          setModalState({
-                            state: ModalState.CLOSED,
-                            type: ModalType.CLOSED,
-                            header: "",
-                            body: "",
-                            confirm: undefined,
-                            close: undefined
-                          })
-                      })
-                  })
-                )
-              : "No token for this user"}
-          </div>
-        </>
-      )}
-      <Modal {...modalState} />
-    </main>
+        ) : (
+          <>
+            <h2>
+              {userAddress && userAddress === address ? "Your" : "User"} Profile
+            </h2>
+            <h3 className={styles.user_address}>
+              <a
+                href={`https://${
+                  config.ENV === "carthagenet" && "carthage."
+                }tzkt.io/${address}/operations`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {address}
+              </a>
+            </h3>
+            <div className={styles.cards}>
+              {tokens.length > 0
+                ? tokens.map((tk, i) =>
+                    CardGenerator({
+                      artwork: tk,
+                      i,
+                      styles,
+                      view: View.PROFILE,
+                      userAddress,
+                      address,
+                      location: location.pathname,
+                      cart,
+                      setCart,
+                      refreshStorage,
+                      contract,
+                      confirmTransfer,
+                      flippedCard,
+                      setFlippedCard,
+                      transferRecipient,
+                      setTransferRecipient,
+                      newPrice,
+                      setNewPrice,
+                      confirmNewPrice,
+                      burnTokenModal: () =>
+                        setModalState({
+                          state: ModalState.OPEN,
+                          type: ModalType.BURN_TOKEN,
+                          header: "Delete this token?",
+                          body: "",
+                          confirm: () => burnToken(tk.ipfsHash),
+                          close: () =>
+                            setModalState({
+                              state: ModalState.CLOSED,
+                              type: ModalType.CLOSED,
+                              header: "",
+                              body: "",
+                              confirm: undefined,
+                              close: undefined
+                            })
+                        })
+                    })
+                  )
+                : "No token for this user"}
+            </div>
+          </>
+        )}
+        <Modal {...modalState} />
+      </main>
+      <Toast type={ToastType.INFO} text={toastText} />
+    </>
   );
 };
 

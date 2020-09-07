@@ -170,7 +170,7 @@ export const Modal: React.FC<ModalProps> = ({
                   }`}
                   onClick={() => {
                     confirm({
-                      price: parseInt(price) * 1000000,
+                      price: Math.round(parseFloat(price) * 1000000),
                       artistName,
                       name: artName,
                       market: availableOnMarket,

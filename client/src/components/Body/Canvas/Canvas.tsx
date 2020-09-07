@@ -14,6 +14,7 @@ import {
 import config from "../../../config";
 import { IPFSObject, TokenMetadata } from "../../../types";
 import { saveCanvas, loadCanvas } from "./localCanvas";
+import { Toast, ToastType } from "../../Toast/Toast";
 
 const [blockNumberSmall, blockNumberMedium, blockNumberLarge]: number[] = [
   12,
@@ -70,6 +71,7 @@ const CanvasPainting: React.FC = () => {
   const [lastUsedColors, setLastUsedColors] = useState(defaultPalette);
   const activeLastUsedColors = useRef(defaultPalette);
   const [savedCanvas, setSavedCanvas] = useState<boolean>(false);
+  const [errorSavingToken, setErrorSavingToken] = useState(false);
 
   const resetCanvas = () => {
     if (colorPicker && bgColorPicker) {
@@ -247,13 +249,13 @@ const CanvasPainting: React.FC = () => {
           method: "POST"
         });
 
-        const response: {
-          hash: string;
-          timestamp: number;
-          ipfsHash: string;
-        } = await data.json();
         //const response = { ipfsHash: "test" };
-        if (response.ipfsHash && contract) {
+        if (data.status === 200 && contract) {
+          const response: {
+            hash: string;
+            timestamp: number;
+            ipfsHash: string;
+          } = await data.json();
           console.log("IPFS hash:", response.ipfsHash);
           const tokenMetadata: TokenMetadata = {
             ...tkmt,
@@ -283,34 +285,34 @@ const CanvasPainting: React.FC = () => {
           console.log(op.opHash);
           await op.confirmation();
           if (refreshStorage) await refreshStorage();
-          /*const newStorage: any = await contract.storage();
-          if (setStorage) setStorage(newStorage);*/
+          // resets canvas
+          if (gridSize === GridSize.Small) {
+            // small canvas
+            const newCanvas = defaultSmallCanvas();
+            setSmallCanvas(newCanvas);
+            activeSmallCanvas.current = newCanvas;
+          } else if (gridSize === GridSize.Medium) {
+            // medium canvas
+            const newCanvas = defaultMediumCanvas();
+            setMediumCanvas(newCanvas);
+            activeMediumCanvas.current = newCanvas;
+          } else if (gridSize === GridSize.Large) {
+            // large canvas
+            const newCanvas = defaultLargeCanvas();
+            setLargeCanvas(newCanvas);
+            activeLargeCanvas.current = newCanvas;
+          } else {
+            canvas = [[""]];
+          }
         } else {
-          throw new Error("NO_IPFS_HASH");
+          throw new Error(await data.text());
         }
       } catch (error) {
         console.error(error);
+        setErrorSavingToken(true);
+        setTimeout(() => setErrorSavingToken(false), 3000);
       } finally {
         setLoadingNewToken(false);
-        // resets canvas
-        if (gridSize === GridSize.Small) {
-          // small canvas
-          const newCanvas = defaultSmallCanvas();
-          setSmallCanvas(newCanvas);
-          activeSmallCanvas.current = newCanvas;
-        } else if (gridSize === GridSize.Medium) {
-          // medium canvas
-          const newCanvas = defaultMediumCanvas();
-          setMediumCanvas(newCanvas);
-          activeMediumCanvas.current = newCanvas;
-        } else if (gridSize === GridSize.Large) {
-          // large canvas
-          const newCanvas = defaultLargeCanvas();
-          setLargeCanvas(newCanvas);
-          activeLargeCanvas.current = newCanvas;
-        } else {
-          canvas = [[""]];
-        }
       }
     }
     setLoadingNewToken(false);
@@ -451,333 +453,357 @@ const CanvasPainting: React.FC = () => {
   }, []);
 
   return (
-    <main>
-      <div className={styles.layout}>
-        <div className={styles.layout__tools}>
-          <h2>
-            <i className="fas fa-toolbox"></i> Tool Box
-          </h2>
-          <p className={styles.menu_title}>Canvas Size</p>
-          <div className={styles.menu_list}>
-            <label
-              htmlFor="12x12-grid"
-              className={
-                gridSize === GridSize.Small ? styles.active : undefined
-              }
-            >
-              <input
-                id="12x12-grid"
-                type="radio"
-                name="grid-size"
-                value="12x12"
-                checked={gridSize === GridSize.Small}
-                onChange={() => {
-                  if (setGridSize) setGridSize(GridSize.Small);
-                  activeGridSize.current = GridSize.Small;
-                  resetCanvas();
-                }}
-              />
-              <span>12x12</span>
-            </label>
-            <label
-              htmlFor="32x32-grid"
-              className={
-                gridSize === GridSize.Medium ? styles.active : undefined
-              }
-            >
-              <input
-                id="32x32-grid"
-                type="radio"
-                name="grid-size"
-                value="32x32"
-                checked={gridSize === GridSize.Medium}
-                onChange={() => {
-                  if (setGridSize) setGridSize(GridSize.Medium);
-                  activeGridSize.current = GridSize.Medium;
-                  resetCanvas();
-                }}
-              />
-              <span>32x32</span>
-            </label>
-            <label
-              htmlFor="64x64-grid"
-              className={
-                gridSize === GridSize.Large ? styles.active : undefined
-              }
-            >
-              <input
-                id="64x64-grid"
-                type="radio"
-                name="grid-size"
-                value="64x64"
-                checked={gridSize === GridSize.Large}
-                onChange={() => {
-                  if (setGridSize) setGridSize(GridSize.Large);
-                  activeGridSize.current = GridSize.Large;
-                  resetCanvas();
-                }}
-              />
-              <span>64x64</span>
-            </label>
-          </div>
-          <p className={styles.menu_title}>Color Picker</p>
-          <div className={styles.menu_list}>
-            <div className={styles.colorPickerContainer}>
-              <div id="color-picker" className={styles.colorpicker}></div>
-              <div>
-                <em>Brush color</em>
-              </div>
-            </div>
-            <div className={styles.colorPickerContainer}>
-              <div id="bg-color-picker" className={styles.colorpicker}></div>
-              <div>
-                <em>Background color</em>
-              </div>
-            </div>
-            <div className={styles.lastColorsUsed}>
-              <div>Last colors used:</div>
-              <div className={styles.lastUsedColorsPalette}>
-                {lastUsedColors.map((color, i) => {
-                  return (
-                    <div
-                      key={i + "-" + color}
-                      className={styles.palette}
-                      style={{ backgroundColor: color }}
-                      onClick={() => {
-                        if (colorPicker) colorPicker.setColor(color);
-                      }}
-                    >
-                      &nbsp;
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-          <p className={styles.menu_title}>Options</p>
-          <div className={styles.menu_list}>
-            {displayGrid ? (
-              <p onClick={() => setDisplayGrid(false)}>Hide the grid</p>
-            ) : (
-              <p onClick={() => setDisplayGrid(true)}>Show the grid</p>
-            )}
-            <p onClick={resetCanvas}>Reset the grid</p>
-            {window.localStorage &&
-            window.localStorage.getItem("pixel-art-nfts") ? (
-              <p
-                onClick={() => {
-                  const savedCanvas = loadCanvas(gridSize as GridSize);
-                  if (savedCanvas) {
-                    if (gridSize === GridSize.Small) {
-                      setSmallCanvas(savedCanvas.canvas);
-                      activeSmallCanvas.current = savedCanvas.canvas;
-                    } else if (gridSize === GridSize.Medium) {
-                      setMediumCanvas(savedCanvas.canvas);
-                      activeMediumCanvas.current = savedCanvas.canvas;
-                    } else if (gridSize === GridSize.Large) {
-                      setLargeCanvas(savedCanvas.canvas);
-                      activeLargeCanvas.current = savedCanvas.canvas;
-                    }
-                  }
-                }}
+    <>
+      <main>
+        <div className={styles.layout}>
+          <div className={styles.layout__tools}>
+            <h2>
+              <i className="fas fa-toolbox"></i> Tool Box
+            </h2>
+            <p className={styles.menu_title}>Canvas Size</p>
+            <div className={styles.menu_list}>
+              <label
+                htmlFor="12x12-grid"
+                className={
+                  gridSize === GridSize.Small ? styles.active : undefined
+                }
               >
-                Load saved grid
-              </p>
-            ) : (
-              <p>No saved grid</p>
-            )}
-          </div>
-          <p className={styles.menu_title}>Tokenize your pixel art</p>
-          <div className={styles.menu_list}>
-            <div className="buttons">
-              {loadingNewToken ? (
-                <button className="button info">
-                  <i className="fas fa-spinner fa-spin"></i> Processing...
-                </button>
+                <input
+                  id="12x12-grid"
+                  type="radio"
+                  name="grid-size"
+                  value="12x12"
+                  checked={gridSize === GridSize.Small}
+                  onChange={() => {
+                    if (setGridSize) setGridSize(GridSize.Small);
+                    activeGridSize.current = GridSize.Small;
+                    resetCanvas();
+                  }}
+                />
+                <span>12x12</span>
+              </label>
+              <label
+                htmlFor="32x32-grid"
+                className={
+                  gridSize === GridSize.Medium ? styles.active : undefined
+                }
+              >
+                <input
+                  id="32x32-grid"
+                  type="radio"
+                  name="grid-size"
+                  value="32x32"
+                  checked={gridSize === GridSize.Medium}
+                  onChange={() => {
+                    if (setGridSize) setGridSize(GridSize.Medium);
+                    activeGridSize.current = GridSize.Medium;
+                    resetCanvas();
+                  }}
+                />
+                <span>32x32</span>
+              </label>
+              <label
+                htmlFor="64x64-grid"
+                className={
+                  gridSize === GridSize.Large ? styles.active : undefined
+                }
+              >
+                <input
+                  id="64x64-grid"
+                  type="radio"
+                  name="grid-size"
+                  value="64x64"
+                  checked={gridSize === GridSize.Large}
+                  onChange={() => {
+                    if (setGridSize) setGridSize(GridSize.Large);
+                    activeGridSize.current = GridSize.Large;
+                    resetCanvas();
+                  }}
+                />
+                <span>64x64</span>
+              </label>
+            </div>
+            <p className={styles.menu_title}>Color Picker</p>
+            <div className={styles.menu_list}>
+              <div className={styles.colorPickerContainer}>
+                <div id="color-picker" className={styles.colorpicker}></div>
+                <div>
+                  <em>Brush color</em>
+                </div>
+              </div>
+              <div className={styles.colorPickerContainer}>
+                <div id="bg-color-picker" className={styles.colorpicker}></div>
+                <div>
+                  <em>Background color</em>
+                </div>
+              </div>
+              <div className={styles.lastColorsUsed}>
+                <div>Last colors used:</div>
+                <div className={styles.lastUsedColorsPalette}>
+                  {lastUsedColors.map((color, i) => {
+                    return (
+                      <div
+                        key={i + "-" + color}
+                        className={styles.palette}
+                        style={{ backgroundColor: color }}
+                        onClick={() => {
+                          if (colorPicker) colorPicker.setColor(color);
+                        }}
+                      >
+                        &nbsp;
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+            <p className={styles.menu_title}>Options</p>
+            <div className={styles.menu_list}>
+              {displayGrid ? (
+                <p onClick={() => setDisplayGrid(false)}>Hide the grid</p>
               ) : (
-                <button
-                  disabled={!userAddress}
-                  className={`button ${userAddress ? "info" : "disabled"}`}
-                  onClick={() => upload(false)}
+                <p onClick={() => setDisplayGrid(true)}>Show the grid</p>
+              )}
+              <p onClick={resetCanvas}>Reset the grid</p>
+              {window.localStorage &&
+              window.localStorage.getItem("pixel-art-nfts") ? (
+                <p
+                  onClick={() => {
+                    const savedCanvas = loadCanvas(gridSize as GridSize);
+                    if (savedCanvas) {
+                      if (gridSize === GridSize.Small) {
+                        setSmallCanvas(savedCanvas.canvas);
+                        activeSmallCanvas.current = savedCanvas.canvas;
+                      } else if (gridSize === GridSize.Medium) {
+                        setMediumCanvas(savedCanvas.canvas);
+                        activeMediumCanvas.current = savedCanvas.canvas;
+                      } else if (gridSize === GridSize.Large) {
+                        setLargeCanvas(savedCanvas.canvas);
+                        activeLargeCanvas.current = savedCanvas.canvas;
+                      }
+                    }
+                  }}
                 >
-                  <i className="fas fa-file-upload"></i> Save to Blockchain
-                </button>
+                  Load saved grid
+                </p>
+              ) : (
+                <p>No saved grid</p>
               )}
             </div>
+            <p className={styles.menu_title}>Tokenize your pixel art</p>
+            <div className={styles.menu_list}>
+              <div className="buttons">
+                {loadingNewToken ? (
+                  <button className="button info">
+                    <i className="fas fa-spinner fa-spin"></i> Processing...
+                  </button>
+                ) : (
+                  <button
+                    disabled={!userAddress || errorSavingToken}
+                    className={`button ${
+                      errorSavingToken
+                        ? "error"
+                        : userAddress
+                        ? "info"
+                        : "disabled"
+                    }`}
+                    onClick={() => upload(false)}
+                  >
+                    {errorSavingToken ? (
+                      <span>
+                        <i className="fas fa-exclamation-triangle"></i> Error
+                      </span>
+                    ) : (
+                      <span>
+                        <i className="fas fa-file-upload"></i> Save to
+                        Blockchain
+                      </span>
+                    )}
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
-        </div>
-        <div className={styles.layout__canvas}>
-          <h2>
-            <i className="fas fa-paint-brush"></i> Draw your pixel art below
-          </h2>
-          <div>
-            {/* Small Grid */}
-            {gridSize === GridSize.Small && (
-              <div
-                className={styles.pixelGridSmall}
-                style={{
-                  borderBottom: displayGrid ? "solid 1px black" : "none",
-                  borderRight: displayGrid ? "solid 1px black" : "none"
-                }}
-              >
-                {smallCanvas.map((row, i1) =>
-                  row.map((bgColor, i2) => (
-                    <div
-                      key={i1.toString() + i2.toString()}
-                      className={styles.pixel}
-                      style={{
-                        backgroundColor: bgColor,
-                        borderTop: displayGrid ? "solid 1px black" : "none",
-                        borderLeft: displayGrid ? "solid 1px black" : "none"
-                      }}
-                      onMouseDown={() => {
-                        //console.log(`row: ${i1} ; column: ${i2}`);
-                        // updates color in `smallCanvas` variable
-                        const newCanvas: Canvas = updateCanvas(i1, i2, [
-                          ...smallCanvas
-                        ]);
-                        setSmallCanvas(newCanvas);
-                        activeSmallCanvas.current = newCanvas;
-                      }}
-                      onMouseUp={() => {
-                        // saves update in local storage
-                        setSavedCanvas(false);
-                        const isSaved = saveCanvas(smallCanvas, GridSize.Small);
-                        if (isSaved) {
-                          setSavedCanvas(true);
-                          setTimeout(() => setSavedCanvas(false), 2000);
-                        }
-                      }}
-                      onMouseEnter={event => {
-                        // draw as user drags the mouse
-                        if (event.buttons === 1) {
+          <div className={styles.layout__canvas}>
+            <h2>
+              <i className="fas fa-paint-brush"></i> Draw your pixel art below
+            </h2>
+            <div>
+              {/* Small Grid */}
+              {gridSize === GridSize.Small && (
+                <div
+                  className={styles.pixelGridSmall}
+                  style={{
+                    borderBottom: displayGrid ? "solid 1px black" : "none",
+                    borderRight: displayGrid ? "solid 1px black" : "none"
+                  }}
+                >
+                  {smallCanvas.map((row, i1) =>
+                    row.map((bgColor, i2) => (
+                      <div
+                        key={i1.toString() + i2.toString()}
+                        className={styles.pixel}
+                        style={{
+                          backgroundColor: bgColor,
+                          borderTop: displayGrid ? "solid 1px black" : "none",
+                          borderLeft: displayGrid ? "solid 1px black" : "none"
+                        }}
+                        onMouseDown={() => {
+                          //console.log(`row: ${i1} ; column: ${i2}`);
                           // updates color in `smallCanvas` variable
                           const newCanvas: Canvas = updateCanvas(i1, i2, [
                             ...smallCanvas
                           ]);
                           setSmallCanvas(newCanvas);
                           activeSmallCanvas.current = newCanvas;
-                        }
-                      }}
-                    ></div>
-                  ))
-                )}
-              </div>
-            )}
-            {/* Medium Grid */}
-            {gridSize === GridSize.Medium && (
-              <div
-                className={styles.pixelGridMedium}
-                style={{
-                  borderBottom: displayGrid ? "solid 1px black" : "none",
-                  borderRight: displayGrid ? "solid 1px black" : "none"
-                }}
-              >
-                {mediumCanvas.map((row, i1) =>
-                  row.map((bgColor, i2) => (
-                    <div
-                      key={i1.toString() + i2.toString()}
-                      className={styles.pixel}
-                      style={{
-                        backgroundColor: bgColor,
-                        borderTop: displayGrid ? "solid 1px black" : "none",
-                        borderLeft: displayGrid ? "solid 1px black" : "none"
-                      }}
-                      onMouseDown={() => {
-                        // updates color in `smallCanvas` variable
-                        const newCanvas: Canvas = updateCanvas(i1, i2, [
-                          ...mediumCanvas
-                        ]);
-                        setMediumCanvas(newCanvas);
-                        activeMediumCanvas.current = newCanvas;
-                      }}
-                      onMouseUp={() => {
-                        // saves update in local storage
-                        setSavedCanvas(false);
-                        const isSaved = saveCanvas(
-                          mediumCanvas,
-                          GridSize.Medium
-                        );
-                        if (isSaved) {
-                          setSavedCanvas(true);
-                          setTimeout(() => setSavedCanvas(false), 2000);
-                        }
-                      }}
-                      onMouseEnter={event => {
-                        // draw as user drags the mouse
-                        if (event.buttons === 1) {
+                        }}
+                        onMouseUp={() => {
+                          // saves update in local storage
+                          setSavedCanvas(false);
+                          const isSaved = saveCanvas(
+                            smallCanvas,
+                            GridSize.Small
+                          );
+                          if (isSaved) {
+                            setSavedCanvas(true);
+                            setTimeout(() => setSavedCanvas(false), 2000);
+                          }
+                        }}
+                        onMouseEnter={event => {
+                          // draw as user drags the mouse
+                          if (event.buttons === 1) {
+                            // updates color in `smallCanvas` variable
+                            const newCanvas: Canvas = updateCanvas(i1, i2, [
+                              ...smallCanvas
+                            ]);
+                            setSmallCanvas(newCanvas);
+                            activeSmallCanvas.current = newCanvas;
+                          }
+                        }}
+                      ></div>
+                    ))
+                  )}
+                </div>
+              )}
+              {/* Medium Grid */}
+              {gridSize === GridSize.Medium && (
+                <div
+                  className={styles.pixelGridMedium}
+                  style={{
+                    borderBottom: displayGrid ? "solid 1px black" : "none",
+                    borderRight: displayGrid ? "solid 1px black" : "none"
+                  }}
+                >
+                  {mediumCanvas.map((row, i1) =>
+                    row.map((bgColor, i2) => (
+                      <div
+                        key={i1.toString() + i2.toString()}
+                        className={styles.pixel}
+                        style={{
+                          backgroundColor: bgColor,
+                          borderTop: displayGrid ? "solid 1px black" : "none",
+                          borderLeft: displayGrid ? "solid 1px black" : "none"
+                        }}
+                        onMouseDown={() => {
                           // updates color in `smallCanvas` variable
                           const newCanvas: Canvas = updateCanvas(i1, i2, [
                             ...mediumCanvas
                           ]);
-                          setSmallCanvas(newCanvas);
-                          activeSmallCanvas.current = newCanvas;
-                        }
-                      }}
-                    ></div>
-                  ))
-                )}
-              </div>
-            )}
-            {/* Large Grid */}
-            {gridSize === GridSize.Large && (
-              <div
-                className={styles.pixelGridLarge}
-                style={{
-                  borderBottom: displayGrid ? "solid 1px black" : "none",
-                  borderRight: displayGrid ? "solid 1px black" : "none"
-                }}
-              >
-                {largeCanvas.map((row, i1) =>
-                  row.map((bgColor, i2) => (
-                    <div
-                      key={i1.toString() + i2.toString()}
-                      className={styles.pixel}
-                      style={{
-                        backgroundColor: bgColor,
-                        borderTop: displayGrid ? "solid 1px black" : "none",
-                        borderLeft: displayGrid ? "solid 1px black" : "none"
-                      }}
-                      onMouseDown={() => {
-                        // updates color in `smallCanvas` variable
-                        const newCanvas: Canvas = updateCanvas(i1, i2, [
-                          ...largeCanvas
-                        ]);
-                        setLargeCanvas(newCanvas);
-                        activeLargeCanvas.current = newCanvas;
-                      }}
-                      onMouseUp={() => {
-                        // saves update in local storage
-                        setSavedCanvas(false);
-                        const isSaved = saveCanvas(largeCanvas, GridSize.Large);
-                        if (isSaved) {
-                          setSavedCanvas(true);
-                          setTimeout(() => setSavedCanvas(false), 2000);
-                        }
-                      }}
-                      onMouseEnter={event => {
-                        // draw as user drags the mouse
-                        if (event.buttons === 1) {
+                          setMediumCanvas(newCanvas);
+                          activeMediumCanvas.current = newCanvas;
+                        }}
+                        onMouseUp={() => {
+                          // saves update in local storage
+                          setSavedCanvas(false);
+                          const isSaved = saveCanvas(
+                            mediumCanvas,
+                            GridSize.Medium
+                          );
+                          if (isSaved) {
+                            setSavedCanvas(true);
+                            setTimeout(() => setSavedCanvas(false), 2000);
+                          }
+                        }}
+                        onMouseEnter={event => {
+                          // draw as user drags the mouse
+                          if (event.buttons === 1) {
+                            // updates color in `smallCanvas` variable
+                            const newCanvas: Canvas = updateCanvas(i1, i2, [
+                              ...mediumCanvas
+                            ]);
+                            setSmallCanvas(newCanvas);
+                            activeSmallCanvas.current = newCanvas;
+                          }
+                        }}
+                      ></div>
+                    ))
+                  )}
+                </div>
+              )}
+              {/* Large Grid */}
+              {gridSize === GridSize.Large && (
+                <div
+                  className={styles.pixelGridLarge}
+                  style={{
+                    borderBottom: displayGrid ? "solid 1px black" : "none",
+                    borderRight: displayGrid ? "solid 1px black" : "none"
+                  }}
+                >
+                  {largeCanvas.map((row, i1) =>
+                    row.map((bgColor, i2) => (
+                      <div
+                        key={i1.toString() + i2.toString()}
+                        className={styles.pixel}
+                        style={{
+                          backgroundColor: bgColor,
+                          borderTop: displayGrid ? "solid 1px black" : "none",
+                          borderLeft: displayGrid ? "solid 1px black" : "none"
+                        }}
+                        onMouseDown={() => {
                           // updates color in `smallCanvas` variable
                           const newCanvas: Canvas = updateCanvas(i1, i2, [
                             ...largeCanvas
                           ]);
-                          setSmallCanvas(newCanvas);
-                          activeSmallCanvas.current = newCanvas;
-                        }
-                      }}
-                    ></div>
-                  ))
-                )}
-              </div>
-            )}
-            {savedCanvas ? <p>Saved</p> : <p>&nbsp;</p>}
+                          setLargeCanvas(newCanvas);
+                          activeLargeCanvas.current = newCanvas;
+                        }}
+                        onMouseUp={() => {
+                          // saves update in local storage
+                          setSavedCanvas(false);
+                          const isSaved = saveCanvas(
+                            largeCanvas,
+                            GridSize.Large
+                          );
+                          if (isSaved) {
+                            setSavedCanvas(true);
+                            setTimeout(() => setSavedCanvas(false), 2000);
+                          }
+                        }}
+                        onMouseEnter={event => {
+                          // draw as user drags the mouse
+                          if (event.buttons === 1) {
+                            // updates color in `smallCanvas` variable
+                            const newCanvas: Canvas = updateCanvas(i1, i2, [
+                              ...largeCanvas
+                            ]);
+                            setSmallCanvas(newCanvas);
+                            activeSmallCanvas.current = newCanvas;
+                          }
+                        }}
+                      ></div>
+                    ))
+                  )}
+                </div>
+              )}
+              {savedCanvas ? <p>Saved</p> : <p>&nbsp;</p>}
+            </div>
+            <div></div>
           </div>
-          <div></div>
         </div>
-      </div>
-      <Modal {...modalState} />
-    </main>
+        <Modal {...modalState} />
+      </main>
+      <Toast type={ToastType.DEFAULT} text="I am a toast!" />
+    </>
   );
 };
 
