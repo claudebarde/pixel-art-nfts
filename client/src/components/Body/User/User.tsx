@@ -158,6 +158,7 @@ const User: React.FC = () => {
   useEffect(() => {
     (async () => {
       if (storage) {
+        // if users check their own profile
         let tokensOwned: any[];
         // gets ledger to find tokens owned by user
         const responseLedger = await fetch(
@@ -242,6 +243,7 @@ const User: React.FC = () => {
         tokens.sort((a, b) =>
           a.timestamp > b.timestamp ? -1 : b.timestamp > a.timestamp ? 1 : 0
         );
+        console.log(tokens);
         setTokens(tokens);
         setLoading(false);
       }

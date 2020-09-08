@@ -136,6 +136,17 @@ const CardGenerator: React.FC<CardProps> = ({
                   </p>
                 </>
               )}
+              {view === View.PROFILE && (
+                <p>
+                  Artist:{" "}
+                  <NavLink
+                    to={`/profile/${artwork.author}`}
+                    className={styles.card__link}
+                  >
+                    {displayAuthorName(artwork.author, artwork.artistName)}
+                  </NavLink>
+                </p>
+              )}
               <p>
                 {artwork.market ? (
                   <button
@@ -263,6 +274,8 @@ const CardGenerator: React.FC<CardProps> = ({
                 </button>
               </div>
             </div>
+            <br />
+            <br />
             <div className={styles.card__footer}>
               <div
                 style={{ cursor: "pointer" }}

@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, matchPath } from "react-router-dom";
 import styles from "./header.module.scss";
 import { Context } from "../../Context";
 import ztext from "./ztext-custom";
@@ -58,6 +58,7 @@ const Header: React.FC = () => {
     confirm: undefined,
     close: undefined
   });
+  const [address, setAddress] = useState<string>();
 
   const confirmBuy = async (cart, setCart) => {
     const tokens = cart?.map(item => item.ipfsHash);
@@ -106,6 +107,17 @@ const Header: React.FC = () => {
     }
   }, []);
 
+  useEffect(() => {
+    const path = matchPath(location.pathname, {
+      path: "/profile/:address",
+      exact: true,
+      strict: false
+    });
+    if (path) {
+      setAddress(path.params.address);
+    }
+  }, [location]);
+
   return (
     <header>
       <div className={styles.nav}></div>
@@ -139,7 +151,8 @@ const Header: React.FC = () => {
               <i
                 className="fas fa-user-check fa-lg"
                 style={
-                  location.pathname.includes("/profile")
+                  location.pathname.includes("/profile") &&
+                  userAddress === address
                     ? { color: "#4fd1c5" }
                     : { color: "black" }
                 }
