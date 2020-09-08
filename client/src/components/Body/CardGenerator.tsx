@@ -2,6 +2,7 @@ import React from "react";
 import moment from "moment";
 import { NavLink } from "react-router-dom";
 import { View, CartItem, CardProps } from "../../types";
+import Identicon from "identicon.js";
 
 const displayAuthorName = (address: string, name: string): string => {
   if (name && name !== "unknown") {
@@ -9,6 +10,11 @@ const displayAuthorName = (address: string, name: string): string => {
   } else {
     return address.slice(0, 5) + "..." + address.slice(-5);
   }
+};
+
+const makeIdenticon = hash => {
+  const options = { size: 20 };
+  return new Identicon(hash, options).toString();
 };
 
 const CardGenerator: React.FC<CardProps> = ({
@@ -103,7 +109,12 @@ const CardGenerator: React.FC<CardProps> = ({
                 </div>
               )}
             </div>
-            <div className={styles.card__header}>{artwork.name}</div>
+            <div className={styles.card__header}>
+              {artwork.name}
+              <img
+                src={`data:image/png;base64,${makeIdenticon(artwork.hash)}`}
+              ></img>
+            </div>
             <div className={styles.card__body}>
               <p>
                 {artwork.size === 1 && "12x12"}
@@ -123,15 +134,6 @@ const CardGenerator: React.FC<CardProps> = ({
                       className={styles.card__link}
                     >
                       {displayAuthorName(artwork.author, artwork.artistName)}
-                    </NavLink>
-                  </p>
-                  <p>
-                    Sold by{" "}
-                    <NavLink
-                      to={`/profile/${artwork.seller}`}
-                      className={styles.card__link}
-                    >
-                      {displayAuthorName(artwork.seller, "")}
                     </NavLink>
                   </p>
                 </>
