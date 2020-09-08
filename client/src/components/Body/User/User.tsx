@@ -158,6 +158,8 @@ const User: React.FC = () => {
   useEffect(() => {
     (async () => {
       if (storage) {
+        setTokens([]);
+        setLoading(true);
         // if users check their own profile
         let tokensOwned: any[];
         // gets ledger to find tokens owned by user
@@ -248,7 +250,7 @@ const User: React.FC = () => {
         setLoading(false);
       }
     })();
-  }, [storage]);
+  }, [storage, location]);
   return (
     <>
       <main>
