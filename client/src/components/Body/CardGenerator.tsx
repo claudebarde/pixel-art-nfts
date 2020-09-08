@@ -13,7 +13,12 @@ const displayAuthorName = (address: string, name: string): string => {
 };
 
 const makeIdenticon = hash => {
-  const options = { size: 20 };
+  const options = {
+    size: 20,
+    background: [255, 255, 255, 0],
+    saturation: 1,
+    brightness: 1
+  };
   return new Identicon(hash, options).toString();
 };
 
@@ -109,12 +114,7 @@ const CardGenerator: React.FC<CardProps> = ({
                 </div>
               )}
             </div>
-            <div className={styles.card__header}>
-              {artwork.name}
-              <img
-                src={`data:image/png;base64,${makeIdenticon(artwork.hash)}`}
-              ></img>
-            </div>
+            <div className={styles.card__header}>{artwork.name}</div>
             <div className={styles.card__body}>
               <p>
                 {artwork.size === 1 && "12x12"}
@@ -197,6 +197,22 @@ const CardGenerator: React.FC<CardProps> = ({
                   <i className="fas fa-share-alt"></i>
                 </NavLink>
               </div>
+              {!isOwnerConnected && (
+                <>
+                  <div>
+                    <img
+                      src={`data:image/png;base64,${makeIdenticon(
+                        artwork.hash
+                      )}`}
+                    />
+                  </div>
+                  <div>
+                    <NavLink to={`/profile/${artwork.seller}`}>
+                      <i className="fas fa-cash-register"></i>
+                    </NavLink>
+                  </div>
+                </>
+              )}
               {isOwnerConnected && (
                 <div
                   style={{ cursor: "pointer" }}

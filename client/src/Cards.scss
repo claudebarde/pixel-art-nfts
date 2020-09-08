@@ -70,10 +70,6 @@ $large-grid-blocks: 48;
   flex-direction: row;
   justify-content: center;
   align-items: center;
-
-  img {
-    margin: 0px 10px;
-  }
 }
 
 .card__image {
@@ -173,6 +169,10 @@ $large-grid-blocks: 48;
   a {
     text-decoration: none;
     color: white;
+  }
+
+  img {
+    border-radius: 3px;
   }
 }
 
