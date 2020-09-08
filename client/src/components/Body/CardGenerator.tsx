@@ -1,7 +1,7 @@
 import React from "react";
 import moment from "moment";
 import { NavLink } from "react-router-dom";
-import { View, CartItem, CardProps } from "../../types";
+import { View, CartItem, CardProps, GridSize } from "../../types";
 import Identicon from "identicon.js";
 
 const displayAuthorName = (address: string, name: string): string => {
@@ -90,9 +90,32 @@ const CardGenerator: React.FC<CardProps> = ({
             }
           >
             <div className={styles.card__image}>
-              {artwork.size === 1 && (
+              {artwork.size === GridSize.Small && (
                 <div
                   className={styles.pixelGridSmall}
+                  style={{
+                    borderBottom: "none",
+                    borderRight: "none"
+                  }}
+                >
+                  {artwork.canvas.map((row, i1) =>
+                    row.map((bgColor, i2) => (
+                      <div
+                        key={i1.toString() + i2.toString()}
+                        className={styles.pixel}
+                        style={{
+                          backgroundColor: bgColor,
+                          borderTop: "none",
+                          borderLeft: "none"
+                        }}
+                      ></div>
+                    ))
+                  )}
+                </div>
+              )}
+              {artwork.size === GridSize.Medium && (
+                <div
+                  className={styles.pixelGridMedium}
                   style={{
                     borderBottom: "none",
                     borderRight: "none"
@@ -204,13 +227,16 @@ const CardGenerator: React.FC<CardProps> = ({
                       src={`data:image/png;base64,${makeIdenticon(
                         artwork.hash
                       )}`}
+                      title="Unique identicon"
                     />
                   </div>
-                  <div>
-                    <NavLink to={`/profile/${artwork.seller}`}>
-                      <i className="fas fa-cash-register"></i>
-                    </NavLink>
-                  </div>
+                  {artwork.seller && (
+                    <div>
+                      <NavLink to={`/profile/${artwork.seller}`}>
+                        <i className="fas fa-cash-register"></i>
+                      </NavLink>
+                    </div>
+                  )}
                 </>
               )}
               {isOwnerConnected && (

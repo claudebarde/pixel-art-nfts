@@ -250,7 +250,6 @@ const User: React.FC = () => {
         tokens.sort((a, b) =>
           a.timestamp > b.timestamp ? -1 : b.timestamp > a.timestamp ? 1 : 0
         );
-        console.log(tokens);
         setTokens(tokens);
         setLoading(false);
       }
