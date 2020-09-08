@@ -162,9 +162,14 @@ const User: React.FC = () => {
         setLoading(true);
         // if users check their own profile
         let tokensOwned: any[];
+        // gets length of big map
+        const lengthQuery = await fetch(
+          `https://api.better-call.dev/v1/bigmap/${config.ENV}/${config.LEDGER_ID}`
+        );
+        const length = await lengthQuery.json();
         // gets ledger to find tokens owned by user
         const responseLedger = await fetch(
-          `https://api.better-call.dev/v1/bigmap/${config.ENV}/${config.LEDGER_ID}/keys`
+          `https://api.better-call.dev/v1/bigmap/${config.ENV}/${config.LEDGER_ID}/keys?size=${length.total_keys}`
         );
         const ledger = await responseLedger.json();
         tokensOwned = [
@@ -176,7 +181,7 @@ const User: React.FC = () => {
         const IPFSHashes: string[] = tokensOwned.map(el => el.data.key.value);
         // gets token metadata to find tokens created by user
         const responseMetadata = await fetch(
-          `https://api.better-call.dev/v1/bigmap/${config.ENV}/${config.TOKEN_METADATA_ID}/keys`
+          `https://api.better-call.dev/v1/bigmap/${config.ENV}/${config.TOKEN_METADATA_ID}/keys?size=20`
         );
         const entries: any[] = await responseMetadata.json();
         const tokensMetadata: any[] = entries.filter(el =>

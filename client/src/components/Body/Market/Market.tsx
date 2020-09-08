@@ -16,9 +16,14 @@ const Market: React.FC = () => {
 
   useEffect(() => {
     (async () => {
+      // gets length of big map
+      const lengthQuery = await fetch(
+        `https://api.better-call.dev/v1/bigmap/${config.ENV}/${config.LEDGER_ID}`
+      );
+      const length = await lengthQuery.json();
       // fetches IPFS hashes from big map
       const response = await fetch(
-        `https://api.better-call.dev/v1/bigmap/${config.ENV}/${config.LEDGER_ID}/keys`
+        `https://api.better-call.dev/v1/bigmap/${config.ENV}/${config.LEDGER_ID}/keys?size=${length.total_keys}`
       );
       const entries: any[] = await response.json();
       setNumberOfArtwork(entries.length);
