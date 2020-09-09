@@ -112,4 +112,5 @@ export interface CardProps {
   setNewPrice?: React.Dispatch<React.SetStateAction<string>>;
   confirmNewPrice?: (newPrice: string) => any;
   burnTokenModal?: () => any;
+  openArtworkPopup?: (artwork: ArtworkListElement) => any;
 }

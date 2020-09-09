@@ -6,13 +6,21 @@ import { Context } from "../../../Context";
 import { BigNumber } from "bignumber.js";
 import CardGenerator from "../CardGenerator";
 import { useParams } from "react-router-dom";
+import ArtworkModal from "../../Modals/ArtworkModal";
 
 const Market: React.FC = () => {
   const { storage, cart, setCart, userAddress } = useContext(Context);
   const [loadingMarket, setLoadingMarket] = useState(true);
   const [artworkList, setArtworkList] = useState<ArtworkListElement[]>([]);
   const [numberOfArtwork, setNumberOfArtwork] = useState<number>(0);
+  const [openArtworkModal, setOpenArtworkModal] = useState(false);
+  const [artworkModal, setArtworkModal] = useState<ArtworkListElement>();
   const { token_id } = useParams();
+
+  const openArtworkPopup = artwork => {
+    setArtworkModal(artwork);
+    setOpenArtworkModal(true);
+  };
 
   useEffect(() => {
     (async () => {
@@ -90,62 +98,52 @@ const Market: React.FC = () => {
           setArtworkList(list as ArtworkListElement[]);
         }
         setLoadingMarket(false);
-        /*
-        // builds a list of IPFS hashes to query from the IPFS
-        const list: string[] = entries.map(entry => entry.data.key.value);
-        // fetches list of NFTs
-        const FetchArtwork =
-          process.env.NODE_ENV === "development"
-            ? `http://localhost:${config.NETLIFY_PORT}/fetchArtworkList`
-            : "https://pixel-art-nfts.netlify.app/.netlify/functions/fetchArtworkList";
-
-        const response = await fetch(FetchArtwork, {
-          body: JSON.stringify(list),
-          method: "POST"
-        });
-        const {
-          count,
-          rows
-        }: { count: number; rows: any[] } = await response.json();
-        setNumberOfArtwork(count);
-        console.log(rows);*/
       }
     })();
   }, [storage, token_id]);
 
   return (
-    <main>
-      {loadingMarket ? (
-        <div className="loader">
-          <div>Loading the market place</div>
-          <div className="pulsate-fwd">
-            <i className="fas fa-store fa-lg"></i>
+    <>
+      <main>
+        {loadingMarket ? (
+          <div className="loader">
+            <div>Loading the market place</div>
+            <div className="pulsate-fwd">
+              <i className="fas fa-store fa-lg"></i>
+            </div>
           </div>
-        </div>
-      ) : artworkList.length > 0 ? (
-        <>
-          <h2>Artwork Marketplace</h2>
-          <div className={styles.cards}>
-            {artworkList.map((artwork, i) => {
-              return CardGenerator({
-                artwork,
-                i,
-                styles,
-                view: View.MARKET,
-                userAddress,
-                cart,
-                setCart,
-                token_id
-              });
-            })}
+        ) : artworkList.length > 0 ? (
+          <>
+            <h2>Artwork Marketplace</h2>
+            <div className={styles.cards}>
+              {artworkList.map((artwork, i) => {
+                return CardGenerator({
+                  artwork,
+                  i,
+                  styles,
+                  view: View.MARKET,
+                  userAddress,
+                  cart,
+                  setCart,
+                  token_id,
+                  openArtworkPopup
+                });
+              })}
+            </div>
+          </>
+        ) : (
+          <div>
+            <h2>No artwork available yet</h2>
           </div>
-        </>
-      ) : (
-        <div>
-          <h2>No artwork available yet</h2>
-        </div>
+        )}
+      </main>
+      {openArtworkModal && (
+        <ArtworkModal
+          close={() => setOpenArtworkModal(false)}
+          artwork={artworkModal as ArtworkListElement}
+        />
       )}
-    </main>
+    </>
   );
 };
 

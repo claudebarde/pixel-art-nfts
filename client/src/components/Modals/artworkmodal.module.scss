@@ -1,0 +1,12 @@
+@import "./modal.scss";
+
+.modal {
+  @include modal;
+
+  width: 30%;
+
+  .modal__body_p {
+    text-align: center;
+    padding: 10px;
+  }
+}

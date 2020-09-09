@@ -45,7 +45,8 @@ const CardGenerator: React.FC<CardProps> = ({
   newPrice,
   setNewPrice,
   confirmNewPrice,
-  burnTokenModal
+  burnTokenModal,
+  openArtworkPopup
 }) => {
   const isOwnerConnected =
     location?.includes("/profile") && userAddress && userAddress === address;
@@ -91,7 +92,14 @@ const CardGenerator: React.FC<CardProps> = ({
                 : styles.card
             }
           >
-            <div className={styles.card__image}>
+            <div
+              className={styles.card__image}
+              onClick={() => {
+                if (view === View.MARKET && openArtworkPopup) {
+                  openArtworkPopup(artwork);
+                }
+              }}
+            >
               {artwork.size === GridSize.Small && (
                 <div
                   className={styles.pixelGridSmall}
@@ -146,22 +154,21 @@ const CardGenerator: React.FC<CardProps> = ({
                 {artwork.size === 2 && "32x32"}
                 {artwork.size === 3 && "64x64"}
               </p>
-              <p>
-                Created on{" "}
-                {moment.unix(artwork.timestamp / 1000).format("MM/DD/YYYY")}
-              </p>
-              {view === View.MARKET && (
-                <>
-                  <p>
-                    Artist:{" "}
-                    <NavLink
-                      to={`/profile/${artwork.author}`}
-                      className={styles.card__link}
-                    >
-                      {displayAuthorName(artwork.author, artwork.artistName)}
-                    </NavLink>
-                  </p>
-                </>
+              {view === View.MARKET ? (
+                <p>
+                  Artist:{" "}
+                  <NavLink
+                    to={`/profile/${artwork.author}`}
+                    className={styles.card__link}
+                  >
+                    {displayAuthorName(artwork.author, artwork.artistName)}
+                  </NavLink>
+                </p>
+              ) : (
+                <p>
+                  Created on{" "}
+                  {moment.unix(artwork.timestamp / 1000).format("MM/DD/YYYY")}
+                </p>
               )}
               {view === View.PROFILE && (
                 <p>
