@@ -1,6 +1,6 @@
 $pixel-size-small: 6px;
 $pixel-size-medium: 4px;
-$pixel-size-large: 2px;
+$pixel-size-large: 3px;
 
 $small-grid-blocks: 12;
 $medium-grid-blocks: 32;
@@ -123,11 +123,11 @@ $large-grid-blocks: 48;
     transition: 0.4s;
   }
 
-  input#manual-transfer {
+  input.manual-transfer {
     width: 80px;
   }
 
-  input[type="text"]#new-price {
+  input[type="text"].new-price {
     width: 80px;
   }
 }

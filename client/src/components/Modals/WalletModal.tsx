@@ -147,7 +147,7 @@ const WalletModal: React.FC<{ close: any }> = ({ close }) => {
                   ></i>
                 )}
               </span>
-              <input type="checkbox" /> Beacon
+              <input type="checkbox" /> Thanos
             </label>
           </div>
           {process.env.NODE_ENV === "development" && (

@@ -95,7 +95,7 @@ const CardGenerator: React.FC<CardProps> = ({
             <div
               className={styles.card__image}
               onClick={() => {
-                if (view === View.MARKET && openArtworkPopup) {
+                if (openArtworkPopup) {
                   openArtworkPopup(artwork);
                 }
               }}
@@ -126,6 +126,29 @@ const CardGenerator: React.FC<CardProps> = ({
               {artwork.size === GridSize.Medium && (
                 <div
                   className={styles.pixelGridMedium}
+                  style={{
+                    borderBottom: "none",
+                    borderRight: "none"
+                  }}
+                >
+                  {artwork.canvas.map((row, i1) =>
+                    row.map((bgColor, i2) => (
+                      <div
+                        key={i1.toString() + i2.toString()}
+                        className={styles.pixel}
+                        style={{
+                          backgroundColor: bgColor,
+                          borderTop: "none",
+                          borderLeft: "none"
+                        }}
+                      ></div>
+                    ))
+                  )}
+                </div>
+              )}
+              {artwork.size === GridSize.Large && (
+                <div
+                  className={styles.pixelGridLarge}
                   style={{
                     borderBottom: "none",
                     borderRight: "none"
@@ -272,7 +295,7 @@ const CardGenerator: React.FC<CardProps> = ({
               <div className={styles.card__body_}>
                 <p>Manual transfer</p>
                 <input
-                  id="manual-transfer"
+                  className="manual-transfer"
                   type="text"
                   placeholder="Recipient"
                   value={transferRecipient}
@@ -295,7 +318,7 @@ const CardGenerator: React.FC<CardProps> = ({
               <div>
                 <p>Price update</p>
                 <input
-                  id="new-price"
+                  className="new-price"
                   type="text"
                   maxLength={5}
                   placeholder="New price"

@@ -12,6 +12,7 @@ import {
   Modal
 } from "../../Modals/Modal";
 import { Toast, ToastType } from "../../Toast/Toast";
+import ArtworkModal from "../../Modals/ArtworkModal";
 
 const User: React.FC = () => {
   const {
@@ -21,7 +22,8 @@ const User: React.FC = () => {
     setCart,
     refreshStorage,
     contract,
-    network
+    network,
+    setView
   } = useContext(Context);
   const [loading, setLoading] = useState(true);
   const [tokens, setTokens] = useState<ArtworkListElement[]>([]);
@@ -38,8 +40,15 @@ const User: React.FC = () => {
   const [newPrice, setNewPrice] = useState<string>("");
   const [toastText, setToastText] = useState<ReactNode>();
   const [toastType, setToastType] = useState<ToastType>(ToastType.DEFAULT);
+  const [openArtworkModal, setOpenArtworkModal] = useState(false);
+  const [artworkModal, setArtworkModal] = useState<ArtworkListElement>();
   let { address } = useParams();
   const location = useLocation();
+
+  const openArtworkPopup = artwork => {
+    setArtworkModal(artwork);
+    setOpenArtworkModal(true);
+  };
 
   const confirmTransfer = ipfsHash => {
     if (ipfsHash && transferRecipient) {
@@ -156,6 +165,8 @@ const User: React.FC = () => {
   };
 
   useEffect(() => {
+    if (setView) setView(View.PROFILE);
+
     (async () => {
       if (storage) {
         setTokens([]);
@@ -324,7 +335,8 @@ const User: React.FC = () => {
                               confirm: undefined,
                               close: undefined
                             })
-                        })
+                        }),
+                      openArtworkPopup
                     })
                   )
                 : "No token for this user"}
@@ -334,6 +346,12 @@ const User: React.FC = () => {
         <Modal {...modalState} />
       </main>
       <Toast type={toastType} text={toastText} />
+      {openArtworkModal && (
+        <ArtworkModal
+          close={() => setOpenArtworkModal(false)}
+          artwork={artworkModal as ArtworkListElement}
+        />
+      )}
     </>
   );
 };
