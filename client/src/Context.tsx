@@ -15,6 +15,7 @@ export const Provider: React.FC = props => {
   const [storage, setStorage] = useState<Storage>();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [userBalance, setUserBalance] = useState<number>(0);
+  const [walletModalOpen, setWalletModalOpen] = useState(false);
 
   const refreshStorage = async () => {
     if (contract) {
@@ -41,7 +42,9 @@ export const Provider: React.FC = props => {
     cart,
     setCart,
     userBalance,
-    setUserBalance
+    setUserBalance,
+    walletModalOpen,
+    setWalletModalOpen
   };
 
   useEffect(() => {

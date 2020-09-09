@@ -22,7 +22,14 @@ const titleColors = [
 ];
 
 const Header: React.FC = () => {
-  const { userAddress, cart, contract, refreshStorage } = useContext(Context);
+  const {
+    userAddress,
+    cart,
+    contract,
+    refreshStorage,
+    walletModalOpen,
+    setWalletModalOpen
+  } = useContext(Context);
   const title = useRef(null);
   const [zTextTitle] = useState(
     [
@@ -48,7 +55,6 @@ const Header: React.FC = () => {
       })
       .join("")
   );
-  const [walletModalOpen, setWalletModalOpen] = useState(false);
   const location = useLocation();
   const [modalState, setModalState] = useState<ModalProps>({
     state: ModalState.CLOSED,
@@ -159,7 +165,13 @@ const Header: React.FC = () => {
               ></i>
             </Link>
           ) : (
-            <div onClick={() => setWalletModalOpen(!walletModalOpen)}>
+            <div
+              onClick={() => {
+                if (setWalletModalOpen) {
+                  setWalletModalOpen(!walletModalOpen);
+                }
+              }}
+            >
               <i className="fas fa-wallet fa-lg"></i>
             </div>
           )}

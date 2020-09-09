@@ -86,6 +86,8 @@ export interface State {
   setCart: React.Dispatch<React.SetStateAction<CartItem[]>>;
   userBalance: number;
   setUserBalance: React.Dispatch<React.SetStateAction<number>>;
+  walletModalOpen: boolean;
+  setWalletModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export interface CardProps {

@@ -21,6 +21,7 @@ import config from "../../../config";
 import { IPFSObject, TokenMetadata } from "../../../types";
 import { saveCanvas, loadCanvas } from "./localCanvas";
 import { Toast, ToastType } from "../../Toast/Toast";
+import WalletModal from "../../Modals/WalletModal";
 
 const [blockNumberSmall, blockNumberMedium, blockNumberLarge]: number[] = [
   12,
@@ -51,7 +52,9 @@ const CanvasPainting: React.FC = () => {
     userAddress,
     contract,
     network,
-    refreshStorage
+    refreshStorage,
+    walletModalOpen,
+    setWalletModalOpen
   } = useContext(Context);
   const [smallCanvas, setSmallCanvas] = useState(defaultSmallCanvas());
   const [mediumCanvas, setMediumCanvas] = useState(defaultMediumCanvas());
@@ -637,33 +640,59 @@ const CanvasPainting: React.FC = () => {
             <div className={styles.menu_list}>
               <div className="buttons">
                 {loadingNewToken ? (
-                  <button className="button info">
+                  <button className="button info" disabled>
                     <i className="fas fa-spinner fa-spin"></i> Processing...
+                  </button>
+                ) : errorSavingToken ? (
+                  <button className="button error">
+                    <span>
+                      <i className="fas fa-exclamation-triangle"></i> Error
+                    </span>
+                  </button>
+                ) : userAddress ? (
+                  <button className="button info" onClick={() => upload(false)}>
+                    <span>
+                      <i className="fas fa-file-upload"></i> Save to Blockchain
+                    </span>
                   </button>
                 ) : (
                   <button
-                    disabled={!userAddress || errorSavingToken}
-                    className={`button ${
-                      errorSavingToken
-                        ? "error"
-                        : userAddress
-                        ? "info"
-                        : "disabled"
-                    }`}
-                    onClick={() => upload(false)}
+                    className="button disabled"
+                    onClick={() => {
+                      if (setWalletModalOpen) setWalletModalOpen(true);
+                    }}
                   >
-                    {errorSavingToken ? (
-                      <span>
-                        <i className="fas fa-exclamation-triangle"></i> Error
-                      </span>
-                    ) : (
-                      <span>
-                        <i className="fas fa-file-upload"></i> Save to
-                        Blockchain
-                      </span>
-                    )}
+                    <span>
+                      <i className="fas fa-wallet"></i> Connect Wallet
+                    </span>
                   </button>
                 )}
+                {/*<button
+                      disabled={!userAddress || errorSavingToken}
+                      className={`button ${
+                        errorSavingToken
+                          ? "error"
+                          : userAddress
+                          ? "info"
+                          : "disabled"
+                      }`}
+                      onClick={() => upload(false)}
+                    >
+                      {errorSavingToken ? (
+                        <span>
+                          <i className="fas fa-exclamation-triangle"></i> Error
+                        </span>
+                      ) : userAddress ? (
+                        <span>
+                          <i className="fas fa-file-upload"></i> Save to
+                          Blockchain
+                        </span>
+                      ) : (
+                        <span>
+                          <i className="fas fa-file-upload"></i> Connect Wallet
+                        </span>
+                      )}
+                      </button>*/}
               </div>
             </div>
           </div>
@@ -844,6 +873,7 @@ const CanvasPainting: React.FC = () => {
           </div>
         </div>
         <Modal {...modalState} />
+        {walletModalOpen && <WalletModal close={setWalletModalOpen} />}
       </main>
       <Toast type={toastType} text={toastText} />
     </>
