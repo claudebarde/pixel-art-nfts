@@ -251,19 +251,19 @@ const CanvasPainting: React.FC = () => {
           ? `http://localhost:${config.NETLIFY_PORT}/pinPixelArt`
           : "https://pixel-art-nfts.netlify.app/.netlify/functions/pinPixelArt";
 
-      try {
-        const data = await fetch(PinPixelArt, {
-          body: JSON.stringify(IPFSObject),
-          method: "POST"
-        });
+      const data = await fetch(PinPixelArt, {
+        body: JSON.stringify(IPFSObject),
+        method: "POST"
+      });
 
-        //const response = { ipfsHash: "test" };
-        if (data.status === 200 && contract) {
-          const response: {
-            hash: string;
-            timestamp: number;
-            ipfsHash: string;
-          } = await data.json();
+      //const response = { ipfsHash: "test" };
+      if (data.status === 200 && contract) {
+        const response: {
+          hash: string;
+          timestamp: number;
+          ipfsHash: string;
+        } = await data.json();
+        try {
           console.log("IPFS hash:", response.ipfsHash);
           const tokenMetadata: TokenMetadata = {
             ...tkmt,
@@ -324,12 +324,31 @@ const CanvasPainting: React.FC = () => {
           } else {
             canvas = [[""]];
           }
-        } else {
-          throw await data.text();
+        } catch (error) {
+          // removes token from IPFS node if it was already saved
+          const BurnToken =
+            process.env.NODE_ENV === "development"
+              ? `http://localhost:${config.NETLIFY_PORT}/burnPixelArt`
+              : "https://pixel-art-nfts.netlify.app/.netlify/functions/burnPixelArt";
+          const data = await fetch(BurnToken, {
+            body: response.ipfsHash,
+            method: "POST"
+          });
+          console.error(error);
+          setToastType(ToastType.ERROR);
+          if (error.includes("TOKEN_ALREADY_EXISTS")) {
+            setToastText(<span>This artwork already exists</span>);
+          } else {
+            setToastText(<span>An error has occurred</span>);
+          }
+          setErrorSavingToken(true);
+          setTimeout(() => setErrorSavingToken(false), 3000);
+        } finally {
+          setLoadingNewToken(false);
         }
-      } catch (error) {
-        console.error(error);
+      } else {
         setToastType(ToastType.ERROR);
+        const error = await data.text();
         if (error.includes("TOKEN_ALREADY_EXISTS")) {
           setToastText(<span>This artwork already exists</span>);
         } else {
@@ -337,8 +356,6 @@ const CanvasPainting: React.FC = () => {
         }
         setErrorSavingToken(true);
         setTimeout(() => setErrorSavingToken(false), 3000);
-      } finally {
-        setLoadingNewToken(false);
       }
     }
     setLoadingNewToken(false);

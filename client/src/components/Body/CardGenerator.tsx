@@ -7,8 +7,10 @@ import Identicon from "identicon.js";
 const displayAuthorName = (address: string, name: string): string => {
   if (name && name !== "unknown") {
     return name;
-  } else {
+  } else if (address) {
     return address.slice(0, 5) + "..." + address.slice(-5);
+  } else {
+    return "unknown";
   }
 };
 
@@ -225,7 +227,7 @@ const CardGenerator: React.FC<CardProps> = ({
                   <div>
                     <img
                       src={`data:image/png;base64,${makeIdenticon(
-                        artwork.hash
+                        artwork.hash || artwork.extras.canvasHash
                       )}`}
                       title="Unique identicon"
                     />
