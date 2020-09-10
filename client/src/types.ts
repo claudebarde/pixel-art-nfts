@@ -53,6 +53,11 @@ export enum GridSize {
   Large = 3
 }
 
+export enum CursorType {
+  PEN = "pixel_pen",
+  PICKER = "pixel_picker"
+}
+
 export interface Storage {
   admin: string;
   ledger: BigMapAbstraction;

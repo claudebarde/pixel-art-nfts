@@ -10,7 +10,7 @@ import "@simonwep/pickr/dist/themes/classic.min.css";
 import { MichelsonMap } from "@taquito/taquito";
 import styles from "./canvas.module.scss";
 import { Context } from "../../../Context";
-import { GridSize, Canvas } from "../../../types";
+import { GridSize, Canvas, CursorType } from "../../../types";
 import {
   State as ModalState,
   ModalProps,
@@ -83,6 +83,7 @@ const CanvasPainting: React.FC = () => {
   const [errorSavingToken, setErrorSavingToken] = useState(false);
   const [toastText, setToastText] = useState<ReactNode>();
   const [toastType, setToastType] = useState<ToastType>(ToastType.DEFAULT);
+  const [cursorType, setCursorType] = useState<CursorType>(CursorType.PEN);
 
   const resetCanvas = () => {
     if (colorPicker && bgColorPicker) {
@@ -569,8 +570,30 @@ const CanvasPainting: React.FC = () => {
                 <span>64x64</span>
               </label>
             </div>
-            <p className={styles.menu_title}>Color Picker</p>
+            <p className={styles.menu_title}>Drawing Tools</p>
             <div className={styles.menu_list}>
+              <div className={styles.cursor_style}>
+                <label>
+                  <input
+                    type="radio"
+                    name="cursor-type"
+                    onChange={() => setCursorType(CursorType.PEN)}
+                    checked={cursorType === CursorType.PEN}
+                  />
+                  <img src="pen-32.png" alt="pen" />
+                  <span>Pen</span>
+                </label>
+                <label>
+                  <input
+                    type="radio"
+                    name="cursor-type"
+                    onChange={() => setCursorType(CursorType.PICKER)}
+                    checked={cursorType === CursorType.PICKER}
+                  />
+                  <img src="color-dropper-30.png" alt="pen" />
+                  <span>Color Picker</span>
+                </label>
+              </div>
               <div className={styles.colorPickerContainer}>
                 <div id="color-picker" className={styles.colorpicker}></div>
                 <div>
@@ -667,32 +690,6 @@ const CanvasPainting: React.FC = () => {
                     </span>
                   </button>
                 )}
-                {/*<button
-                      disabled={!userAddress || errorSavingToken}
-                      className={`button ${
-                        errorSavingToken
-                          ? "error"
-                          : userAddress
-                          ? "info"
-                          : "disabled"
-                      }`}
-                      onClick={() => upload(false)}
-                    >
-                      {errorSavingToken ? (
-                        <span>
-                          <i className="fas fa-exclamation-triangle"></i> Error
-                        </span>
-                      ) : userAddress ? (
-                        <span>
-                          <i className="fas fa-file-upload"></i> Save to
-                          Blockchain
-                        </span>
-                      ) : (
-                        <span>
-                          <i className="fas fa-file-upload"></i> Connect Wallet
-                        </span>
-                      )}
-                      </button>*/}
               </div>
             </div>
           </div>
@@ -714,7 +711,7 @@ const CanvasPainting: React.FC = () => {
                     row.map((bgColor, i2) => (
                       <div
                         key={i1.toString() + i2.toString()}
-                        className={styles.pixel}
+                        className={styles[cursorType]}
                         style={{
                           backgroundColor: bgColor,
                           borderTop: displayGrid ? "solid 1px black" : "none",
@@ -722,34 +719,47 @@ const CanvasPainting: React.FC = () => {
                         }}
                         onMouseDown={() => {
                           //console.log(`row: ${i1} ; column: ${i2}`);
-                          // updates color in `smallCanvas` variable
-                          const newCanvas: Canvas = updateCanvas(i1, i2, [
-                            ...smallCanvas
-                          ]);
-                          setSmallCanvas(newCanvas);
-                          activeSmallCanvas.current = newCanvas;
-                        }}
-                        onMouseUp={() => {
-                          // saves update in local storage
-                          setSavedCanvas(false);
-                          const isSaved = saveCanvas(
-                            smallCanvas,
-                            GridSize.Small
-                          );
-                          if (isSaved) {
-                            setSavedCanvas(true);
-                            setTimeout(() => setSavedCanvas(false), 2000);
-                          }
-                        }}
-                        onMouseEnter={event => {
-                          // draw as user drags the mouse
-                          if (event.buttons === 1) {
+                          if (cursorType === CursorType.PEN) {
                             // updates color in `smallCanvas` variable
                             const newCanvas: Canvas = updateCanvas(i1, i2, [
                               ...smallCanvas
                             ]);
                             setSmallCanvas(newCanvas);
                             activeSmallCanvas.current = newCanvas;
+                          }
+                        }}
+                        onMouseUp={() => {
+                          if (cursorType === CursorType.PEN) {
+                            // saves update in local storage
+                            setSavedCanvas(false);
+                            const isSaved = saveCanvas(
+                              smallCanvas,
+                              GridSize.Small
+                            );
+                            if (isSaved) {
+                              setSavedCanvas(true);
+                              setTimeout(() => setSavedCanvas(false), 2000);
+                            }
+                          } else if (cursorType === CursorType.PICKER) {
+                            if (colorPicker && setCursorType) {
+                              // sets new color
+                              colorPicker.setColor(bgColor);
+                              //  bring back the pen
+                              setCursorType(CursorType.PEN);
+                            }
+                          }
+                        }}
+                        onMouseEnter={event => {
+                          if (cursorType === CursorType.PEN) {
+                            // draw as user drags the mouse
+                            if (event.buttons === 1) {
+                              // updates color in `smallCanvas` variable
+                              const newCanvas: Canvas = updateCanvas(i1, i2, [
+                                ...smallCanvas
+                              ]);
+                              setSmallCanvas(newCanvas);
+                              activeSmallCanvas.current = newCanvas;
+                            }
                           }
                         }}
                       ></div>
@@ -770,41 +780,54 @@ const CanvasPainting: React.FC = () => {
                     row.map((bgColor, i2) => (
                       <div
                         key={i1.toString() + i2.toString()}
-                        className={styles.pixel}
+                        className={styles[cursorType]}
                         style={{
                           backgroundColor: bgColor,
                           borderTop: displayGrid ? "solid 1px black" : "none",
                           borderLeft: displayGrid ? "solid 1px black" : "none"
                         }}
                         onMouseDown={() => {
-                          // updates color in `smallCanvas` variable
-                          const newCanvas: Canvas = updateCanvas(i1, i2, [
-                            ...mediumCanvas
-                          ]);
-                          setMediumCanvas(newCanvas);
-                          activeMediumCanvas.current = newCanvas;
-                        }}
-                        onMouseUp={() => {
-                          // saves update in local storage
-                          setSavedCanvas(false);
-                          const isSaved = saveCanvas(
-                            mediumCanvas,
-                            GridSize.Medium
-                          );
-                          if (isSaved) {
-                            setSavedCanvas(true);
-                            setTimeout(() => setSavedCanvas(false), 2000);
-                          }
-                        }}
-                        onMouseEnter={event => {
-                          // draw as user drags the mouse
-                          if (event.buttons === 1) {
+                          if (cursorType === CursorType.PEN) {
                             // updates color in `smallCanvas` variable
                             const newCanvas: Canvas = updateCanvas(i1, i2, [
                               ...mediumCanvas
                             ]);
-                            setSmallCanvas(newCanvas);
-                            activeSmallCanvas.current = newCanvas;
+                            setMediumCanvas(newCanvas);
+                            activeMediumCanvas.current = newCanvas;
+                          }
+                        }}
+                        onMouseUp={() => {
+                          if (cursorType === CursorType.PEN) {
+                            // saves update in local storage
+                            setSavedCanvas(false);
+                            const isSaved = saveCanvas(
+                              mediumCanvas,
+                              GridSize.Medium
+                            );
+                            if (isSaved) {
+                              setSavedCanvas(true);
+                              setTimeout(() => setSavedCanvas(false), 2000);
+                            }
+                          } else if (cursorType === CursorType.PICKER) {
+                            if (colorPicker && setCursorType) {
+                              // sets new color
+                              colorPicker.setColor(bgColor);
+                              //  bring back the pen
+                              setCursorType(CursorType.PEN);
+                            }
+                          }
+                        }}
+                        onMouseEnter={event => {
+                          if (cursorType === CursorType.PEN) {
+                            // draw as user drags the mouse
+                            if (event.buttons === 1) {
+                              // updates color in `smallCanvas` variable
+                              const newCanvas: Canvas = updateCanvas(i1, i2, [
+                                ...mediumCanvas
+                              ]);
+                              setSmallCanvas(newCanvas);
+                              activeSmallCanvas.current = newCanvas;
+                            }
                           }
                         }}
                       ></div>
@@ -825,41 +848,54 @@ const CanvasPainting: React.FC = () => {
                     row.map((bgColor, i2) => (
                       <div
                         key={i1.toString() + i2.toString()}
-                        className={styles.pixel}
+                        className={styles[cursorType]}
                         style={{
                           backgroundColor: bgColor,
                           borderTop: displayGrid ? "solid 1px black" : "none",
                           borderLeft: displayGrid ? "solid 1px black" : "none"
                         }}
                         onMouseDown={() => {
-                          // updates color in `smallCanvas` variable
-                          const newCanvas: Canvas = updateCanvas(i1, i2, [
-                            ...largeCanvas
-                          ]);
-                          setLargeCanvas(newCanvas);
-                          activeLargeCanvas.current = newCanvas;
-                        }}
-                        onMouseUp={() => {
-                          // saves update in local storage
-                          setSavedCanvas(false);
-                          const isSaved = saveCanvas(
-                            largeCanvas,
-                            GridSize.Large
-                          );
-                          if (isSaved) {
-                            setSavedCanvas(true);
-                            setTimeout(() => setSavedCanvas(false), 2000);
-                          }
-                        }}
-                        onMouseEnter={event => {
-                          // draw as user drags the mouse
-                          if (event.buttons === 1) {
+                          if (cursorType === CursorType.PEN) {
                             // updates color in `smallCanvas` variable
                             const newCanvas: Canvas = updateCanvas(i1, i2, [
                               ...largeCanvas
                             ]);
-                            setSmallCanvas(newCanvas);
-                            activeSmallCanvas.current = newCanvas;
+                            setLargeCanvas(newCanvas);
+                            activeLargeCanvas.current = newCanvas;
+                          }
+                        }}
+                        onMouseUp={() => {
+                          if (cursorType === CursorType.PEN) {
+                            // saves update in local storage
+                            setSavedCanvas(false);
+                            const isSaved = saveCanvas(
+                              largeCanvas,
+                              GridSize.Large
+                            );
+                            if (isSaved) {
+                              setSavedCanvas(true);
+                              setTimeout(() => setSavedCanvas(false), 2000);
+                            }
+                          } else if (cursorType === CursorType.PICKER) {
+                            if (colorPicker && setCursorType) {
+                              // sets new color
+                              colorPicker.setColor(bgColor);
+                              //  bring back the pen
+                              setCursorType(CursorType.PEN);
+                            }
+                          }
+                        }}
+                        onMouseEnter={event => {
+                          if (cursorType === CursorType.PEN) {
+                            // draw as user drags the mouse
+                            if (event.buttons === 1) {
+                              // updates color in `smallCanvas` variable
+                              const newCanvas: Canvas = updateCanvas(i1, i2, [
+                                ...largeCanvas
+                              ]);
+                              setSmallCanvas(newCanvas);
+                              activeSmallCanvas.current = newCanvas;
+                            }
                           }
                         }}
                       ></div>

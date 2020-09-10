@@ -33,8 +33,11 @@ $large-grid-blocks: 48;
   margin: auto;
 }
 
-.pixel {
+.pixel_pen {
   cursor: url("/pen-32.png") 1 30, pointer;
+}
+.pixel_picker {
+  cursor: url("/color-dropper-30.png") 1 30, pointer;
 }
 
 .layout {
@@ -143,4 +146,27 @@ div .palette {
   margin: 0px 5px;
   border-radius: 3px;
   cursor: pointer;
+}
+
+.cursor_style {
+  display: flex;
+  flex-direction: row;
+  justify-items: flex-start;
+  align-items: center;
+
+  label {
+    display: flex;
+    flex-direction: row;
+    justify-items: center;
+    align-items: center;
+
+    span {
+      margin-left: 5px;
+    }
+  }
+
+  img {
+    width: 25px;
+    height: 25px;
+  }
 }
