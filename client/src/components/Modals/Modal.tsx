@@ -274,6 +274,7 @@ export const Modal: React.FC<ModalProps> = ({
                   className={`button ${
                     cart && cart.length > 0 ? "info" : "disabled"
                   }`}
+                  disabled={cart && cart.length === 0}
                   onClick={() => {
                     setConfirmBuy(true);
                     confirm(cart, setCart);
