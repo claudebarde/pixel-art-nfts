@@ -102,6 +102,9 @@ type token_metadata_param = {
 
 type token_metadata_param_michelson = token_metadata_param michelson_pair_right_comb
 
+type token_format = { check: bool; initial: string; length: nat }
+type token_format_michelson = token_format michelson_pair_right_comb
+
 type fa2_entry_points =
   | Transfer of transfer_michelson list
   | Balance_of of balance_of_param_michelson
@@ -115,6 +118,8 @@ type fa2_entry_points =
   | Update_token_status of token_id * bool
   | Withdraw_revenue of unit
   | Withdraw_revenue_from_fee of unit
+  | Update_token_format of token_format_michelson
+  | Pause of bool
 
 
 type fa2_token_metadata =
@@ -293,6 +298,11 @@ tools.
 
 
 # 1 "ligo/src/fa2_interface.mligo" 1
+
+
+
+
+
 
 
 
@@ -816,6 +826,8 @@ type collection_storage = {
   market_fee: tez;
   revenue_from_fee: tez;
   admin: address;
+  token_format_checker: token_format_michelson;
+  pause: bool
 }
 
 
@@ -825,14 +837,22 @@ let mint_token ((user, metadata, storage) : address * token_metadata_michelson *
     if Tezos.amount = storage.market_fee
     then
         let token_metadata: token_metadata = Layout.convert_from_right_comb metadata in
-        let new_ledger: ledger = match Big_map.find_opt token_metadata.token_id storage.ledger with
-            | Some (token) -> (failwith "TOKEN_ID_EXISTS" : ledger)
-            (* Adds the new token to the ledger *)
-            | None -> Big_map.add token_metadata.token_id user storage.ledger in
-        (* Adds token metadata in storage *)
-        let new_token_metadata: token_metadata_storage = 
-            Big_map.add token_metadata.token_id metadata storage.token_metadata in
-        { storage with ledger = new_ledger ; token_metadata = new_token_metadata ; revenue_from_fee = storage.revenue_from_fee + Tezos.amount }
+        let token_format: token_format = Layout.convert_from_right_comb storage.token_format_checker in
+        (* Verifies the token format *)
+        if token_format.check && 
+            (String.length token_metadata.token_id <> token_format.length ||
+            String.sub 0n 2n token_metadata.token_id <> token_format.initial)
+        then (failwith "WRONG_TOKEN_FORMAT": collection_storage)
+        else
+            (* Checks if the token exists *)
+            let new_ledger: ledger = match Big_map.find_opt token_metadata.token_id storage.ledger with
+                | Some (token) -> (failwith "TOKEN_ID_EXISTS" : ledger)
+                (* Adds the new token to the ledger *)
+                | None -> Big_map.add token_metadata.token_id user storage.ledger in
+            (* Adds token metadata in storage *)
+            let new_token_metadata: token_metadata_storage = 
+                Big_map.add token_metadata.token_id metadata storage.token_metadata in
+            { storage with ledger = new_ledger ; token_metadata = new_token_metadata ; revenue_from_fee = storage.revenue_from_fee + Tezos.amount }
     else (failwith "WRONG_MARKET_FEE": collection_storage)
 
 let burn_token ((token_id, storage): token_id * collection_storage): collection_storage = 
@@ -846,7 +866,7 @@ let burn_token ((token_id, storage): token_id * collection_storage): collection_
         { storage with ledger = Big_map.remove token_id storage.ledger ; token_metadata = Big_map.remove token_id storage.token_metadata }
     else
         (failwith "UNAUTHORIZED OPERATION": collection_storage) 
-# 32 "ligo/src/fa2_fixed_collection_token.mligo" 2
+# 34 "ligo/src/fa2_fixed_collection_token.mligo" 2
 
 # 1 "ligo/src/fa2_buy_tokens.mligo" 1
 let buy_tokens ((list_of_token_id, storage) : token_id list * collection_storage)
@@ -880,7 +900,7 @@ let buy_tokens ((list_of_token_id, storage) : token_id list * collection_storage
                 (* Credits artist *)
                 let new_revenues = match Big_map.find_opt artist storage.revenues with
                     | None -> Big_map.add artist Tezos.amount storage.revenues
-                    | Some balance_ -> Big_map.update artist (Some (Tezos.amount + balance_)) storage.revenues in
+                    | Some blc -> Big_map.update artist (Some (token.price + blc)) storage.revenues in
             
                 { storage with ledger = new_ledger ; token_metadata = new_token_metadata ; revenues = new_revenues }
             else (failwith "INCORRECT_PRICE": collection_storage)
@@ -888,7 +908,7 @@ let buy_tokens ((list_of_token_id, storage) : token_id list * collection_storage
     ) in
         
     List.fold buy_token list_of_token_id storage
-# 33 "ligo/src/fa2_fixed_collection_token.mligo" 2
+# 35 "ligo/src/fa2_fixed_collection_token.mligo" 2
 
 # 1 "ligo/src/fa2_maintenance.mligo" 1
 (* Admin updates market fee *)
@@ -940,7 +960,7 @@ let withdraw_revenue (storage: collection_storage): operation list * collection_
    (* Gets amount to be sent *)
    let revenue: tez = match Big_map.find_opt Tezos.source storage.revenues with
       | None -> (failwith "NO_ACCOUNT": tez)
-      | Some balance_ -> balance in
+      | Some blc -> blc in
    (* Prepares transaction to be sent *)
    let account: unit contract = match (Tezos.get_contract_opt Tezos.source : unit contract option) with
       | Some contract -> contract
@@ -951,7 +971,7 @@ let withdraw_revenue (storage: collection_storage): operation list * collection_
 
 (* Admin withdraws generated revenues *)
 let withdraw_revenue_from_fee (storage: collection_storage): operation list * collection_storage =
-   if Tezos.source = storage.admin
+   if Tezos.sender = storage.admin
    then
       (* Gets amount to be sent *)
       let revenue: tez = storage.revenue_from_fee in
@@ -964,7 +984,23 @@ let withdraw_revenue_from_fee (storage: collection_storage): operation list * co
       ([payment], { storage with revenue_from_fee = 0mutez })
    else
       (failwith "UNAUTHORIZED_OPERATION": operation list * collection_storage) 
-# 34 "ligo/src/fa2_fixed_collection_token.mligo" 2
+
+(* Admin updates token format data *)
+let update_token_format ((new_format, storage): token_format_michelson * collection_storage): collection_storage =
+   if Tezos.sender = storage.admin
+   then
+      { storage with token_format_checker = new_format }
+   else
+      (failwith "UNAUTHORIZED_OPERATION": collection_storage)
+
+(* Admin pauses contract *)
+let set_pause ((status, storage): bool * collection_storage): collection_storage =
+   if Tezos.sender = storage.admin
+   then
+      { storage with pause = status }
+   else
+      (failwith "UNAUTHORIZED_OPERATION": collection_storage)
+# 36 "ligo/src/fa2_fixed_collection_token.mligo" 2
 
 (**
 Update leger balances according to the specified transfers. Fails if any of the
@@ -1019,11 +1055,14 @@ let main (param, storage : fa2_entry_points * collection_storage)
     :  (operation list) * collection_storage =
   match param with
   | Transfer txs_michelson ->
-    let txs = transfers_from_michelson txs_michelson in
-    let validator = make_default_operator_validator Tezos.sender in
-    let new_ledger = transfer (txs, validator, storage.operators, storage.ledger) in
-    let new_storage = { storage with ledger = new_ledger; } in
-    ([] : operation list), new_storage
+    if storage.pause
+    then (failwith "PAUSED": operation list * collection_storage)
+    else
+      let txs = transfers_from_michelson txs_michelson in
+      let validator = make_default_operator_validator Tezos.sender in
+      let new_ledger = transfer (txs, validator, storage.operators, storage.ledger) in
+      let new_storage = { storage with ledger = new_ledger; } in
+      ([] : operation list), new_storage
   
   | Balance_of pm ->
     let p = balance_of_param_from_michelson pm in
@@ -1041,16 +1080,25 @@ let main (param, storage : fa2_entry_points * collection_storage)
     [callback_op], storage
 
   | Mint_token params ->
-    let new_storage = mint_token ((params.0, params.1, storage)) in
-    ([] : operation list), new_storage
+    if storage.pause
+    then (failwith "PAUSED": operation list * collection_storage)
+    else
+      let new_storage = mint_token ((params.0, params.1, storage)) in
+      ([] : operation list), new_storage
 
   | Burn_token param ->
-    let new_storage = burn_token ((param, storage)) in
-    ([] : operation list), new_storage
+    if storage.pause && Tezos.sender <> storage.admin
+    then (failwith "PAUSED": operation list * collection_storage)
+    else
+      let new_storage = burn_token ((param, storage)) in
+      ([] : operation list), new_storage
 
   | Buy_tokens params ->
-    let new_storage = buy_tokens ((params, storage)) in
-    ([] : operation list), new_storage
+    if storage.pause
+    then (failwith "PAUSED": operation list * collection_storage)
+    else
+      let new_storage = buy_tokens ((params, storage)) in
+      ([] : operation list), new_storage
 
   | Update_market_fee params ->
     let new_storage = update_market_fee ((params, storage)) in
@@ -1065,9 +1113,22 @@ let main (param, storage : fa2_entry_points * collection_storage)
     ([]: operation list), new_storage
 
   | Withdraw_revenue param ->
-    let (operations, new_storage) = withdraw_revenue (storage) in
-    operations, new_storage
+    if storage.pause
+    then (failwith "PAUSED": operation list * collection_storage)
+    else
+      let (operations, new_storage) = withdraw_revenue (storage) in
+      operations, new_storage
 
   | Withdraw_revenue_from_fee param ->
     let (operations, new_storage) = withdraw_revenue_from_fee (storage) in
     operations, new_storage
+
+  | Update_token_format param ->
+    let new_storage = update_token_format ((param, storage)) in
+    ([]: operation list), new_storage
+
+  | Pause param ->
+    let new_storage = set_pause ((param, storage)) in
+    ([]: operation list), new_storage
+
+

@@ -135,6 +135,7 @@ export const Modal: React.FC<ModalProps> = ({
                     <div>
                       <input
                         type="text"
+                        maxLength={5}
                         value={price}
                         onChange={event => setPrice(event.target.value)}
                       />

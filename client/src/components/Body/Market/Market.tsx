@@ -38,7 +38,12 @@ const Market: React.FC = () => {
       if (entries.length > 0 && storage) {
         const artPieces: Promise<any>[] = [];
         entries.forEach(async entry => {
-          if (entry.data.value) {
+          // must be a valid IPFS hash
+          if (
+            entry.data.value &&
+            entry.data.key.value.length === 46 &&
+            entry.data.key.value.slice(0, 2) === "Qm"
+          ) {
             // gets info for each piece from the IPFS
             artPieces.push(
               fetch(`https://gateway.pinata.cloud/ipfs/${entry.data.key.value}`)

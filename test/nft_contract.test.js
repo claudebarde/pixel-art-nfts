@@ -7,8 +7,8 @@ contract("Pixel Art NFT Contract", () => {
   let fa2_address;
   let fa2_instance;
   let signerFactory;
-  const tokenId = "QmTezosTaquito2020";
-  const tokenId2 = "Alice2ndToken";
+  const tokenId = "Qma1dAWvTkmqgffVwqaUaPKcwUCDZ2MYnnqbSNRNTqeU2j";
+  let tokenId2 = "Alice2ndToken";
   const tokenPrice = 10000000;
 
   before(async () => {
@@ -200,6 +200,23 @@ contract("Pixel Art NFT Contract", () => {
       extras: new MichelsonMap()
     };
 
+    // should fail first because of wrong token format
+    let err;
+
+    try {
+      const op = await fa2_instance.methods
+        .mint_token(alice.pkh, ...Object.values(tokenMetadata))
+        .send({ amount: storage.market_fee.toNumber(), mutez: true });
+      await op.confirmation();
+    } catch (error) {
+      err = error.message;
+    }
+
+    assert.equal(err, "WRONG_TOKEN_FORMAT");
+
+    tokenId2 = "QmPhiDWkwNpuJs3i8FjA4GV9vwnrZfm6g1isghavNBqZvy";
+    tokenMetadata.token_id = tokenId2;
+
     try {
       const op = await fa2_instance.methods
         .mint_token(alice.pkh, ...Object.values(tokenMetadata))
@@ -220,7 +237,7 @@ contract("Pixel Art NFT Contract", () => {
     try {
       const op = await fa2_instance.methods
         .buy_tokens([tokenId, tokenId2])
-        .send({ amount: tokenPrice * 2, mutez: true });
+        .send({ amount: tokenPrice + tokenPrice * 2, mutez: true });
       await op.confirmation();
     } catch (error) {
       console.log(error);
@@ -288,7 +305,35 @@ contract("Pixel Art NFT Contract", () => {
     assert.isUndefined(token);
   });
 
+  it("should let Alice withdraw her revenues from contract", async () => {
+    await signerFactory(alice.sk);
+
+    const contractBalance = await Tezos.tz.getBalance(fa2_address);
+    const revenues = await storage.revenues.get(alice.pkh);
+
+    try {
+      const op = await fa2_instance.methods.withdraw_revenue([["unit"]]).send();
+      await op.confirmation();
+    } catch (error) {
+      console.log(error);
+    }
+
+    storage = await fa2_instance.storage();
+    const newRevenues = await storage.revenues.get(alice.pkh);
+    const newContractBalance = await Tezos.tz.getBalance(fa2_address);
+
+    // Alice's revenues must be set to zero
+    assert.equal(newRevenues.toNumber(), 0);
+    // contract balance should be decreased by Alice's revenues
+    assert.equal(
+      newContractBalance.toNumber(),
+      contractBalance.toNumber() - revenues.toNumber()
+    );
+  });
+
   it("should prevent Bob from withdrawing revenue from fees and let Alice", async () => {
+    await signerFactory(bob.sk);
+
     assert.isAbove(storage.revenue_from_fee.toNumber(), 0);
     const aliceBalance = await Tezos.tz.getBalance(alice.pkh);
 

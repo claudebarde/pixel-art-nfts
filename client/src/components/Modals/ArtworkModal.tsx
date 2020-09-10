@@ -15,7 +15,7 @@ const ArtworkModal: React.FC<{ close: any; artwork: ArtworkListElement }> = ({
 
   const drawCanvas = (ctx, grid, size) => {
     let counter = 0;
-    let delay = size === GridSize.Small ? 15 : 2;
+    let delay = size === GridSize.Small ? 15 : size === GridSize.Medium ? 2 : 1;
 
     grid.forEach((row, i1) => {
       row.forEach((color, i2) => {
@@ -39,7 +39,7 @@ const ArtworkModal: React.FC<{ close: any; artwork: ArtworkListElement }> = ({
         } else if (artwork.size === GridSize.Medium) {
           setPixelSize(3);
         } else if (artwork.size === GridSize.Large) {
-          setPixelSize(1);
+          setPixelSize(2);
         }
         drawCanvas(ctx, artwork.canvas, artwork.size);
       }
