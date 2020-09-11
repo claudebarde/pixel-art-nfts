@@ -5,7 +5,7 @@ import config from "../../../config";
 import { Context } from "../../../Context";
 import { BigNumber } from "bignumber.js";
 import CardGenerator from "../CardGenerator";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import ArtworkModal from "../../Modals/ArtworkModal";
 
 const Market: React.FC = () => {
@@ -16,6 +16,7 @@ const Market: React.FC = () => {
   const [openArtworkModal, setOpenArtworkModal] = useState(false);
   const [artworkModal, setArtworkModal] = useState<ArtworkListElement>();
   const { token_id } = useParams();
+  const location = useLocation();
 
   const openArtworkPopup = artwork => {
     setArtworkModal(artwork);
@@ -131,7 +132,8 @@ const Market: React.FC = () => {
                   cart,
                   setCart,
                   token_id,
-                  openArtworkPopup
+                  openArtworkPopup,
+                  location: location.pathname
                 });
               })}
             </div>

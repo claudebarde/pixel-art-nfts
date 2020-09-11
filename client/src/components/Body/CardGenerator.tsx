@@ -34,8 +34,6 @@ const CardGenerator: React.FC<CardProps> = ({
   location,
   cart,
   setCart,
-  refreshStorage,
-  contract,
   token_id,
   confirmTransfer,
   flippedCard,
@@ -46,7 +44,11 @@ const CardGenerator: React.FC<CardProps> = ({
   setNewPrice,
   confirmNewPrice,
   burnTokenModal,
-  openArtworkPopup
+  openArtworkPopup,
+  changePriceLoading,
+  transferLoading,
+  setOnSale,
+  removeFromMarket
 }) => {
   const isOwnerConnected =
     location?.includes("/profile") && userAddress && userAddress === address;
@@ -60,20 +62,6 @@ const CardGenerator: React.FC<CardProps> = ({
     ) {
       console.log(cart);
       setCart([...cart, cartItem]);
-    }
-  };
-
-  const setOnSale = async () => {
-    try {
-      const op = await contract?.methods
-        .update_token_status(artwork.ipfsHash, true)
-        .send();
-      await op?.confirmation();
-      if (refreshStorage) {
-        await refreshStorage();
-      }
-    } catch (error) {
-      console.log(error);
     }
   };
 
@@ -208,27 +196,51 @@ const CardGenerator: React.FC<CardProps> = ({
                 {artwork.market ? (
                   <button
                     className={styles.card__button}
-                    onClick={
-                      !cart?.includes(artwork.ipfsHash)
-                        ? () =>
-                            buy({
-                              ipfsHash: artwork.ipfsHash,
-                              seller: artwork.author,
-                              canvas: artwork.canvas,
-                              price: artwork.price,
-                              size: artwork.size
-                            })
-                        : () => null
-                    }
+                    onClick={() => {
+                      if (location?.includes("market")) {
+                        // market page
+                        if (!cart?.includes(artwork.ipfsHash)) {
+                          buy({
+                            ipfsHash: artwork.ipfsHash,
+                            seller: artwork.author,
+                            canvas: artwork.canvas,
+                            price: artwork.price,
+                            size: artwork.size
+                          });
+                        }
+                      } else if (location?.includes("profile")) {
+                        // profile page
+                        if (isOwnerConnected && removeFromMarket) {
+                          // owner wants to remove the token from the market
+                          removeFromMarket(artwork.ipfsHash);
+                        } else {
+                          // visitor wants to buy the token
+                          buy({
+                            ipfsHash: artwork.ipfsHash,
+                            seller: artwork.author,
+                            canvas: artwork.canvas,
+                            price: artwork.price,
+                            size: artwork.size
+                          });
+                        }
+                      }
+                    }}
                   >
                     {cart &&
                     cart.filter(el => el.ipfsHash === artwork.ipfsHash).length >
                       0
                       ? "Added to cart"
+                      : isOwnerConnected && userAddress === artwork.seller
+                      ? "Remove from market"
                       : "Buy"}
                   </button>
-                ) : isOwnerConnected ? (
-                  <button className={styles.card__button} onClick={setOnSale}>
+                ) : isOwnerConnected && userAddress === artwork.seller ? (
+                  <button
+                    className={styles.card__button}
+                    onClick={() => {
+                      if (setOnSale) setOnSale(artwork.ipfsHash);
+                    }}
+                  >
                     Set On Sale
                   </button>
                 ) : (
@@ -252,7 +264,8 @@ const CardGenerator: React.FC<CardProps> = ({
                   <i className="fas fa-share-alt"></i>
                 </NavLink>
               </div>
-              {!isOwnerConnected && (
+              {(!isOwnerConnected ||
+                (isOwnerConnected && userAddress !== artwork.seller)) && (
                 <>
                   <div>
                     <img
@@ -271,7 +284,7 @@ const CardGenerator: React.FC<CardProps> = ({
                   )}
                 </>
               )}
-              {isOwnerConnected && (
+              {isOwnerConnected && userAddress === artwork.seller && (
                 <div
                   style={{ cursor: "pointer" }}
                   onClick={() => {
@@ -308,10 +321,23 @@ const CardGenerator: React.FC<CardProps> = ({
                 <button
                   className={styles.card__button}
                   onClick={() => {
-                    if (confirmTransfer) confirmTransfer(artwork.ipfsHash);
+                    if (
+                      transferLoading !== artwork.ipfsHash &&
+                      confirmTransfer
+                    ) {
+                      confirmTransfer(artwork.ipfsHash);
+                    }
                   }}
                 >
-                  <i className="fas fa-exchange-alt"></i> Transfer
+                  {transferLoading === artwork.ipfsHash ? (
+                    <span>
+                      <i className="fas fa-spinner fa-spin"></i> Transferring
+                    </span>
+                  ) : (
+                    <span>
+                      <i className="fas fa-exchange-alt"></i> Transfer
+                    </span>
+                  )}
                 </button>
               </div>
               <div className={styles.card__separator}></div>
@@ -332,12 +358,23 @@ const CardGenerator: React.FC<CardProps> = ({
                 <button
                   className={styles.card__button}
                   onClick={() => {
-                    if (confirmNewPrice) {
+                    if (
+                      changePriceLoading !== artwork.ipfsHash &&
+                      confirmNewPrice
+                    ) {
                       confirmNewPrice(artwork.ipfsHash);
                     }
                   }}
                 >
-                  <i className="fas fa-tag"></i> Confirm
+                  {changePriceLoading === artwork.ipfsHash ? (
+                    <span>
+                      <i className="fas fa-spinner fa-spin"></i> Updating
+                    </span>
+                  ) : (
+                    <span>
+                      <i className="fas fa-tag"></i> Confirm
+                    </span>
+                  )}
                 </button>
               </div>
               <div className={styles.card__separator}></div>

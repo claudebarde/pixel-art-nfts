@@ -42,6 +42,8 @@ const User: React.FC = () => {
   const [toastType, setToastType] = useState<ToastType>(ToastType.DEFAULT);
   const [openArtworkModal, setOpenArtworkModal] = useState(false);
   const [artworkModal, setArtworkModal] = useState<ArtworkListElement>();
+  const [changePriceLoading, setChangePriceLoading] = useState<string>();
+  const [transferLoading, setTransferLoading] = useState<string>();
   let { address } = useParams();
   const location = useLocation();
 
@@ -58,6 +60,7 @@ const User: React.FC = () => {
 
   const transfer = async (ipfsHash: string, recipient: string) => {
     if (ipfsHash && recipient && refreshStorage) {
+      setTransferLoading(ipfsHash);
       try {
         const op = await contract?.methods
           .transfer([
@@ -67,11 +70,30 @@ const User: React.FC = () => {
             }
           ])
           .send();
+        setToastType(ToastType.INFO);
+        setToastText(
+          <span>
+            Op hash:{" "}
+            <a
+              href={`https://better-call.dev/${network}/opg/${op?.opHash}/contents`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {op?.opHash.slice(0, 7) + "..." + op?.opHash.slice(-7)}
+            </a>
+          </span>
+        );
         await op?.confirmation();
         setTransferRecipient("");
+        setToastType(ToastType.SUCCESS);
+        setToastText(<span>Token successfully transferred!</span>);
         await refreshStorage();
       } catch (error) {
         console.log(error);
+        setToastType(ToastType.ERROR);
+        setToastText(<span>An error has occurred</span>);
+      } finally {
+        setTransferLoading(undefined);
       }
     }
   };
@@ -83,6 +105,7 @@ const User: React.FC = () => {
   const changePrice = async (ipfsHash: string, price: string) => {
     if (ipfsHash && !isNaN(+price) && refreshStorage) {
       try {
+        setChangePriceLoading(ipfsHash);
         const op = await contract?.methods
           .update_token_price(ipfsHash, Math.round(parseFloat(price) * 1000000))
           .send();
@@ -107,7 +130,9 @@ const User: React.FC = () => {
       } catch (error) {
         console.log(error);
         setToastType(ToastType.ERROR);
-        setToastText(<span>Arn error has occurred</span>);
+        setToastText(<span>An error has occurred</span>);
+      } finally {
+        setChangePriceLoading(undefined);
       }
     }
   };
@@ -164,13 +189,73 @@ const User: React.FC = () => {
     }
   };
 
+  const setOnSale = async (ipfsHash: string) => {
+    try {
+      const op = await contract?.methods
+        .update_token_status(ipfsHash, true)
+        .send();
+      setToastType(ToastType.INFO);
+      setToastText(
+        <span>
+          Op hash:{" "}
+          <a
+            href={`https://better-call.dev/${network}/opg/${op?.opHash}/contents`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {op?.opHash.slice(0, 7) + "..." + op?.opHash.slice(-7)}
+          </a>
+        </span>
+      );
+      await op?.confirmation();
+      setToastType(ToastType.SUCCESS);
+      setToastText(<span>Successfully set on sale!</span>);
+      if (refreshStorage) {
+        await refreshStorage();
+      }
+    } catch (error) {
+      console.log(error);
+      setToastType(ToastType.ERROR);
+      setToastText(<span>An error occurred</span>);
+    }
+  };
+
+  const removeFromMarket = async (ipfsHash: string) => {
+    try {
+      const op = await contract?.methods
+        .update_token_status(ipfsHash, false)
+        .send();
+      setToastType(ToastType.INFO);
+      setToastText(
+        <span>
+          Op hash:{" "}
+          <a
+            href={`https://better-call.dev/${network}/opg/${op?.opHash}/contents`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {op?.opHash.slice(0, 7) + "..." + op?.opHash.slice(-7)}
+          </a>
+        </span>
+      );
+      await op?.confirmation();
+      setToastType(ToastType.SUCCESS);
+      setToastText(<span>Successfully removed from the market!</span>);
+      if (refreshStorage) {
+        await refreshStorage();
+      }
+    } catch (error) {
+      console.log(error);
+      setToastType(ToastType.ERROR);
+      setToastText(<span>An error occurred</span>);
+    }
+  };
+
   useEffect(() => {
     if (setView) setView(View.PROFILE);
 
     (async () => {
       if (storage) {
-        setTokens([]);
-        setLoading(true);
         // if users check their own profile
         let tokensOwned: any[];
         // gets length of big map
@@ -213,7 +298,7 @@ const User: React.FC = () => {
             el.data.key_string
           );
           const children = [...el.data.value.children];
-          const token = {};
+          const token = { seller: await storage.ledger.get(tkmt.token_id) };
           await Promise.all(
             children.map(async child => {
               if (child.name === "extras") {
@@ -309,8 +394,6 @@ const User: React.FC = () => {
                       location: location.pathname,
                       cart,
                       setCart,
-                      refreshStorage,
-                      contract,
                       confirmTransfer,
                       flippedCard,
                       setFlippedCard,
@@ -336,7 +419,11 @@ const User: React.FC = () => {
                               close: undefined
                             })
                         }),
-                      openArtworkPopup
+                      openArtworkPopup,
+                      changePriceLoading,
+                      transferLoading,
+                      setOnSale,
+                      removeFromMarket
                     })
                   )
                 : "No token for this user"}

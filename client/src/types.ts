@@ -105,8 +105,6 @@ export interface CardProps {
   location?: string;
   cart?: CartItem[];
   setCart?: React.Dispatch<React.SetStateAction<CartItem[]>>;
-  refreshStorage?: () => void;
-  contract?: ContractAbstraction<Wallet>;
   token_id?: string;
   confirmTransfer?: (ipfsHash: string) => any;
   flippedCard?: string | undefined;
@@ -118,4 +116,8 @@ export interface CardProps {
   confirmNewPrice?: (newPrice: string) => any;
   burnTokenModal?: () => any;
   openArtworkPopup?: (artwork: ArtworkListElement) => any;
+  changePriceLoading?: string;
+  transferLoading?: string;
+  setOnSale?: (s: string) => any;
+  removeFromMarket?: (s: string) => any;
 }

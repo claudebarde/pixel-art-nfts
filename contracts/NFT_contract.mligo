@@ -940,11 +940,11 @@ let update_token_price ((token_id, new_price, storage) : token_id * tez * collec
 (* Artist updates token status from on market to off market *)
 let update_token_status ((token_id, new_status, storage): token_id * bool * collection_storage)
    : collection_storage =
-      (* Only artist is allowed to update the token status *)
-      let artist: address = match Big_map.find_opt token_id storage.ledger with
+      (* Only owner is allowed to update the token status *)
+      let owner: address = match Big_map.find_opt token_id storage.ledger with
          | None -> (failwith "NO_TOKEN_FOUND": address)
          | Some addr -> addr in
-      if Tezos.source = artist
+      if Tezos.source = owner
       then
          let metadata_michelson: token_metadata_michelson = match Big_map.find_opt token_id storage.token_metadata with
          | None -> (failwith "NO_TOKEN": token_metadata_michelson)

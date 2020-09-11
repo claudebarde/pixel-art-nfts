@@ -110,6 +110,7 @@ export const Modal: React.FC<ModalProps> = ({
                     <div>
                       <input
                         type="text"
+                        maxLength={20}
                         value={artName}
                         onChange={event => setArtName(event.target.value)}
                       />
@@ -122,6 +123,7 @@ export const Modal: React.FC<ModalProps> = ({
                     <div>
                       <input
                         type="text"
+                        maxLength={20}
                         value={artistName}
                         onChange={event => setArtistName(event.target.value)}
                       />

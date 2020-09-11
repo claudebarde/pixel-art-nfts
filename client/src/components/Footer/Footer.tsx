@@ -14,6 +14,7 @@ const Footer: React.FC = () => {
           }`}
       </div>
       <div>
+        <span className="address-display">v{config.version}</span>{" "}
         <a
           href={`https://better-call.dev/carthagenet/${
             config.CONTRACT[config.ENV]

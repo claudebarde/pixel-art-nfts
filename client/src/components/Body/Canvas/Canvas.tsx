@@ -255,13 +255,18 @@ const CanvasPainting: React.FC = () => {
           ? `http://localhost:${config.NETLIFY_PORT}/pinPixelArt`
           : "https://pixel-art-nfts.netlify.app/.netlify/functions/pinPixelArt";
 
-      const data = await fetch(PinPixelArt, {
-        body: JSON.stringify(IPFSObject),
-        method: "POST"
-      });
+      let data;
+      try {
+        data = await fetch(PinPixelArt, {
+          body: JSON.stringify(IPFSObject),
+          method: "POST"
+        });
+      } catch (error) {
+        console.log(error);
+      }
 
       //const response = { ipfsHash: "test" };
-      if (data.status === 200 && contract) {
+      if (data && data.status === 200 && contract) {
         const response: {
           hash: string;
           timestamp: number;
@@ -279,7 +284,6 @@ const CanvasPainting: React.FC = () => {
               createdBy: userAddress
             })
           };
-          console.log(network);
 
           // includes token in the blockchain
           const op = await contract.methods
@@ -328,6 +332,8 @@ const CanvasPainting: React.FC = () => {
           } else {
             canvas = [[""]];
           }
+          setToastType(ToastType.SUCCESS);
+          setToastText(<span>Artwork successfully saved!</span>);
         } catch (error) {
           // removes token from IPFS node if it was already saved
           const BurnToken =
@@ -352,11 +358,15 @@ const CanvasPainting: React.FC = () => {
         }
       } else {
         setToastType(ToastType.ERROR);
-        const error = await data.text();
-        if (error.includes("TOKEN_ALREADY_EXISTS")) {
-          setToastText(<span>This artwork already exists</span>);
+        if (!data) {
+          setToastText(<span>No data returned from the IPFS node</span>);
         } else {
-          setToastText(<span>An error has occurred</span>);
+          const error = await data.text();
+          if (error.includes("TOKEN_ALREADY_EXISTS")) {
+            setToastText(<span>This artwork already exists</span>);
+          } else {
+            setToastText(<span>An error has occurred</span>);
+          }
         }
         setErrorSavingToken(true);
         setTimeout(() => setErrorSavingToken(false), 3000);

@@ -20,9 +20,6 @@ export const Provider: React.FC = props => {
   const refreshStorage = async () => {
     if (contract) {
       const newStorage: Storage = await contract.storage();
-      const tkmt: any = await newStorage.token_metadata.get(
-        "QmT3o46MhGfA7DQKFipkbkBw4UTc2M4E63V9B2F7WkJbGp"
-      );
       setStorage(newStorage);
     }
   };
