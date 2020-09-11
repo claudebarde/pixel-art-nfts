@@ -48,7 +48,9 @@ const CardGenerator: React.FC<CardProps> = ({
   changePriceLoading,
   transferLoading,
   setOnSale,
-  removeFromMarket
+  removeFromMarket,
+  removingFromMarket,
+  settingOnSale
 }) => {
   const isOwnerConnected =
     location?.includes("/profile") && userAddress && userAddress === address;
@@ -192,8 +194,23 @@ const CardGenerator: React.FC<CardProps> = ({
                   </NavLink>
                 </p>
               )}
-              <p>
-                {artwork.market ? (
+              <p style={{ minHeight: "66px" }}>
+                {artwork.market && removingFromMarket === artwork.ipfsHash && (
+                  <button className={styles.card__button} disabled>
+                    <span>
+                      <i className="fas fa-spinner fa-spin"></i> Removing
+                    </span>
+                  </button>
+                )}
+                {!artwork.market && settingOnSale === artwork.ipfsHash && (
+                  <button className={styles.card__button} disabled>
+                    <span>
+                      <i className="fas fa-spinner fa-spin"></i> Updating
+                    </span>
+                  </button>
+                )}
+                {removingFromMarket === artwork.ipfsHash ||
+                settingOnSale === artwork.ipfsHash ? null : artwork.market ? (
                   <button
                     className={styles.card__button}
                     onClick={() => {

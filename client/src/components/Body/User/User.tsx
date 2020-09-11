@@ -13,6 +13,7 @@ import {
 } from "../../Modals/Modal";
 import { Toast, ToastType } from "../../Toast/Toast";
 import ArtworkModal from "../../Modals/ArtworkModal";
+import BigNumber from "bignumber.js";
 
 const User: React.FC = () => {
   const {
@@ -44,6 +45,11 @@ const User: React.FC = () => {
   const [artworkModal, setArtworkModal] = useState<ArtworkListElement>();
   const [changePriceLoading, setChangePriceLoading] = useState<string>();
   const [transferLoading, setTransferLoading] = useState<string>();
+  const [removingFromMarket, setRemovingFromMarket] = useState<string>();
+  const [settingOnSale, setSettingOnSale] = useState<string>();
+  const [numberOfArtwork, setNumberOfArtwork] = useState<number>(0);
+  const [revenue, setRevenue] = useState(0);
+  const [withdrawingRevenue, setWithdrawingRevenue] = useState(false);
   let { address } = useParams();
   const location = useLocation();
 
@@ -190,6 +196,7 @@ const User: React.FC = () => {
   };
 
   const setOnSale = async (ipfsHash: string) => {
+    setSettingOnSale(ipfsHash);
     try {
       const op = await contract?.methods
         .update_token_status(ipfsHash, true)
@@ -217,10 +224,16 @@ const User: React.FC = () => {
       console.log(error);
       setToastType(ToastType.ERROR);
       setToastText(<span>An error occurred</span>);
+    } finally {
+      // the storage needs a second or two to update
+      // setTimeout prevents the previous button to display
+      // which could be confusing for the user
+      setTimeout(() => setSettingOnSale(undefined), 2000);
     }
   };
 
   const removeFromMarket = async (ipfsHash: string) => {
+    setRemovingFromMarket(ipfsHash);
     try {
       const op = await contract?.methods
         .update_token_status(ipfsHash, false)
@@ -248,6 +261,43 @@ const User: React.FC = () => {
       console.log(error);
       setToastType(ToastType.ERROR);
       setToastText(<span>An error occurred</span>);
+    } finally {
+      // the storage needs a second or two to update
+      // setTimeout prevents the previous button to display
+      // which could be confusing for the user
+      setTimeout(() => setRemovingFromMarket(undefined), 2000);
+    }
+  };
+
+  const withdrawRevenue = async () => {
+    setWithdrawingRevenue(true);
+    try {
+      const op = await contract?.methods.withdraw_revenue([["unit"]]).send();
+      setToastType(ToastType.INFO);
+      setToastText(
+        <span>
+          Op hash:{" "}
+          <a
+            href={`https://better-call.dev/${network}/opg/${op?.opHash}/contents`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {op?.opHash.slice(0, 7) + "..." + op?.opHash.slice(-7)}
+          </a>
+        </span>
+      );
+      await op?.confirmation();
+      setToastType(ToastType.SUCCESS);
+      setToastText(<span>Today is payday!</span>);
+      if (refreshStorage) {
+        await refreshStorage();
+      }
+    } catch (error) {
+      console.log(error);
+      setToastType(ToastType.ERROR);
+      setToastText(<span>An error occurred</span>);
+    } finally {
+      setWithdrawingRevenue(false);
     }
   };
 
@@ -347,10 +397,21 @@ const User: React.FC = () => {
           a.timestamp > b.timestamp ? -1 : b.timestamp > a.timestamp ? 1 : 0
         );
         setTokens(tokens);
+        setNumberOfArtwork(tokens.filter(tk => tk.market === true).length);
         setLoading(false);
       }
     })();
   }, [storage, location]);
+
+  useEffect(() => {
+    if (userAddress && userAddress === address && storage) {
+      (async () => {
+        const revenue = (await storage.revenues.get(userAddress)) as BigNumber;
+        setRevenue(revenue.toNumber());
+      })();
+    }
+  }, [userAddress, storage]);
+
   return (
     <>
       <main>
@@ -367,20 +428,62 @@ const User: React.FC = () => {
           </div>
         ) : (
           <>
-            <h2>
-              {userAddress && userAddress === address ? "Your" : "User"} Profile
-            </h2>
-            <h3 className={styles.user_address}>
-              <a
-                href={`https://${
-                  config.ENV === "carthagenet" && "carthage."
-                }tzkt.io/${address}/operations`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {address}
-              </a>
-            </h3>
+            <div
+              className={
+                userAddress && userAddress === address
+                  ? styles.title_owner
+                  : styles.title_user
+              }
+            >
+              <h2>
+                <span>
+                  Welcome to{" "}
+                  {userAddress && userAddress === address ? "your" : "my"}{" "}
+                  profile!
+                </span>
+                <a
+                  href={`https://${
+                    config.ENV === "carthagenet" && "carthage."
+                  }tzkt.io/${address}/operations`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <img
+                    src={`https://services.tzkt.io/v1/avatars/${address}`}
+                    alt="avatar"
+                  />
+                </a>
+              </h2>
+              {userAddress && userAddress === address ? (
+                <>
+                  <div>
+                    <h2>Current revenue: ꜩ {revenue / 1000000}</h2>
+                    <button
+                      className={`button ${
+                        revenue !== 0 ? "info" : "disabled"
+                      }`}
+                      disabled={revenue === 0}
+                      onClick={withdrawRevenue}
+                    >
+                      {withdrawingRevenue ? (
+                        <span>
+                          <i className="fas fa-spinner fa-spin"></i> Withdrawing
+                        </span>
+                      ) : (
+                        <span>
+                          <i className="fas fa-money-bill-wave"></i> Withdraw
+                        </span>
+                      )}
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <h4 className={styles.subtitle}>
+                  {numberOfArtwork} piece{numberOfArtwork > 1 ? "s" : ""} of art
+                  on sale
+                </h4>
+              )}
+            </div>
             <div className={styles.cards}>
               {tokens.length > 0
                 ? tokens.map((tk, i) =>
@@ -423,7 +526,9 @@ const User: React.FC = () => {
                       changePriceLoading,
                       transferLoading,
                       setOnSale,
-                      removeFromMarket
+                      removeFromMarket,
+                      removingFromMarket,
+                      settingOnSale
                     })
                   )
                 : "No token for this user"}

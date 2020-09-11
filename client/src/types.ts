@@ -120,4 +120,6 @@ export interface CardProps {
   transferLoading?: string;
   setOnSale?: (s: string) => any;
   removeFromMarket?: (s: string) => any;
+  removingFromMarket?: string;
+  settingOnSale?: string;
 }

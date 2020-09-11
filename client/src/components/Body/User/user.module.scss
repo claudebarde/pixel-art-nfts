@@ -18,3 +18,58 @@
     }
   }
 }
+
+.title_user {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: center;
+  width: 40%;
+  margin: 10px 0px 0px 0px;
+
+  h2 {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+  }
+
+  img {
+    margin-top: 10px;
+    width: 80px;
+    height: 80px;
+  }
+}
+
+.title_owner {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  align-items: flex-start;
+  width: 60%;
+  margin: 10px 0px 0px 0px;
+
+  h2 {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+  }
+
+  div {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+
+  img {
+    margin-top: 10px;
+    width: 80px;
+    height: 80px;
+  }
+}
+
+.subtitle {
+  margin: 0px 0px 10px 0px;
+}
