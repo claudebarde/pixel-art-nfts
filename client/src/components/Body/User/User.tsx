@@ -495,8 +495,6 @@ const User: React.FC = () => {
                       userAddress,
                       address,
                       location: location.pathname,
-                      cart,
-                      setCart,
                       confirmTransfer,
                       flippedCard,
                       setFlippedCard,

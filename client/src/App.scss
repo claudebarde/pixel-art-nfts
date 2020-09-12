@@ -73,6 +73,7 @@ aside {
 h2,
 h3 {
   text-align: center;
+  margin: 5px 0px 10px 0px;
 }
 
 .buttons {
@@ -93,7 +94,6 @@ h3 {
   -moz-box-shadow: 1px 8px 10px -5px #ccc;
   -webkit-box-shadow: 1px 8px 10px -5px #ccc;
   box-shadow: 1px 8px 10px -5px #ccc;
-  font-family: "Nunito", sans-serif;
 
   &.disabled {
     background-color: #e2e8f0;

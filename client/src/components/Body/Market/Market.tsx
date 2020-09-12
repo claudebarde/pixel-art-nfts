@@ -9,7 +9,7 @@ import { useParams, useLocation } from "react-router-dom";
 import ArtworkModal from "../../Modals/ArtworkModal";
 
 const Market: React.FC = () => {
-  const { storage, cart, setCart, userAddress } = useContext(Context);
+  const { storage, userAddress } = useContext(Context);
   const [loadingMarket, setLoadingMarket] = useState(true);
   const [artworkList, setArtworkList] = useState<ArtworkListElement[]>([]);
   const [numberOfArtwork, setNumberOfArtwork] = useState<number>(0);
@@ -118,27 +118,25 @@ const Market: React.FC = () => {
               <i className="fas fa-store fa-lg"></i>
             </div>
           </div>
-        ) : artworkList.length > 0 ? (
-          <>
-            <h2>Artwork Marketplace</h2>
-            <div className={styles.cards}>
-              {artworkList.map((artwork, i) => {
-                return CardGenerator({
-                  artwork,
-                  i,
-                  styles,
-                  view: View.MARKET,
-                  userAddress,
-                  cart,
-                  setCart,
-                  token_id,
-                  openArtworkPopup,
-                  location: location.pathname
-                });
-              })}
-            </div>
-          </>
         ) : (
+          <h2>Artwork Marketplace</h2>
+        )}
+        <div className={styles.cards}>
+          {artworkList.map((artwork, i) => (
+            <CardGenerator
+              key={artwork.hash}
+              artwork={artwork}
+              i={i}
+              styles={styles}
+              view={View.MARKET}
+              userAddress={userAddress}
+              token_id={token_id}
+              openArtworkPopup={openArtworkPopup}
+              location={location.pathname}
+            />
+          ))}
+        </div>
+        {artworkList.length === 0 && !loadingMarket && (
           <div>
             <h2>No artwork available yet</h2>
           </div>

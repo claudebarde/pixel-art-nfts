@@ -103,8 +103,6 @@ export interface CardProps {
   userAddress?: string;
   address?: string;
   location?: string;
-  cart?: CartItem[];
-  setCart?: React.Dispatch<React.SetStateAction<CartItem[]>>;
   token_id?: string;
   confirmTransfer?: (ipfsHash: string) => any;
   flippedCard?: string | undefined;

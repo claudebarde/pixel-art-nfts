@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useState, useContext } from "react";
 import moment from "moment";
 import { NavLink } from "react-router-dom";
 import { View, CartItem, CardProps, GridSize } from "../../types";
 import Identicon from "identicon.js";
+import { Context } from "../../Context";
 
 const displayAuthorName = (address: string, name: string): string => {
   if (name && name !== "unknown") {
@@ -32,8 +33,6 @@ const CardGenerator: React.FC<CardProps> = ({
   userAddress,
   address,
   location,
-  cart,
-  setCart,
   token_id,
   confirmTransfer,
   flippedCard,
@@ -54,6 +53,7 @@ const CardGenerator: React.FC<CardProps> = ({
 }) => {
   const isOwnerConnected =
     location?.includes("/profile") && userAddress && userAddress === address;
+  const { cart, setCart } = useContext(Context);
 
   const buy = (cartItem: CartItem) => {
     if (
@@ -169,7 +169,7 @@ const CardGenerator: React.FC<CardProps> = ({
               </p>
               {view === View.MARKET ? (
                 <p>
-                  Artist:{" "}
+                  By{" "}
                   <NavLink
                     to={`/profile/${artwork.author}`}
                     className={styles.card__link}
