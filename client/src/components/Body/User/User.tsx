@@ -371,6 +371,7 @@ const User: React.FC = () => {
         <ArtworkModal
           close={() => setOpenArtworkModal(false)}
           artwork={artworkModal as ArtworkListElement}
+          address={address}
         />
       )}
     </>

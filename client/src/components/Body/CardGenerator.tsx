@@ -252,7 +252,7 @@ const CardGenerator: React.FC<CardProps> = ({
             <div
               className={styles.card__image}
               onClick={() => {
-                if (openArtworkPopup) {
+                if (openArtworkPopup && location?.includes("profile")) {
                   openArtworkPopup(artwork);
                 }
               }}

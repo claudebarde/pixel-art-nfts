@@ -146,6 +146,7 @@ const Market: React.FC = () => {
         <ArtworkModal
           close={() => setOpenArtworkModal(false)}
           artwork={artworkModal as ArtworkListElement}
+          address={""}
         />
       )}
     </>

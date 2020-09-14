@@ -4,14 +4,23 @@ import styles from "./artworkmodal.module.scss";
 import { Context } from "../../Context";
 import { ArtworkListElement, View, GridSize } from "../../types";
 
-const ArtworkModal: React.FC<{ close: any; artwork: ArtworkListElement }> = ({
-  close,
-  artwork
-}) => {
-  const { view } = useContext(Context);
+const ArtworkModal: React.FC<{
+  close: any;
+  artwork: ArtworkListElement;
+  address: string;
+}> = ({ close, artwork, address }) => {
+  const { view, userAddress } = useContext(Context);
   const canvasRef = useRef<any>();
   const [gridSize, setGridSize] = useState<GridSize>();
   const [pixelSize, setPixelSize] = useState(0);
+
+  const makeTitle = (): string => {
+    return `${artwork.name} by ${
+      artwork.artistName && artwork.artistName !== "unknown"
+        ? artwork.artistName
+        : artwork.author.slice(0, 5) + "..." + artwork.author.slice(-5)
+    }`;
+  };
 
   const drawCanvas = (ctx, grid, size) => {
     let counter = 0;
@@ -28,6 +37,14 @@ const ArtworkModal: React.FC<{ close: any; artwork: ArtworkListElement }> = ({
     });
   };
 
+  const downloadCanvas = () => {
+    const url = canvasRef.current.toDataURL("image/png");
+    var link = document.createElement("a");
+    link.download = makeTitle().toLowerCase() + ".png";
+    link.href = url;
+    link.click();
+  };
+
   useEffect(() => {
     setGridSize(artwork.size);
     if (canvasRef.current) {
@@ -37,7 +54,7 @@ const ArtworkModal: React.FC<{ close: any; artwork: ArtworkListElement }> = ({
         if (artwork.size === GridSize.Small) {
           setPixelSize(6);
         } else if (artwork.size === GridSize.Medium) {
-          setPixelSize(3);
+          setPixelSize(4);
         } else if (artwork.size === GridSize.Large) {
           setPixelSize(2);
         }
@@ -49,12 +66,7 @@ const ArtworkModal: React.FC<{ close: any; artwork: ArtworkListElement }> = ({
   return (
     <div className={styles.modal_container}>
       <div className={styles.modal}>
-        <div className={styles.modal__header}>
-          {artwork.name} by{" "}
-          {artwork.artistName && artwork.artistName !== "unknown"
-            ? artwork.artistName
-            : artwork.author.slice(0, 5) + "..." + artwork.author.slice(-5)}
-        </div>
+        <div className={styles.modal__header}>{makeTitle()}</div>
         <div className={styles.modal__body}>
           <div className={styles.modal__body_p}>
             <canvas
@@ -85,8 +97,10 @@ const ArtworkModal: React.FC<{ close: any; artwork: ArtworkListElement }> = ({
           </div>
         </div>
         <div className={styles.modal__buttons}>
-          {view === View.PROFILE ? (
-            <button className="button info">Download</button>
+          {view === View.PROFILE && userAddress === address ? (
+            <button className="button info" onClick={downloadCanvas}>
+              Download
+            </button>
           ) : (
             <button className="button info">Buy</button>
           )}
