@@ -60,7 +60,6 @@ const CardGenerator: React.FC<CardProps> = ({
       cart &&
       cart.filter(el => el.ipfsHash === cartItem.ipfsHash).length === 0
     ) {
-      console.log(cart);
       setCart([...cart, cartItem]);
     }
   };
@@ -363,22 +362,21 @@ const CardGenerator: React.FC<CardProps> = ({
                 </p>
               )}
               <p style={{ minHeight: "66px" }}>
-                {artwork.market && removingFromMarket === artwork.ipfsHash && (
+                {artwork.market && removingFromMarket && (
                   <button className={styles.card__button} disabled>
                     <span>
                       <i className="fas fa-spinner fa-spin"></i> Removing
                     </span>
                   </button>
                 )}
-                {!artwork.market && settingOnSale === artwork.ipfsHash && (
+                {!artwork.market && settingOnSale && (
                   <button className={styles.card__button} disabled>
                     <span>
                       <i className="fas fa-spinner fa-spin"></i> Updating
                     </span>
                   </button>
                 )}
-                {removingFromMarket === artwork.ipfsHash ||
-                settingOnSale === artwork.ipfsHash ? null : artwork.market ? (
+                {removingFromMarket || settingOnSale ? null : artwork.market ? (
                   <button
                     className={styles.card__button}
                     onClick={() => {
@@ -387,7 +385,7 @@ const CardGenerator: React.FC<CardProps> = ({
                         if (!cart?.includes(artwork.ipfsHash)) {
                           buy({
                             ipfsHash: artwork.ipfsHash,
-                            seller: artwork.author,
+                            seller: artwork.seller,
                             canvas: artwork.canvas,
                             price: artwork.price,
                             size: artwork.size
@@ -402,7 +400,7 @@ const CardGenerator: React.FC<CardProps> = ({
                           // visitor wants to buy the token
                           buy({
                             ipfsHash: artwork.ipfsHash,
-                            seller: artwork.author,
+                            seller: artwork.seller,
                             canvas: artwork.canvas,
                             price: artwork.price,
                             size: artwork.size

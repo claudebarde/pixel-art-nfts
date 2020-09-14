@@ -252,7 +252,7 @@ const User: React.FC = () => {
         setRevenue(revenue.toNumber());
       })();
     }
-  }, [userAddress, storage]);
+  }, [userAddress, address, storage]);
 
   return (
     <>
