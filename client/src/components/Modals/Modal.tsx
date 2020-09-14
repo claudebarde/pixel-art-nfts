@@ -255,7 +255,16 @@ export const Modal: React.FC<ModalProps> = ({
                           </div>
                         ))}
                     </div>
-                    <p className={styles.cart_total}>
+                    <p
+                      className={styles.cart_total}
+                      style={
+                        userBalance &&
+                        cart.map(item => item.price).reduce((a, b) => a + b) >
+                          userBalance
+                          ? { color: "tomato" }
+                          : {}
+                      }
+                    >
                       Total: ꜩ{" "}
                       {cart.map(item => item.price).reduce((a, b) => a + b) /
                         1000000}
