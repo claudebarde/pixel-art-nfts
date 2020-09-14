@@ -4,6 +4,7 @@ import { NavLink } from "react-router-dom";
 import { View, CartItem, CardProps, GridSize } from "../../types";
 import Identicon from "identicon.js";
 import { Context } from "../../Context";
+import { ToastType } from "../Toast/Toast";
 
 const displayAuthorName = (address: string, name: string): string => {
   if (name && name !== "unknown") {
@@ -34,26 +35,23 @@ const CardGenerator: React.FC<CardProps> = ({
   address,
   location,
   token_id,
-  confirmTransfer,
-  flippedCard,
-  setFlippedCard,
-  transferRecipient,
-  setTransferRecipient,
-  newPrice,
-  setNewPrice,
-  confirmNewPrice,
   burnTokenModal,
   openArtworkPopup,
-  changePriceLoading,
-  transferLoading,
-  setOnSale,
-  removeFromMarket,
-  removingFromMarket,
-  settingOnSale
+  setToastType,
+  setToastText
 }) => {
   const isOwnerConnected =
     location?.includes("/profile") && userAddress && userAddress === address;
-  const { cart, setCart } = useContext(Context);
+  const { cart, setCart, refreshStorage, contract, network } = useContext(
+    Context
+  );
+  const [transferLoading, setTransferLoading] = useState(false);
+  const [transferRecipient, setTransferRecipient] = useState<string>("");
+  const [changePriceLoading, setChangePriceLoading] = useState(false);
+  const [newPrice, setNewPrice] = useState<string>("");
+  const [settingOnSale, setSettingOnSale] = useState(false);
+  const [removingFromMarket, setRemovingFromMarket] = useState(false);
+  const [flippedCard, setFlippedCard] = useState(false);
 
   const buy = (cartItem: CartItem) => {
     if (
@@ -67,13 +65,183 @@ const CardGenerator: React.FC<CardProps> = ({
     }
   };
 
+  const transfer = async () => {
+    if (
+      artwork.ipfsHash &&
+      transferRecipient &&
+      refreshStorage &&
+      setToastType &&
+      setToastText
+    ) {
+      setTransferLoading(true);
+      try {
+        const op = await contract?.methods
+          .transfer([
+            {
+              from_: userAddress,
+              txs: [
+                {
+                  to_: transferRecipient,
+                  token_id: artwork.ipfsHash,
+                  amount: 1
+                }
+              ]
+            }
+          ])
+          .send();
+        setToastType(ToastType.INFO);
+        setToastText(
+          <span>
+            Op hash:{" "}
+            <a
+              href={`https://better-call.dev/${network}/opg/${op?.opHash}/contents`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {op?.opHash.slice(0, 7) + "..." + op?.opHash.slice(-7)}
+            </a>
+          </span>
+        );
+        await op?.confirmation();
+        setTransferRecipient("");
+        setToastType(ToastType.SUCCESS);
+        setToastText(<span>Token successfully transferred!</span>);
+        await refreshStorage();
+      } catch (error) {
+        console.log(error);
+        setToastType(ToastType.ERROR);
+        setToastText(<span>An error has occurred</span>);
+      } finally {
+        setTransferLoading(false);
+      }
+    }
+  };
+
+  const changePrice = async () => {
+    if (
+      artwork.ipfsHash &&
+      !isNaN(+newPrice) &&
+      refreshStorage &&
+      setToastType &&
+      setToastText
+    ) {
+      try {
+        setChangePriceLoading(true);
+        const op = await contract?.methods
+          .update_token_price(
+            artwork.ipfsHash,
+            Math.round(parseFloat(newPrice) * 1000000)
+          )
+          .send();
+        setToastType(ToastType.INFO);
+        setToastText(
+          <span>
+            Op hash:{" "}
+            <a
+              href={`https://better-call.dev/${network}/opg/${op?.opHash}/contents`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {op?.opHash.slice(0, 7) + "..." + op?.opHash.slice(-7)}
+            </a>
+          </span>
+        );
+        await op?.confirmation();
+        setNewPrice("");
+        await refreshStorage();
+        setToastType(ToastType.SUCCESS);
+        setToastText(<span>Price successfully changed!</span>);
+      } catch (error) {
+        console.log(error);
+        setToastType(ToastType.ERROR);
+        setToastText(<span>An error has occurred</span>);
+      } finally {
+        setChangePriceLoading(false);
+      }
+    }
+  };
+
+  const setOnSale = async () => {
+    if (!setToastText || !setToastType) return;
+
+    setSettingOnSale(true);
+    try {
+      const op = await contract?.methods
+        .update_token_status(artwork.ipfsHash, true)
+        .send();
+      setToastType(ToastType.INFO);
+      setToastText(
+        <span>
+          Op hash:{" "}
+          <a
+            href={`https://better-call.dev/${network}/opg/${op?.opHash}/contents`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {op?.opHash.slice(0, 7) + "..." + op?.opHash.slice(-7)}
+          </a>
+        </span>
+      );
+      await op?.confirmation();
+      setToastType(ToastType.SUCCESS);
+      setToastText(<span>Successfully set on sale!</span>);
+      if (refreshStorage) {
+        await refreshStorage();
+      }
+    } catch (error) {
+      console.log(error);
+      setToastType(ToastType.ERROR);
+      setToastText(<span>An error occurred</span>);
+    } finally {
+      // the storage needs a second or two to update
+      // setTimeout prevents the previous button to display
+      // which could be confusing for the user
+      setTimeout(() => setSettingOnSale(false), 2000);
+    }
+  };
+
+  const removeFromMarket = async () => {
+    if (!setToastText || !setToastType) return;
+
+    setRemovingFromMarket(true);
+    try {
+      const op = await contract?.methods
+        .update_token_status(artwork.ipfsHash, false)
+        .send();
+      setToastType(ToastType.INFO);
+      setToastText(
+        <span>
+          Op hash:{" "}
+          <a
+            href={`https://better-call.dev/${network}/opg/${op?.opHash}/contents`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {op?.opHash.slice(0, 7) + "..." + op?.opHash.slice(-7)}
+          </a>
+        </span>
+      );
+      await op?.confirmation();
+      setToastType(ToastType.SUCCESS);
+      setToastText(<span>Successfully removed from the market!</span>);
+      if (refreshStorage) {
+        await refreshStorage();
+      }
+    } catch (error) {
+      console.log(error);
+      setToastType(ToastType.ERROR);
+      setToastText(<span>An error occurred</span>);
+    } finally {
+      // the storage needs a second or two to update
+      // setTimeout prevents the previous button to display
+      // which could be confusing for the user
+      setTimeout(() => setRemovingFromMarket(false), 2000);
+    }
+  };
+
   return (
     <div className="flip-container" key={i + "-" + artwork.hash}>
-      <div
-        className={`flip-card ${
-          flippedCard && flippedCard === artwork.ipfsHash ? "hover" : ""
-        }`}
-      >
+      <div className={`flip-card ${flippedCard ? "hover" : ""}`}>
         <div className="front">
           <div
             className={
@@ -229,7 +397,7 @@ const CardGenerator: React.FC<CardProps> = ({
                         // profile page
                         if (isOwnerConnected && removeFromMarket) {
                           // owner wants to remove the token from the market
-                          removeFromMarket(artwork.ipfsHash);
+                          removeFromMarket();
                         } else {
                           // visitor wants to buy the token
                           buy({
@@ -252,12 +420,7 @@ const CardGenerator: React.FC<CardProps> = ({
                       : "Buy"}
                   </button>
                 ) : isOwnerConnected && userAddress === artwork.seller ? (
-                  <button
-                    className={styles.card__button}
-                    onClick={() => {
-                      if (setOnSale) setOnSale(artwork.ipfsHash);
-                    }}
-                  >
+                  <button className={styles.card__button} onClick={setOnSale}>
                     Set On Sale
                   </button>
                 ) : (
@@ -305,10 +468,8 @@ const CardGenerator: React.FC<CardProps> = ({
                 <div
                   style={{ cursor: "pointer" }}
                   onClick={() => {
-                    if (setFlippedCard && setTransferRecipient) {
-                      setFlippedCard(artwork.ipfsHash);
-                      setTransferRecipient("");
-                    }
+                    setFlippedCard(true);
+                    setTransferRecipient("");
                   }}
                 >
                   <i className="fas fa-user-cog"></i>
@@ -338,15 +499,12 @@ const CardGenerator: React.FC<CardProps> = ({
                 <button
                   className={styles.card__button}
                   onClick={() => {
-                    if (
-                      transferLoading !== artwork.ipfsHash &&
-                      confirmTransfer
-                    ) {
-                      confirmTransfer(artwork.ipfsHash);
+                    if (!transferLoading) {
+                      transfer();
                     }
                   }}
                 >
-                  {transferLoading === artwork.ipfsHash ? (
+                  {transferLoading ? (
                     <span>
                       <i className="fas fa-spinner fa-spin"></i> Transferring
                     </span>
@@ -375,15 +533,12 @@ const CardGenerator: React.FC<CardProps> = ({
                 <button
                   className={styles.card__button}
                   onClick={() => {
-                    if (
-                      changePriceLoading !== artwork.ipfsHash &&
-                      confirmNewPrice
-                    ) {
-                      confirmNewPrice(artwork.ipfsHash);
+                    if (!changePriceLoading) {
+                      changePrice();
                     }
                   }}
                 >
-                  {changePriceLoading === artwork.ipfsHash ? (
+                  {changePriceLoading ? (
                     <span>
                       <i className="fas fa-spinner fa-spin"></i> Updating
                     </span>
@@ -410,9 +565,7 @@ const CardGenerator: React.FC<CardProps> = ({
               <div
                 style={{ cursor: "pointer" }}
                 onClick={() => {
-                  if (setFlippedCard) {
-                    setFlippedCard(undefined);
-                  }
+                  setFlippedCard(false);
                 }}
               >
                 <i className="far fa-image"></i>

@@ -2,7 +2,10 @@ import React, { useState, useEffect } from "react";
 import { Tezos, ContractAbstraction, Wallet } from "@taquito/taquito";
 import config from "./config";
 import { Storage, State, View, GridSize, CartItem } from "./types";
-import { connectWithBeacon } from "./components/Modals/walletConnection";
+import {
+  connectWithBeacon,
+  connectWithThanos
+} from "./components/Modals/walletConnection";
 import BigNumber from "bignumber.js";
 
 export const Context = React.createContext<Partial<State>>({});
@@ -62,6 +65,14 @@ export const Provider: React.FC = props => {
           const wallet = JSON.parse(connectedWallet);
           if (wallet.walletType === "beacon") {
             const pkh = await connectWithBeacon(Tezos, state.network);
+            if (pkh) {
+              setUserAddress(pkh);
+              let balance: number | BigNumber = 0;
+              balance = await Tezos.tz.getBalance(pkh);
+              setUserBalance(balance.toNumber());
+            }
+          } else if (wallet.walletType === "thanos") {
+            const pkh = await connectWithThanos(Tezos, state.network);
             if (pkh) {
               setUserAddress(pkh);
               let balance: number | BigNumber = 0;

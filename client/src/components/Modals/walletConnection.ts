@@ -1,38 +1,14 @@
 import { TezosToolkit } from "@taquito/taquito";
-//import { BeaconWallet } from "@taquito/beacon-wallet";
-import { ThanosWallet, ThanosDAppNetwork } from "@thanos-wallet/dapp";
-//import { NetworkType } from "@airgap/beacon-sdk";
+import { BeaconWallet } from "@taquito/beacon-wallet";
+import { ThanosWallet } from "@thanos-wallet/dapp";
+import { NetworkType } from "@airgap/beacon-sdk";
 import config from "../../config";
 
 export const connectWithBeacon = async (
   Tezos: TezosToolkit,
   network: string
 ) => {
-  if (ThanosWallet.isAvailable()) {
-    const wallet = new ThanosWallet("Pixel Art NFTs");
-    await wallet.connect(config.ENV === "dev" ? "sandbox" : "carthagenet", {
-      forcePermission: true
-    });
-    Tezos.setWalletProvider(wallet);
-
-    const keyHash = await wallet.getPKH();
-
-    console.log("Public key:", keyHash);
-
-    if (window.localStorage) {
-      window.localStorage.setItem(
-        "connected-wallet",
-        JSON.stringify({
-          address: keyHash,
-          connectedAt: Date.now(),
-          walletType: "thanos"
-        })
-      );
-    }
-
-    return keyHash;
-  }
-  /*try {
+  try {
     if (!Tezos) throw new Error("Undefined Tezos");
 
     const wallet = new BeaconWallet({
@@ -103,5 +79,39 @@ export const connectWithBeacon = async (
     return keyHash;
   } catch (error) {
     console.log(error);
-  }*/
+  }
+};
+
+export const connectWithThanos = async (
+  Tezos: TezosToolkit,
+  network: string
+) => {
+  if (ThanosWallet.isAvailable()) {
+    const wallet = new ThanosWallet("Pixel Art NFTs");
+    // forces permission if no data found in local storage
+    const forcePermission =
+      window.localStorage && !window.localStorage.getItem("connected-wallet");
+    // connects wallet
+    await wallet.connect(network === "dev" ? "sandbox" : "carthagenet", {
+      forcePermission
+    });
+    Tezos.setWalletProvider(wallet);
+
+    const keyHash = await wallet.getPKH();
+
+    console.log("Public key:", keyHash);
+
+    if (window.localStorage) {
+      window.localStorage.setItem(
+        "connected-wallet",
+        JSON.stringify({
+          address: keyHash,
+          connectedAt: Date.now(),
+          walletType: "thanos"
+        })
+      );
+    }
+
+    return keyHash;
+  }
 };

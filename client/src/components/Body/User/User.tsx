@@ -19,8 +19,6 @@ const User: React.FC = () => {
   const {
     storage,
     userAddress,
-    cart,
-    setCart,
     refreshStorage,
     contract,
     network,
@@ -36,17 +34,10 @@ const User: React.FC = () => {
     confirm: undefined,
     close: undefined
   });
-  const [flippedCard, setFlippedCard] = useState<string>();
-  const [transferRecipient, setTransferRecipient] = useState<string>("");
-  const [newPrice, setNewPrice] = useState<string>("");
   const [toastText, setToastText] = useState<ReactNode>();
   const [toastType, setToastType] = useState<ToastType>(ToastType.DEFAULT);
   const [openArtworkModal, setOpenArtworkModal] = useState(false);
   const [artworkModal, setArtworkModal] = useState<ArtworkListElement>();
-  const [changePriceLoading, setChangePriceLoading] = useState<string>();
-  const [transferLoading, setTransferLoading] = useState<string>();
-  const [removingFromMarket, setRemovingFromMarket] = useState<string>();
-  const [settingOnSale, setSettingOnSale] = useState<string>();
   const [numberOfArtwork, setNumberOfArtwork] = useState<number>(0);
   const [revenue, setRevenue] = useState(0);
   const [withdrawingRevenue, setWithdrawingRevenue] = useState(false);
@@ -58,90 +49,15 @@ const User: React.FC = () => {
     setOpenArtworkModal(true);
   };
 
-  const confirmTransfer = ipfsHash => {
+  /*const confirmTransfer = ipfsHash => {
     if (ipfsHash && transferRecipient) {
       transfer(ipfsHash, transferRecipient);
     }
   };
-
-  const transfer = async (ipfsHash: string, recipient: string) => {
-    if (ipfsHash && recipient && refreshStorage) {
-      setTransferLoading(ipfsHash);
-      try {
-        const op = await contract?.methods
-          .transfer([
-            {
-              from_: userAddress,
-              txs: [{ to_: recipient, token_id: ipfsHash, amount: 1 }]
-            }
-          ])
-          .send();
-        setToastType(ToastType.INFO);
-        setToastText(
-          <span>
-            Op hash:{" "}
-            <a
-              href={`https://better-call.dev/${network}/opg/${op?.opHash}/contents`}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {op?.opHash.slice(0, 7) + "..." + op?.opHash.slice(-7)}
-            </a>
-          </span>
-        );
-        await op?.confirmation();
-        setTransferRecipient("");
-        setToastType(ToastType.SUCCESS);
-        setToastText(<span>Token successfully transferred!</span>);
-        await refreshStorage();
-      } catch (error) {
-        console.log(error);
-        setToastType(ToastType.ERROR);
-        setToastText(<span>An error has occurred</span>);
-      } finally {
-        setTransferLoading(undefined);
-      }
-    }
-  };
-
+  
   const confirmNewPrice = (ipfsHash: string) => {
     changePrice(ipfsHash, newPrice);
-  };
-
-  const changePrice = async (ipfsHash: string, price: string) => {
-    if (ipfsHash && !isNaN(+price) && refreshStorage) {
-      try {
-        setChangePriceLoading(ipfsHash);
-        const op = await contract?.methods
-          .update_token_price(ipfsHash, Math.round(parseFloat(price) * 1000000))
-          .send();
-        setToastType(ToastType.INFO);
-        setToastText(
-          <span>
-            Op hash:{" "}
-            <a
-              href={`https://better-call.dev/${network}/opg/${op?.opHash}/contents`}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {op?.opHash.slice(0, 7) + "..." + op?.opHash.slice(-7)}
-            </a>
-          </span>
-        );
-        await op?.confirmation();
-        setNewPrice("");
-        await refreshStorage();
-        setToastType(ToastType.SUCCESS);
-        setToastText(<span>Price successfully changed!</span>);
-      } catch (error) {
-        console.log(error);
-        setToastType(ToastType.ERROR);
-        setToastText(<span>An error has occurred</span>);
-      } finally {
-        setChangePriceLoading(undefined);
-      }
-    }
-  };
+  };*/
 
   const burnToken = async (tokenID: string) => {
     const BurnToken =
@@ -192,80 +108,6 @@ const User: React.FC = () => {
       console.log(error);
       setToastType(ToastType.ERROR);
       setToastText(<span>An error occurred</span>);
-    }
-  };
-
-  const setOnSale = async (ipfsHash: string) => {
-    setSettingOnSale(ipfsHash);
-    try {
-      const op = await contract?.methods
-        .update_token_status(ipfsHash, true)
-        .send();
-      setToastType(ToastType.INFO);
-      setToastText(
-        <span>
-          Op hash:{" "}
-          <a
-            href={`https://better-call.dev/${network}/opg/${op?.opHash}/contents`}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {op?.opHash.slice(0, 7) + "..." + op?.opHash.slice(-7)}
-          </a>
-        </span>
-      );
-      await op?.confirmation();
-      setToastType(ToastType.SUCCESS);
-      setToastText(<span>Successfully set on sale!</span>);
-      if (refreshStorage) {
-        await refreshStorage();
-      }
-    } catch (error) {
-      console.log(error);
-      setToastType(ToastType.ERROR);
-      setToastText(<span>An error occurred</span>);
-    } finally {
-      // the storage needs a second or two to update
-      // setTimeout prevents the previous button to display
-      // which could be confusing for the user
-      setTimeout(() => setSettingOnSale(undefined), 2000);
-    }
-  };
-
-  const removeFromMarket = async (ipfsHash: string) => {
-    setRemovingFromMarket(ipfsHash);
-    try {
-      const op = await contract?.methods
-        .update_token_status(ipfsHash, false)
-        .send();
-      setToastType(ToastType.INFO);
-      setToastText(
-        <span>
-          Op hash:{" "}
-          <a
-            href={`https://better-call.dev/${network}/opg/${op?.opHash}/contents`}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {op?.opHash.slice(0, 7) + "..." + op?.opHash.slice(-7)}
-          </a>
-        </span>
-      );
-      await op?.confirmation();
-      setToastType(ToastType.SUCCESS);
-      setToastText(<span>Successfully removed from the market!</span>);
-      if (refreshStorage) {
-        await refreshStorage();
-      }
-    } catch (error) {
-      console.log(error);
-      setToastType(ToastType.ERROR);
-      setToastText(<span>An error occurred</span>);
-    } finally {
-      // the storage needs a second or two to update
-      // setTimeout prevents the previous button to display
-      // which could be confusing for the user
-      setTimeout(() => setRemovingFromMarket(undefined), 2000);
     }
   };
 
@@ -415,7 +257,7 @@ const User: React.FC = () => {
   return (
     <>
       <main>
-        {loading ? (
+        {loading && (
           <div className="loader">
             <div>
               Loading{" "}
@@ -426,7 +268,8 @@ const User: React.FC = () => {
               <i className="fas fa-user fa-lg"></i>
             </div>
           </div>
-        ) : (
+        )}
+        {!loading && (
           <>
             <div
               className={
@@ -484,55 +327,43 @@ const User: React.FC = () => {
                 </h4>
               )}
             </div>
-            <div className={styles.cards}>
-              {tokens.length > 0
-                ? tokens.map((tk, i) =>
-                    CardGenerator({
-                      artwork: tk,
-                      i,
-                      styles,
-                      view: View.PROFILE,
-                      userAddress,
-                      address,
-                      location: location.pathname,
-                      confirmTransfer,
-                      flippedCard,
-                      setFlippedCard,
-                      transferRecipient,
-                      setTransferRecipient,
-                      newPrice,
-                      setNewPrice,
-                      confirmNewPrice,
-                      burnTokenModal: () =>
-                        setModalState({
-                          state: ModalState.OPEN,
-                          type: ModalType.BURN_TOKEN,
-                          header: "Delete this token?",
-                          body: "",
-                          confirm: () => burnToken(tk.ipfsHash),
-                          close: () =>
-                            setModalState({
-                              state: ModalState.CLOSED,
-                              type: ModalType.CLOSED,
-                              header: "",
-                              body: "",
-                              confirm: undefined,
-                              close: undefined
-                            })
-                        }),
-                      openArtworkPopup,
-                      changePriceLoading,
-                      transferLoading,
-                      setOnSale,
-                      removeFromMarket,
-                      removingFromMarket,
-                      settingOnSale
-                    })
-                  )
-                : "No token for this user"}
-            </div>
           </>
         )}
+        <div className={styles.cards}>
+          {tokens.map((tk, i) => (
+            <CardGenerator
+              key={tk.hash}
+              artwork={tk}
+              i={i}
+              styles={styles}
+              view={View.PROFILE}
+              userAddress={userAddress}
+              address={address}
+              location={location.pathname}
+              burnTokenModal={() =>
+                setModalState({
+                  state: ModalState.OPEN,
+                  type: ModalType.BURN_TOKEN,
+                  header: "Delete this token?",
+                  body: "",
+                  confirm: () => burnToken(tk.ipfsHash),
+                  close: () =>
+                    setModalState({
+                      state: ModalState.CLOSED,
+                      type: ModalType.CLOSED,
+                      header: "",
+                      body: "",
+                      confirm: undefined,
+                      close: undefined
+                    })
+                })
+              }
+              openArtworkPopup={openArtworkPopup}
+              setToastType={setToastType}
+              setToastText={setToastText}
+            />
+          ))}
+        </div>
         <Modal {...modalState} />
       </main>
       <Toast type={toastType} text={toastText} />

@@ -6,7 +6,8 @@ import {
   Wallet
 } from "@taquito/taquito";
 import BigNumber from "bignumber.js";
-import React from "react";
+import React, { ReactNode } from "react";
+import { ToastType } from "./components/Toast/Toast";
 
 export type Canvas = string[][];
 
@@ -105,19 +106,8 @@ export interface CardProps {
   location?: string;
   token_id?: string;
   confirmTransfer?: (ipfsHash: string) => any;
-  flippedCard?: string | undefined;
-  setFlippedCard?: React.Dispatch<React.SetStateAction<string | undefined>>;
-  transferRecipient?: string;
-  setTransferRecipient?: React.Dispatch<React.SetStateAction<string>>;
-  newPrice?: string;
-  setNewPrice?: React.Dispatch<React.SetStateAction<string>>;
-  confirmNewPrice?: (newPrice: string) => any;
   burnTokenModal?: () => any;
   openArtworkPopup?: (artwork: ArtworkListElement) => any;
-  changePriceLoading?: string;
-  transferLoading?: string;
-  setOnSale?: (s: string) => any;
-  removeFromMarket?: (s: string) => any;
-  removingFromMarket?: string;
-  settingOnSale?: string;
+  setToastType?: React.Dispatch<React.SetStateAction<ToastType>>;
+  setToastText?: React.Dispatch<React.SetStateAction<ReactNode>>;
 }
