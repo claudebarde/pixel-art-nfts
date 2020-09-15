@@ -128,14 +128,16 @@ const Header: React.FC = () => {
     <header>
       <div className={styles.nav}></div>
       <div className="title">
-        <h1 ref={title} dangerouslySetInnerHTML={{ __html: zTextTitle }}></h1>
+        <Link to="/">
+          <h1 ref={title} dangerouslySetInnerHTML={{ __html: zTextTitle }}></h1>
+        </Link>
       </div>
       <div className={styles.nav}>
-        <Link to="/">
+        <Link to="/draw">
           <i
             className="fas fa-palette fa-lg"
             style={
-              location.pathname === "/"
+              location.pathname === "/draw"
                 ? { color: "#4fd1c5" }
                 : { color: "black" }
             }

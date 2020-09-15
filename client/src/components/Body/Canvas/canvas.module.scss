@@ -2,9 +2,9 @@ $pixel-size-small: 30px;
 $pixel-size-medium: 20px;
 $pixel-size-large: 14px;
 
-$small-grid-blocks: 12;
-$medium-grid-blocks: 32;
-$large-grid-blocks: 48;
+$small-grid-blocks: 13;
+$medium-grid-blocks: 33;
+$large-grid-blocks: 49;
 
 .pixelGridSmall {
   display: grid;
@@ -169,4 +169,10 @@ div .palette {
     width: 25px;
     height: 25px;
   }
+}
+
+.header_number {
+  font-size: 0.7rem;
+  display: grid;
+  place-items: center;
 }

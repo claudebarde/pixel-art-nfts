@@ -332,7 +332,7 @@ const CardGenerator: React.FC<CardProps> = ({
               <p>
                 {artwork.size === 1 && "12x12"}
                 {artwork.size === 2 && "32x32"}
-                {artwork.size === 3 && "64x64"}
+                {artwork.size === 3 && "48x48"}
               </p>
               {view === View.MARKET ? (
                 <p>

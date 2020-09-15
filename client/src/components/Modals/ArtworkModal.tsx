@@ -40,7 +40,7 @@ const ArtworkModal: React.FC<{
   const downloadCanvas = () => {
     const url = canvasRef.current.toDataURL("image/png");
     var link = document.createElement("a");
-    link.download = makeTitle().toLowerCase() + ".png";
+    link.download = artwork.hash + ".png";
     link.href = url;
     link.click();
   };
@@ -77,14 +77,14 @@ const ArtworkModal: React.FC<{
                   ? 12 * pixelSize
                   : gridSize === GridSize.Medium
                   ? 32 * pixelSize
-                  : 64 * pixelSize
+                  : 48 * pixelSize
               }
               height={
                 gridSize === GridSize.Small
                   ? 12 * pixelSize
                   : gridSize === GridSize.Medium
                   ? 32 * pixelSize
-                  : 64 * pixelSize
+                  : 48 * pixelSize
               }
             ></canvas>
           </div>

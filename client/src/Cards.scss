@@ -60,11 +60,12 @@ $large-grid-blocks: 48;
   -moz-box-shadow: 1px 8px 10px -5px #ccc;
   -webkit-box-shadow: 1px 8px 10px -5px #ccc;
   box-shadow: 1px 8px 10px -5px #ccc;
-  transition: 0.4s;
+  font-size: 1rem;
+  transition: 0.8s;
 
   &:hover {
     width: 320px;
-    height: 470px;
+    height: 490px;
     -moz-box-shadow: 10px 8px 10px -5px #ccc;
     -webkit-box-shadow: 10px 8px 10px -5px #ccc;
     box-shadow: 10px 8px 10px -5px #ccc;
