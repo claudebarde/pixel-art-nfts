@@ -31,7 +31,7 @@ const [blockNumberSmall, blockNumberMedium, blockNumberLarge]: number[] = [
 
 const bgColor = "#f7fafc";
 const brushColor = "#42445a";
-const defaultPalette = ["#42445a", "#f7fafc", "#ffffff"];
+const defaultPalette = ["#ffffff", "#42445a", "#f7fafc", "#ffffff"];
 const defaultSmallCanvas = (): Canvas =>
   Array(blockNumberSmall)
     .fill("")
@@ -620,6 +620,8 @@ const CanvasPainting: React.FC = () => {
                 <div>Last colors used:</div>
                 <div className={styles.lastUsedColorsPalette}>
                   {lastUsedColors.map((color, i) => {
+                    if (i === 0) return null;
+
                     return (
                       <div
                         key={i + "-" + color}
