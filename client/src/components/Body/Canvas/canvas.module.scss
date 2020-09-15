@@ -172,7 +172,10 @@ div .palette {
 }
 
 .header_number {
-  font-size: 0.7rem;
+  font-size: 0.5rem;
   display: grid;
   place-items: center;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
