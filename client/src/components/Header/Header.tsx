@@ -10,6 +10,7 @@ import {
   Modal
 } from "../Modals/Modal";
 import WalletModal from "../Modals/WalletModal";
+import { disconnectThanos } from "../Modals/walletConnection";
 
 const titleColors = [
   "red",
@@ -28,7 +29,10 @@ const Header: React.FC = () => {
     contract,
     refreshStorage,
     walletModalOpen,
-    setWalletModalOpen
+    setWalletModalOpen,
+    setUserAddress,
+    setUserBalance,
+    Tezos
   } = useContext(Context);
   const title = useRef(null);
   const [zTextTitle] = useState(
@@ -126,7 +130,21 @@ const Header: React.FC = () => {
 
   return (
     <header>
-      <div className={styles.nav}></div>
+      <div className={styles.nav}>
+        {userAddress && (
+          <Link to={`/profile/${userAddress}`}>
+            <div className={styles.account_connected}>
+              <img
+                src={`https://services.tzkt.io/v1/avatars/${userAddress}`}
+                alt="avatar"
+              />
+              <span>
+                {userAddress.slice(0, 5) + "..." + userAddress.slice(-5)}
+              </span>
+            </div>
+          </Link>
+        )}
+      </div>
       <div className="title">
         <Link to="/">
           <h1 ref={title} dangerouslySetInnerHTML={{ __html: zTextTitle }}></h1>
@@ -153,20 +171,8 @@ const Header: React.FC = () => {
             }
           ></i>
         </Link>
-        <div className={styles.wallet_button}>
-          {userAddress ? (
-            <Link to={`/profile/${userAddress}`}>
-              <i
-                className="fas fa-user-check fa-lg"
-                style={
-                  location.pathname.includes("/profile") &&
-                  userAddress === address
-                    ? { color: "#4fd1c5" }
-                    : { color: "black" }
-                }
-              ></i>
-            </Link>
-          ) : (
+        {!userAddress && (
+          <div className={styles.wallet_button}>
             <div
               onClick={() => {
                 if (setWalletModalOpen) {
@@ -176,36 +182,45 @@ const Header: React.FC = () => {
             >
               <i className="fas fa-wallet fa-lg"></i>
             </div>
-          )}
-        </div>
-        {userAddress && (
-          <div
-            onClick={() =>
-              setModalState({
-                state: ModalState.OPEN,
-                type: ModalType.CONFIRM_CART,
-                header: "Confirm purchases",
-                body: "",
-                confirm: confirmBuy,
-                close: () => {
-                  setModalState({
-                    state: ModalState.CLOSED,
-                    type: ModalType.CLOSED,
-                    header: "",
-                    body: "",
-                    confirm: undefined,
-                    close: undefined
-                  });
-                }
-              })
-            }
-          >
-            <i
-              className={`fas ${
-                cart && cart.length > 0 ? "fa-cart-plus" : "fa-shopping-cart"
-              } fa-lg`}
-            ></i>
           </div>
+        )}
+        {userAddress && (
+          <>
+            <div
+              onClick={() =>
+                setModalState({
+                  state: ModalState.OPEN,
+                  type: ModalType.CONFIRM_CART,
+                  header: "Confirm purchases",
+                  body: "",
+                  confirm: confirmBuy,
+                  close: () => {
+                    setModalState({
+                      state: ModalState.CLOSED,
+                      type: ModalType.CLOSED,
+                      header: "",
+                      body: "",
+                      confirm: undefined,
+                      close: undefined
+                    });
+                  }
+                })
+              }
+            >
+              <i
+                className={`fas ${
+                  cart && cart.length > 0 ? "fa-cart-plus" : "fa-shopping-cart"
+                } fa-lg`}
+              ></i>
+            </div>
+            <div
+              onClick={() =>
+                disconnectThanos(setUserAddress, setUserBalance, Tezos)
+              }
+            >
+              <i className="fas fa-sign-out-alt fa-lg"></i>
+            </div>
+          </>
         )}
       </div>
       <Modal {...modalState} />

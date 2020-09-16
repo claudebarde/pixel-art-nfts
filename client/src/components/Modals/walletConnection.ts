@@ -115,3 +115,10 @@ export const connectWithThanos = async (
     return keyHash;
   }
 };
+
+export const disconnectThanos = (setUserAddress, setUserBalance, Tezos) => {
+  setUserAddress("");
+  setUserBalance(0);
+  Tezos.setWalletProvider(undefined);
+  if (window.localStorage) window.localStorage.removeItem("connected-wallet");
+};

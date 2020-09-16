@@ -1,22 +1,40 @@
-import React, { useEffect, useState, useContext } from "react";
+import React, { useEffect, useState, useContext, ReactNode } from "react";
 import styles from "./market.module.scss";
-import { ArtworkListElement, TokenMetadata, View } from "../../../types";
+import {
+  ArtworkListElement,
+  GridSize,
+  TokenMetadata,
+  View
+} from "../../../types";
 import config from "../../../config";
 import { Context } from "../../../Context";
 import { BigNumber } from "bignumber.js";
 import CardGenerator from "../CardGenerator";
 import { useParams, useLocation } from "react-router-dom";
 import ArtworkModal from "../../Modals/ArtworkModal";
+import { Toast, ToastType } from "../../Toast/Toast";
 
 const Market: React.FC = () => {
   const { storage, userAddress } = useContext(Context);
   const [loadingMarket, setLoadingMarket] = useState(true);
+  const [tokens, setTokens] = useState<ArtworkListElement[]>([]);
   const [artworkList, setArtworkList] = useState<ArtworkListElement[]>([]);
   const [numberOfArtwork, setNumberOfArtwork] = useState<number>(0);
   const [openArtworkModal, setOpenArtworkModal] = useState(false);
   const [artworkModal, setArtworkModal] = useState<ArtworkListElement>();
+  const [toastText, setToastText] = useState<ReactNode>();
+  const [toastType, setToastType] = useState<ToastType>(ToastType.DEFAULT);
+  const [selectedSize, setSelectSize] = useState<GridSize | string>("all");
+  const [orderByPrice, setOrderByPrice] = useState<string>();
   const { token_id } = useParams();
   const location = useLocation();
+
+  const sizeOptions = [
+    { value: "all", label: "All" },
+    { value: GridSize.Small, label: "12x12" },
+    { value: GridSize.Medium, label: "32x32" },
+    { value: GridSize.Large, label: "48x48" }
+  ];
 
   const openArtworkPopup = artwork => {
     setArtworkModal(artwork);
@@ -97,11 +115,17 @@ const Market: React.FC = () => {
               el => el.ipfsHash !== token_id
             ) as ArtworkListElement[];
             setArtworkList([token, ...filteredList]);
+            // a copy is kept to retrieve tokens when user filters them
+            setTokens([token, ...filteredList]);
           } else {
             setArtworkList(list as ArtworkListElement[]);
+            // a copy is kept to retrieve tokens when user filters them
+            setTokens(list);
           }
         } else {
           setArtworkList(list as ArtworkListElement[]);
+          // a copy is kept to retrieve tokens when user filters them
+          setTokens(list);
         }
         setLoadingMarket(false);
       }
@@ -119,7 +143,67 @@ const Market: React.FC = () => {
             </div>
           </div>
         ) : (
-          <h2>Artwork Marketplace</h2>
+          <>
+            <h2>Artwork Marketplace</h2>
+            <div className={styles.market_options}>
+              <label htmlFor="select-size"> Select by size:</label>
+              <span className="custom-dropdown">
+                <select
+                  id="select-size"
+                  onChange={e => {
+                    const val = e.target.value;
+                    // sets new selected size
+                    setSelectSize(val);
+                    // filters tokens
+                    if (val === "all") {
+                      setArtworkList(tokens);
+                    } else {
+                      const newTokens = [...tokens].filter(
+                        token => token.size === +val
+                      );
+                      setArtworkList(newTokens);
+                    }
+                  }}
+                  value={selectedSize}
+                >
+                  {sizeOptions.map(option => (
+                    <option
+                      key={`select-size-` + option.label}
+                      value={option.value}
+                    >
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </span>
+              <label htmlFor="select-price">Order by price:</label>
+              <span className="custom-dropdown">
+                <select
+                  id="select-price"
+                  value={orderByPrice}
+                  onChange={e => {
+                    const val = e.target.value;
+                    setOrderByPrice(val);
+                    if (val === "up") {
+                      const newTokens = [...tokens];
+                      newTokens.sort((a, b) => (+a.price < +b.price ? -1 : 1));
+                      setArtworkList(newTokens);
+                    } else if (val === "down") {
+                      const newTokens = [...tokens];
+                      newTokens.sort((a, b) => (+a.price > +b.price ? -1 : 1));
+                      setArtworkList(newTokens);
+                    } else {
+                      setArtworkList(tokens);
+                    }
+                  }}
+                >
+                  <option value={undefined}>None</option>
+                  <option value="up">Increasing</option>
+                  <option value="down">Decreasing</option>
+                </select>
+              </span>
+            </div>
+          </>
         )}
         <div className={styles.cards}>
           {artworkList.map((artwork, i) => (
@@ -133,6 +217,8 @@ const Market: React.FC = () => {
               token_id={token_id}
               openArtworkPopup={openArtworkPopup}
               location={location.pathname}
+              setToastText={setToastText}
+              setToastType={setToastType}
             />
           ))}
         </div>
@@ -142,6 +228,7 @@ const Market: React.FC = () => {
           </div>
         )}
       </main>
+      <Toast type={toastType} text={toastText} />
       {openArtworkModal && (
         <ArtworkModal
           close={() => setOpenArtworkModal(false)}

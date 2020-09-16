@@ -5,12 +5,13 @@ import { LedgerSigner, DerivationType } from "@taquito/ledger-signer";
 import TransportU2F from "@ledgerhq/hw-transport-u2f";
 import { TezBridgeWallet } from "@taquito/tezbridge-wallet";
 import BigNumber from "bignumber.js";
-import { connectWithBeacon } from "./walletConnection";
+import { connectWithBeacon, connectWithThanos } from "./walletConnection";
 
 enum WalletType {
   LEDGER,
   BEACON,
-  TEZBRIDGE
+  TEZBRIDGE,
+  THANOS
 }
 
 const WalletModal: React.FC<{ close: any }> = ({ close }) => {
@@ -45,6 +46,14 @@ const WalletModal: React.FC<{ close: any }> = ({ close }) => {
     if (walletType === WalletType.BEACON) {
       // Beacon wallet
       const pkh = await connectWithBeacon(Tezos, network as string);
+      if (pkh) {
+        setUserAddress(pkh);
+        getUserBalance(pkh);
+      }
+      close(false);
+    } else if (walletType === WalletType.THANOS) {
+      // Beacon wallet
+      const pkh = await connectWithThanos(Tezos, network as string);
       if (pkh) {
         setUserAddress(pkh);
         getUserBalance(pkh);
@@ -136,6 +145,28 @@ const WalletModal: React.FC<{ close: any }> = ({ close }) => {
               <span className="fa-stack">
                 <i className="far fa-square fa-stack-1x"></i>
                 {walletType === WalletType.BEACON && (
+                  <i
+                    className="fas fa-check fa-stack-1x"
+                    style={{
+                      fontSize: "1.5rem",
+                      marginLeft: "1px",
+                      marginTop: "-4px",
+                      color: "#48bb78"
+                    }}
+                  ></i>
+                )}
+              </span>
+              <input type="checkbox" /> Beacon
+            </label>
+          </div>
+          <div className={styles.modal__body_p}>
+            <label
+              className={styles.modal__wallet_option}
+              onClick={() => setWalletType(WalletType.THANOS)}
+            >
+              <span className="fa-stack">
+                <i className="far fa-square fa-stack-1x"></i>
+                {walletType === WalletType.THANOS && (
                   <i
                     className="fas fa-check fa-stack-1x"
                     style={{

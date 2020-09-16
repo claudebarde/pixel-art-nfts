@@ -437,10 +437,28 @@ const CardGenerator: React.FC<CardProps> = ({
                   <i className="fas fa-cube"></i>
                 </a>
               </div>
-              <div>
-                <NavLink to={`/market/${artwork.ipfsHash}`}>
-                  <i className="fas fa-share-alt"></i>
-                </NavLink>
+              <div
+                style={{ cursor: "pointer" }}
+                onClick={() => {
+                  const currentPath = window.location.href;
+                  let path = "";
+                  if (currentPath.includes("market")) {
+                    path =
+                      currentPath.split("market")[0] +
+                      "market/" +
+                      artwork.ipfsHash;
+                  } else if (currentPath.includes("profile")) {
+                    path =
+                      currentPath.split("profile")[0] +
+                      "profile/" +
+                      artwork.ipfsHash;
+                  }
+                  navigator.clipboard.writeText(path);
+                  setToastType(ToastType.SUCCESS);
+                  setToastText(<span>Link copied to clipboard!</span>);
+                }}
+              >
+                <i className="fas fa-share-alt"></i>
               </div>
               {(!isOwnerConnected ||
                 (isOwnerConnected && userAddress !== artwork.seller)) && (

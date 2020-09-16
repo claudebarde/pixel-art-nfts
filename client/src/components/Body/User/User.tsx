@@ -49,16 +49,6 @@ const User: React.FC = () => {
     setOpenArtworkModal(true);
   };
 
-  /*const confirmTransfer = ipfsHash => {
-    if (ipfsHash && transferRecipient) {
-      transfer(ipfsHash, transferRecipient);
-    }
-  };
-  
-  const confirmNewPrice = (ipfsHash: string) => {
-    changePrice(ipfsHash, newPrice);
-  };*/
-
   const burnToken = async (tokenID: string) => {
     const BurnToken =
       process.env.NODE_ENV === "development"
@@ -254,6 +244,13 @@ const User: React.FC = () => {
     }
   }, [userAddress, address, storage]);
 
+  useEffect(() => {
+    if (!loading) {
+      setTokens([]);
+      setLoading(true);
+    }
+  }, [userAddress, address]);
+
   return (
     <>
       <main>
@@ -278,25 +275,27 @@ const User: React.FC = () => {
                   : styles.title_user
               }
             >
-              <h2>
-                <span>
-                  Welcome to{" "}
-                  {userAddress && userAddress === address ? "your" : "my"}{" "}
-                  profile!
-                </span>
-                <a
-                  href={`https://${
-                    config.ENV === "carthagenet" && "carthage."
-                  }tzkt.io/${address}/operations`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <img
-                    src={`https://services.tzkt.io/v1/avatars/${address}`}
-                    alt="avatar"
-                  />
-                </a>
-              </h2>
+              {userAddress && userAddress === address ? null : (
+                <h2>
+                  <span>
+                    Welcome to{" "}
+                    {userAddress && userAddress === address ? "your" : "my"}{" "}
+                    profile!
+                  </span>
+                  <a
+                    href={`https://${
+                      config.ENV === "carthagenet" && "carthage."
+                    }tzkt.io/${address}/operations`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <img
+                      src={`https://services.tzkt.io/v1/avatars/${address}`}
+                      alt="avatar"
+                    />
+                  </a>
+                </h2>
+              )}
               {userAddress && userAddress === address ? (
                 <>
                   <div>

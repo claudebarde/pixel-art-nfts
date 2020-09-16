@@ -51,12 +51,16 @@ export const Provider: React.FC = props => {
     (async () => {
       Tezos.setRpcProvider(state.network);
       // creates contract instance
-      const newInstance: ContractAbstraction<Wallet> = await Tezos.wallet.at(
-        config.CONTRACT[config.ENV]
-      );
-      setContract(newInstance);
-      const newStorage: Storage = await newInstance.storage();
-      setStorage(newStorage);
+      try {
+        const newInstance: ContractAbstraction<Wallet> = await Tezos.wallet.at(
+          config.CONTRACT[config.ENV]
+        );
+        setContract(newInstance);
+        const newStorage: Storage = await newInstance.storage();
+        setStorage(newStorage);
+      } catch (error) {
+        console.error(error);
+      }
 
       // checks if users connected their wallet before
       if (window.localStorage) {

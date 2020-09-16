@@ -108,6 +108,6 @@ export interface CardProps {
   confirmTransfer?: (ipfsHash: string) => any;
   burnTokenModal?: () => any;
   openArtworkPopup?: (artwork: ArtworkListElement) => any;
-  setToastType?: React.Dispatch<React.SetStateAction<ToastType>>;
-  setToastText?: React.Dispatch<React.SetStateAction<ReactNode>>;
+  setToastType: React.Dispatch<React.SetStateAction<ToastType>>;
+  setToastText: React.Dispatch<React.SetStateAction<ReactNode>>;
 }

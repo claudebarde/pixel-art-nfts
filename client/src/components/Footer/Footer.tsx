@@ -1,18 +1,10 @@
-import React, { useContext } from "react";
-import { Context } from "../../Context";
+import React from "react";
 import config from "../../config";
 
 const Footer: React.FC = () => {
-  const { userAddress } = useContext(Context);
-
   return (
     <footer>
-      <div className="address-display">
-        {userAddress &&
-          `Connected as ${
-            userAddress.slice(0, 5) + "..." + userAddress.slice(-5)
-          }`}
-      </div>
+      <div></div>
       <div>
         <span className="address-display">v{config.version}</span>{" "}
         <a
@@ -30,6 +22,14 @@ const Footer: React.FC = () => {
           rel="noopener noreferrer"
         >
           <i className="fab fa-github"></i>
+        </a>
+        <a
+          href="https://better-call.dev"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="bcd-icon"
+        >
+          BCD
         </a>
       </div>
     </footer>
