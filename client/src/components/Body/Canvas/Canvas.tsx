@@ -340,7 +340,7 @@ const CanvasPainting: React.FC = () => {
             process.env.NODE_ENV === "development"
               ? `http://localhost:${config.NETLIFY_PORT}/burnPixelArt`
               : "https://pixel-art-nfts.netlify.app/.netlify/functions/burnPixelArt";
-          const data = await fetch(BurnToken, {
+          await fetch(BurnToken, {
             body: response.ipfsHash,
             method: "POST"
           });

@@ -1,6 +1,6 @@
 export default {
   ENV: "carthagenet", // dev | carthagenet | mainnet
-  NETLIFY_PORT: 60863,
+  NETLIFY_PORT: 58622,
   CONTRACT: {
     dev: "KT19T89LoroCRbNWGDF4XyVeYTX9BUPcAv44",
     carthagenet: "KT1C6fERZuDjYQT5tUuo9hQje9GbW9VsQ3AH",
@@ -16,5 +16,5 @@ export default {
   // previous id on CTHG: 16420,
   TOKEN_METADATA_ID: 17143,
   // previous id on CTHG: 16423
-  version: "1.6.1"
+  version: "1.6.2"
 };

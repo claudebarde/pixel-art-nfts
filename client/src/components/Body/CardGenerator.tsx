@@ -1,6 +1,7 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import moment from "moment";
 import { NavLink } from "react-router-dom";
+import ReactTooltip from "react-tooltip";
 import { View, CartItem, CardProps, GridSize } from "../../types";
 import Identicon from "identicon.js";
 import { Context } from "../../Context";
@@ -238,6 +239,10 @@ const CardGenerator: React.FC<CardProps> = ({
     }
   };
 
+  useEffect(() => {
+    ReactTooltip.rebuild();
+  }, []);
+
   return (
     <div className="flip-container" key={i + "-" + artwork.hash}>
       <div className={`flip-card ${flippedCard ? "hover" : ""}`}>
@@ -427,7 +432,16 @@ const CardGenerator: React.FC<CardProps> = ({
               </p>
             </div>
             <div className={styles.card__footer}>
-              <div>
+              <div data-tip data-for={`ipfs-link-` + artwork.ipfsHash}>
+                <ReactTooltip
+                  id={`ipfs-link-` + artwork.ipfsHash}
+                  place="bottom"
+                  type="info"
+                  effect="solid"
+                  multiline={true}
+                >
+                  <span>IPFS link</span>
+                </ReactTooltip>
                 <a
                   href={`https://gateway.pinata.cloud/ipfs/${artwork.ipfsHash}`}
                   className={styles.tokenData}
@@ -451,19 +465,41 @@ const CardGenerator: React.FC<CardProps> = ({
                     path =
                       currentPath.split("profile")[0] +
                       "profile/" +
+                      address +
+                      "/" +
                       artwork.ipfsHash;
                   }
                   navigator.clipboard.writeText(path);
                   setToastType(ToastType.SUCCESS);
                   setToastText(<span>Link copied to clipboard!</span>);
                 }}
+                data-tip
+                data-for={`share-link-` + artwork.ipfsHash}
               >
+                <ReactTooltip
+                  id={`share-link-` + artwork.ipfsHash}
+                  place="bottom"
+                  type="info"
+                  effect="solid"
+                  multiline={true}
+                >
+                  <span>Share link</span>
+                </ReactTooltip>
                 <i className="fas fa-share-alt"></i>
               </div>
               {(!isOwnerConnected ||
                 (isOwnerConnected && userAddress !== artwork.seller)) && (
                 <>
-                  <div>
+                  <div data-tip data-for={`identicon-` + artwork.ipfsHash}>
+                    <ReactTooltip
+                      id={`identicon-` + artwork.ipfsHash}
+                      place="bottom"
+                      type="info"
+                      effect="solid"
+                      multiline={true}
+                    >
+                      <span>Identicon</span>
+                    </ReactTooltip>
                     <img
                       src={`data:image/png;base64,${makeIdenticon(
                         artwork.hash || artwork.extras.canvasHash
@@ -472,7 +508,16 @@ const CardGenerator: React.FC<CardProps> = ({
                     />
                   </div>
                   {artwork.seller && (
-                    <div>
+                    <div data-tip data-for={`seller-` + artwork.ipfsHash}>
+                      <ReactTooltip
+                        id={`seller-` + artwork.ipfsHash}
+                        place="bottom"
+                        type="info"
+                        effect="solid"
+                        multiline={true}
+                      >
+                        <span>Seller's account</span>
+                      </ReactTooltip>
                       <NavLink to={`/profile/${artwork.seller}`}>
                         <i className="fas fa-cash-register"></i>
                       </NavLink>
@@ -487,7 +532,18 @@ const CardGenerator: React.FC<CardProps> = ({
                     setFlippedCard(true);
                     setTransferRecipient("");
                   }}
+                  data-tip
+                  data-for={`settings-` + artwork.ipfsHash}
                 >
+                  <ReactTooltip
+                    id={`settings-` + artwork.ipfsHash}
+                    place="bottom"
+                    type="info"
+                    effect="solid"
+                    multiline={true}
+                  >
+                    <span>Settings</span>
+                  </ReactTooltip>
                   <i className="fas fa-user-cog"></i>
                 </div>
               )}

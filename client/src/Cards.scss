@@ -122,15 +122,16 @@ $large-grid-blocks: 48;
   }*/
 
   input[type="text"] {
-    padding: 7px;
+    padding: 7px 10px;
     font-size: 1rem;
     border: none;
-    border-left: solid 1px transparent;
     outline: none;
-    background-color: transparent;
-    color: white;
+    background-color: #f7fafc;
+    opacity: 0.4;
+    color: black;
     display: block;
     margin: 0 auto;
+    border-radius: 15px;
     transition: 0.4s;
   }
 

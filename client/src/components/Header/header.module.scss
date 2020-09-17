@@ -60,17 +60,33 @@
   }
 }
 
+.account_connected_container {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  justify-content: left;
+  align-items: center;
+
+  &:hover .logout {
+    right: 0px;
+  }
+}
+
 .account_connected {
+  position: relative;
   background-color: #f8f8ce;
   padding: 5px 15px 5px 10px;
+  margin: 0px;
+  margin-right: 50px;
   border-radius: 50px;
   display: flex;
   flex-direction: row;
-  justify-content: center;
+  justify-content: left;
   align-items: center;
   font-size: 0.8rem;
   color: #9a9a0a;
   font-weight: bold;
+  z-index: 100;
 
   img {
     width: 30px;
@@ -86,6 +102,34 @@
       -webkit-animation: wobble-hor-bottom 0.8s both;
       animation: wobble-hor-bottom 0.8s both;
     }
+  }
+
+  &:active {
+    padding: 4px 14px 4px 9px;
+    margin: 1px;
+
+    img {
+      width: 27px;
+      height: 27px;
+      margin-right: 5px;
+    }
+  }
+}
+
+.logout {
+  position: absolute;
+  right: 60px;
+  background-color: #f8f8ce;
+  color: #9a9a0a;
+  padding: 7px;
+  margin: 0px;
+  border-radius: 50px;
+  z-index: 10;
+  transition: 0.5s;
+
+  &:hover {
+    background-color: darken(#f8f8ce, 5);
+    color: darken(#9a9a0a, 5);
   }
 }
 

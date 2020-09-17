@@ -132,17 +132,22 @@ const Header: React.FC = () => {
     <header>
       <div className={styles.nav}>
         {userAddress && (
-          <Link to={`/profile/${userAddress}`}>
-            <div className={styles.account_connected}>
-              <img
-                src={`https://services.tzkt.io/v1/avatars/${userAddress}`}
-                alt="avatar"
-              />
-              <span>
-                {userAddress.slice(0, 5) + "..." + userAddress.slice(-5)}
-              </span>
+          <div className={styles.account_connected_container}>
+            <Link to={`/profile/${userAddress}`}>
+              <div className={styles.account_connected}>
+                <img
+                  src={`https://services.tzkt.io/v1/avatars/${userAddress}`}
+                  alt="avatar"
+                />
+                <span>
+                  {userAddress.slice(0, 5) + "..." + userAddress.slice(-5)}
+                </span>
+              </div>
+            </Link>
+            <div className={styles.logout}>
+              <i className="fas fa-sign-out-alt fa-lg"></i>
             </div>
-          </Link>
+          </div>
         )}
       </div>
       <div className="title">
