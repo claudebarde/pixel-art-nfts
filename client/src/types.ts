@@ -94,6 +94,7 @@ export interface State {
   setUserBalance: React.Dispatch<React.SetStateAction<number>>;
   walletModalOpen: boolean;
   setWalletModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  firebase: any;
 }
 
 export interface CardProps {

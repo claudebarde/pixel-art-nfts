@@ -5,5 +5,13 @@ client/node_modules
 client/build
 client/yarn.lock
 faucet.js
-# Local Netlify folder
-.netlify
+# Local Firebase Config
+client/.firebase
+client/.firebaserc
+client/firebase.json
+client/firestore.indexes.json
+client/firestore.rules
+client/src/firebase-config.js
+client/functions
+client/ui-debug.log
+client/firebase-debug.log

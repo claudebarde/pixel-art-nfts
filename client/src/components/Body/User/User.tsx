@@ -22,7 +22,8 @@ const User: React.FC = () => {
     refreshStorage,
     contract,
     network,
-    setView
+    setView,
+    firebase
   } = useContext(Context);
   const [loading, setLoading] = useState(true);
   const [tokens, setTokens] = useState<ArtworkListElement[]>([]);
@@ -50,21 +51,16 @@ const User: React.FC = () => {
   };
 
   const burnToken = async (tokenID: string) => {
-    const BurnToken =
-      process.env.NODE_ENV === "development"
-        ? `http://localhost:${config.NETLIFY_PORT}/burnPixelArt`
-        : "https://pixel-art-nfts.netlify.app/.netlify/functions/burnPixelArt";
+    const burn = firebase.functions().httpsCallable("burnPixelArt");
 
     try {
-      const data = await fetch(BurnToken, {
-        body: tokenID,
-        method: "POST"
-      });
+      const response = await burn(tokenID);
+      const data = response.data;
 
-      if (data.status === 200) {
+      if (data.statusCode === 200) {
         console.log("IPFS hash unpinned!");
       } else {
-        throw new Error(JSON.stringify(await data.text()));
+        throw new Error(JSON.stringify(data));
       }
       // remove the token from the blockchain
       const op = await contract?.methods.burn_token(tokenID).send();

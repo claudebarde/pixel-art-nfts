@@ -22,6 +22,7 @@ import { IPFSObject, TokenMetadata } from "../../../types";
 import { saveCanvas, loadCanvas } from "./localCanvas";
 import { Toast, ToastType } from "../../Toast/Toast";
 import WalletModal from "../../Modals/WalletModal";
+import { burnPixelArt } from "../../../../functions/src/index";
 
 const [blockNumberSmall, blockNumberMedium, blockNumberLarge]: number[] = [
   12,
@@ -54,7 +55,8 @@ const CanvasPainting: React.FC = () => {
     network,
     refreshStorage,
     walletModalOpen,
-    setWalletModalOpen
+    setWalletModalOpen,
+    firebase
   } = useContext(Context);
   const [smallCanvas, setSmallCanvas] = useState(defaultSmallCanvas());
   const [mediumCanvas, setMediumCanvas] = useState(defaultMediumCanvas());
@@ -249,29 +251,23 @@ const CanvasPainting: React.FC = () => {
         name: tkmt.name,
         artistName: tkmt.artistName
       };
-
-      const PinPixelArt =
-        process.env.NODE_ENV === "development"
-          ? `http://localhost:${config.NETLIFY_PORT}/pinPixelArt`
-          : "https://pixel-art-nfts.netlify.app/.netlify/functions/pinPixelArt";
+      const pinPixelArt = firebase.functions().httpsCallable("pinPixelArt");
 
       let data;
       try {
-        data = await fetch(PinPixelArt, {
-          body: JSON.stringify(IPFSObject),
-          method: "POST"
-        });
+        const response = await pinPixelArt(IPFSObject);
+        data = response.data;
       } catch (error) {
         console.log(error);
       }
 
       //const response = { ipfsHash: "test" };
-      if (data && data.status === 200 && contract) {
+      if (data && data.statusCode === 200 && contract) {
         const response: {
           hash: string;
           timestamp: number;
           ipfsHash: string;
-        } = await data.json();
+        } = JSON.parse(data.body);
         try {
           console.log("IPFS hash:", response.ipfsHash);
           const tokenMetadata: TokenMetadata = {
@@ -336,14 +332,8 @@ const CanvasPainting: React.FC = () => {
           setToastText(<span>Artwork successfully saved!</span>);
         } catch (error) {
           // removes token from IPFS node if it was already saved
-          const BurnToken =
-            process.env.NODE_ENV === "development"
-              ? `http://localhost:${config.NETLIFY_PORT}/burnPixelArt`
-              : "https://pixel-art-nfts.netlify.app/.netlify/functions/burnPixelArt";
-          await fetch(BurnToken, {
-            body: response.ipfsHash,
-            method: "POST"
-          });
+          const burnToken = firebase.functions().httpsCallable("burnPixelArt");
+          await burnToken(response.ipfsHash);
           console.error(error);
           setToastType(ToastType.ERROR);
           if (error.includes("TOKEN_ALREADY_EXISTS")) {
@@ -361,8 +351,7 @@ const CanvasPainting: React.FC = () => {
         if (!data) {
           setToastText(<span>No data returned from the IPFS node</span>);
         } else {
-          const error = await data.text();
-          if (error.includes("TOKEN_ALREADY_EXISTS")) {
+          if (data.body.includes("TOKEN_ALREADY_EXISTS")) {
             setToastText(<span>This artwork already exists</span>);
           } else {
             setToastText(<span>An error has occurred</span>);

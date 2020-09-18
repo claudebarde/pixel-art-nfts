@@ -1,5 +1,6 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { Link, useLocation, matchPath } from "react-router-dom";
+import ReactTooltip from "react-tooltip";
 import styles from "./header.module.scss";
 import { Context } from "../../Context";
 import ztext from "./ztext-custom";
@@ -144,7 +145,12 @@ const Header: React.FC = () => {
                 </span>
               </div>
             </Link>
-            <div className={styles.logout}>
+            <div
+              className={styles.logout}
+              onClick={() =>
+                disconnectThanos(setUserAddress, setUserBalance, Tezos)
+              }
+            >
               <i className="fas fa-sign-out-alt fa-lg"></i>
             </div>
           </div>
@@ -156,7 +162,16 @@ const Header: React.FC = () => {
         </Link>
       </div>
       <div className={styles.nav}>
-        <Link to="/draw">
+        <Link to="/draw" data-tip data-for="new-artowrk-link">
+          <ReactTooltip
+            id="new-artowrk-link"
+            place="bottom"
+            type="warning"
+            effect="solid"
+            multiline={true}
+          >
+            <span>New artwork</span>
+          </ReactTooltip>
           <i
             className="fas fa-palette fa-lg"
             style={
@@ -166,7 +181,16 @@ const Header: React.FC = () => {
             }
           ></i>
         </Link>
-        <Link to="/market">
+        <Link to="/market" data-tip data-for="marketplace-link">
+          <ReactTooltip
+            id="marketplace-link"
+            place="bottom"
+            type="warning"
+            effect="solid"
+            multiline={true}
+          >
+            <span>Marketplace</span>
+          </ReactTooltip>
           <i
             className="fas fa-store fa-lg"
             style={
@@ -184,7 +208,18 @@ const Header: React.FC = () => {
                   setWalletModalOpen(!walletModalOpen);
                 }
               }}
+              data-tip
+              data-for="connect-wallet-link"
             >
+              <ReactTooltip
+                id="connect-wallet-link"
+                place="bottom"
+                type="warning"
+                effect="solid"
+                multiline={true}
+              >
+                <span>Connect your wallet</span>
+              </ReactTooltip>
               <i className="fas fa-wallet fa-lg"></i>
             </div>
           </div>
@@ -211,19 +246,29 @@ const Header: React.FC = () => {
                   }
                 })
               }
+              data-tip
+              data-for="cart-link"
             >
+              <ReactTooltip
+                id="cart-link"
+                place="bottom"
+                type="warning"
+                effect="solid"
+                multiline={true}
+              >
+                {cart && cart.length > 0 ? (
+                  <span>
+                    {cart.length} item{cart.length > 1 ? "s" : ""} in your cart
+                  </span>
+                ) : (
+                  <span>Your cart is empty</span>
+                )}
+              </ReactTooltip>
               <i
                 className={`fas ${
                   cart && cart.length > 0 ? "fa-cart-plus" : "fa-shopping-cart"
                 } fa-lg`}
               ></i>
-            </div>
-            <div
-              onClick={() =>
-                disconnectThanos(setUserAddress, setUserBalance, Tezos)
-              }
-            >
-              <i className="fas fa-sign-out-alt fa-lg"></i>
             </div>
           </>
         )}

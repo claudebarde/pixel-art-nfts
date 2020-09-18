@@ -362,7 +362,7 @@ export const Modal: React.FC<ModalProps> = ({
               </div>
             </>
           )}
-          {/* CONFIRM TOKEN TRANSFER */}
+          {/* CONFIRM TOKEN BURN */}
           {type === ModalType.BURN_TOKEN && (
             <div>
               <div className={styles.modal__body}>
@@ -379,7 +379,7 @@ export const Modal: React.FC<ModalProps> = ({
                 <button
                   className="button error"
                   onClick={() => {
-                    if (!loadingBurn) confirm(transferRecipient);
+                    if (!loadingBurn) confirm();
                     setLoadingBurn(true);
                   }}
                 >

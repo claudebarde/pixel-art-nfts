@@ -16,5 +16,5 @@ export default {
   // previous id on CTHG: 16420,
   TOKEN_METADATA_ID: 17143,
   // previous id on CTHG: 16423
-  version: "1.6.2"
+  version: "1.8.1"
 };

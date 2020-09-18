@@ -7,6 +7,8 @@ import {
   connectWithThanos
 } from "./components/Modals/walletConnection";
 import BigNumber from "bignumber.js";
+import firebase from "firebase";
+import firebaseConfig from "./firebase-config";
 
 export const Context = React.createContext<Partial<State>>({});
 
@@ -19,6 +21,7 @@ export const Provider: React.FC = props => {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [userBalance, setUserBalance] = useState<number>(0);
   const [walletModalOpen, setWalletModalOpen] = useState(false);
+  const [_firebase, setFirebase] = useState(firebase);
 
   const refreshStorage = async () => {
     if (contract) {
@@ -44,10 +47,14 @@ export const Provider: React.FC = props => {
     userBalance,
     setUserBalance,
     walletModalOpen,
-    setWalletModalOpen
+    setWalletModalOpen,
+    firebase: _firebase
   };
 
   useEffect(() => {
+    firebase.initializeApp(firebaseConfig);
+    setFirebase(firebase);
+
     (async () => {
       Tezos.setRpcProvider(state.network);
       // creates contract instance
