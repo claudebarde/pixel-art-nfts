@@ -58,6 +58,7 @@ const Market: React.FC = () => {
     // no need to show the market loading if the artwork is already loaded
     if (artworkList && artworkList.length > 0) setLoadingMarket(false);
 
+    let localEntries = !entries ? undefined : [...entries];
     if (!entries) {
       // gets length of big map
       const lengthQuery = await fetch(
@@ -76,13 +77,14 @@ const Market: React.FC = () => {
       );
       setNumberOfArtwork(respEntries.length);
       setEntries(respEntries);
+      localEntries = [...respEntries];
     }
 
-    if (entries && entries.length > 0 && storage) {
+    if (localEntries && localEntries.length > 0 && storage) {
       const artPieces: any[] = [];
-      const tempEntries = [...entries];
+      const tempEntries = [...localEntries];
       let counter = initialCounter;
-      for (const entry of entries) {
+      for (const entry of localEntries) {
         // must be a valid IPFS hash
         if (
           entry.data.key.value.length === 46 &&
