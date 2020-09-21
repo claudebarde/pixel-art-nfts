@@ -341,11 +341,13 @@ footer {
 
 /* FLIP ANIMATION FOR CARDS */
 /* entire container, keeps perspective */
-.flip-container {
+.flip-container-portrait,
+.flip-container-landscape {
   perspective: 1000px;
 }
 /* flip the pane when hovered */
-.flip-container .flip-card.hover {
+.flip-container-portrait .flip-card.hover,
+.flip-container-landscape .flip-card.hover {
   transform: rotateY(180deg);
 }
 

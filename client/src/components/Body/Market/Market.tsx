@@ -15,11 +15,18 @@ import ArtworkModal from "../../Modals/ArtworkModal";
 import { Toast, ToastType } from "../../Toast/Toast";
 
 const Market: React.FC = () => {
-  const { storage, userAddress } = useContext(Context);
+  const {
+    storage,
+    userAddress,
+    artworkList,
+    setArtworkList,
+    tokens,
+    setTokens,
+    entries,
+    setEntries
+  } = useContext(Context);
   const [loadingMarket, setLoadingMarket] = useState(true);
   const [loadingArtPieces, setLoadingArtPieces] = useState(false);
-  const [tokens, setTokens] = useState<ArtworkListElement[]>([]);
-  const [artworkList, setArtworkList] = useState<ArtworkListElement[]>([]);
   const [numberOfArtwork, setNumberOfArtwork] = useState<number>(0);
   const [openArtworkModal, setOpenArtworkModal] = useState(false);
   const [artworkModal, setArtworkModal] = useState<ArtworkListElement>();
@@ -27,8 +34,7 @@ const Market: React.FC = () => {
   const [toastType, setToastType] = useState<ToastType>(ToastType.DEFAULT);
   const [selectedSize, setSelectSize] = useState<GridSize | string>("all");
   const [orderByPrice, setOrderByPrice] = useState<string>();
-  const [cardDisplay, setCardDisplay] = useState("landscape"); // portrait or landscape
-  const [entries, setEntries] = useState<any[] | undefined>();
+  const [cardDisplay, setCardDisplay] = useState("portrait"); // portrait or landscape
   const [initialCounter, setInitialCounter] = useState(0);
   const [initialThreshold, setInitialThreshold] = useState(6);
   const { token_id } = useParams();
@@ -48,6 +54,9 @@ const Market: React.FC = () => {
 
   const loadArtPieces = async storage => {
     if (initialCounter > 0) setLoadingArtPieces(true);
+    if (!setTokens || !setArtworkList || !setEntries) return;
+    // no need to show the market loading if the artwork is already loaded
+    if (artworkList && artworkList.length > 0) setLoadingMarket(false);
 
     if (!entries) {
       // gets length of big map
@@ -84,7 +93,6 @@ const Market: React.FC = () => {
           )) as TokenMetadata;
           if (tkmt && tkmt.market && counter < initialThreshold) {
             // gets info for each piece from the IPFS
-            console.log("call to the IPFS");
             const response = await fetch(
               `https://gateway.pinata.cloud/ipfs/${entry.data.key.value}`
             );
@@ -119,8 +127,8 @@ const Market: React.FC = () => {
       // entries are updated so we don't use the same again after infinite scroll
       setEntries([...tempEntries]);
       setLoadingMarket(false);
-      setTokens([...artworkList, ...artPieces]);
-      setArtworkList([...artworkList, ...artPieces]);
+      setTokens([...artworkList!, ...artPieces]);
+      setArtworkList([...artworkList!, ...artPieces]);
       setInitialCounter(counter);
     }
     setLoadingArtPieces(false);
@@ -159,14 +167,16 @@ const Market: React.FC = () => {
                 <select
                   id="select-size"
                   onChange={e => {
+                    if (!setArtworkList) return;
+
                     const val = e.target.value;
                     // sets new selected size
                     setSelectSize(val);
                     // filters tokens
                     if (val === "all") {
-                      setArtworkList(tokens);
+                      setArtworkList(tokens as ArtworkListElement[]);
                     } else {
-                      const newTokens = [...tokens].filter(
+                      const newTokens = [...tokens!].filter(
                         token => token.size === +val
                       );
                       setArtworkList(newTokens);
@@ -190,18 +200,20 @@ const Market: React.FC = () => {
                   id="select-price"
                   value={orderByPrice}
                   onChange={e => {
+                    if (!setArtworkList) return;
+
                     const val = e.target.value;
                     setOrderByPrice(val);
                     if (val === "up") {
-                      const newTokens = [...tokens];
+                      const newTokens = [...tokens!];
                       newTokens.sort((a, b) => (+a.price < +b.price ? -1 : 1));
-                      setArtworkList(newTokens);
+                      setArtworkList(newTokens as ArtworkListElement[]);
                     } else if (val === "down") {
-                      const newTokens = [...tokens];
+                      const newTokens = [...tokens!];
                       newTokens.sort((a, b) => (+a.price > +b.price ? -1 : 1));
-                      setArtworkList(newTokens);
+                      setArtworkList(newTokens as ArtworkListElement[]);
                     } else {
-                      setArtworkList(tokens);
+                      setArtworkList(tokens as ArtworkListElement[]);
                     }
                   }}
                 >
@@ -213,6 +225,7 @@ const Market: React.FC = () => {
               <label htmlFor="select-card-display">Portrait</label>
               <input
                 type="radio"
+                className={styles.displayRadio}
                 name="select-card-display"
                 value="portrait"
                 checked={cardDisplay === "portrait"}
@@ -221,6 +234,7 @@ const Market: React.FC = () => {
               <label htmlFor="select-card-display">Landscape</label>
               <input
                 type="radio"
+                className={styles.displayRadio}
                 name="select-card-display"
                 value="landscape"
                 checked={cardDisplay === "landscape"}
@@ -230,7 +244,7 @@ const Market: React.FC = () => {
           </>
         )}
         <div className={styles.cards} onScroll={handleScroll}>
-          {artworkList.map((artwork, i) => (
+          {artworkList?.map((artwork, i) => (
             <CardGenerator
               key={artwork.hash}
               artwork={artwork}
@@ -254,7 +268,7 @@ const Market: React.FC = () => {
             </>
           )}
         </div>
-        {artworkList.length === 0 && !loadingMarket && (
+        {artworkList && artworkList.length === 0 && !loadingMarket && (
           <div>
             <h2>No artwork available yet</h2>
           </div>

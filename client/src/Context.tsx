@@ -1,7 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { Tezos, ContractAbstraction, Wallet } from "@taquito/taquito";
 import config from "./config";
-import { Storage, State, View, GridSize, CartItem } from "./types";
+import {
+  Storage,
+  State,
+  View,
+  GridSize,
+  CartItem,
+  ArtworkListElement
+} from "./types";
 import {
   connectWithBeacon,
   connectWithThanos
@@ -22,6 +29,9 @@ export const Provider: React.FC = props => {
   const [userBalance, setUserBalance] = useState<number>(0);
   const [walletModalOpen, setWalletModalOpen] = useState(false);
   const [_firebase, setFirebase] = useState(firebase);
+  const [tokens, setTokens] = useState<ArtworkListElement[]>([]);
+  const [artworkList, setArtworkList] = useState<ArtworkListElement[]>([]);
+  const [entries, setEntries] = useState<any[] | undefined>();
 
   const refreshStorage = async () => {
     if (contract) {
@@ -48,7 +58,13 @@ export const Provider: React.FC = props => {
     setUserBalance,
     walletModalOpen,
     setWalletModalOpen,
-    firebase: _firebase
+    firebase: _firebase,
+    tokens,
+    setTokens,
+    artworkList,
+    setArtworkList,
+    entries,
+    setEntries
   };
 
   useEffect(() => {

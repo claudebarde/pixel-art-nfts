@@ -97,6 +97,12 @@ export interface State {
   walletModalOpen: boolean;
   setWalletModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
   firebase: any;
+  tokens: ArtworkListElement[];
+  setTokens: React.Dispatch<React.SetStateAction<ArtworkListElement[]>>;
+  artworkList: ArtworkListElement[];
+  setArtworkList: React.Dispatch<React.SetStateAction<ArtworkListElement[]>>;
+  entries: any[] | undefined;
+  setEntries: React.Dispatch<React.SetStateAction<any[] | undefined>>;
 }
 
 export interface CardProps {

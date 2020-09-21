@@ -479,7 +479,7 @@ const CardGenerator: React.FC<CardProps> = ({
           </div>
         </div>
         <div className={`back-` + cardDisplay}>
-          <div className={styles.card}>
+          <div className={cardStyle}>
             <div className={styles.card__header}></div>
             <div className={styles.card__body}>
               <div className={styles.card__body_}>

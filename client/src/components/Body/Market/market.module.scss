@@ -48,3 +48,53 @@
   justify-content: center;
   align-items: center;
 }
+
+.displayRadio {
+  appearance: none;
+  outline: none;
+  border: solid 2px black;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  position: relative;
+  padding: 0px;
+  cursor: pointer;
+
+  &:active::before {
+    content: "";
+    width: 20px;
+    height: 20px;
+    background-color: blue;
+    position: absolute;
+    top: -12%;
+    left: -12%;
+    border-radius: 50%;
+  }
+
+  &:checked::before {
+    content: "";
+    width: 12px;
+    height: 12px;
+    background-color: blue;
+    position: absolute;
+    top: 12%;
+    left: 12%;
+    border-radius: 50%;
+    animation: mount-radio-button 1s ease-in 0s 1 normal;
+  }
+}
+
+@keyframes mount-radio-button {
+  from {
+    width: 20px;
+    height: 20px;
+    top: -12%;
+    left: -12%;
+  }
+  to {
+    width: 12px;
+    height: 12px;
+    top: 12%;
+    left: 12%;
+  }
+}
