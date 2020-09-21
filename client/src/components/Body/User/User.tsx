@@ -3,7 +3,7 @@ import { useParams, useLocation } from "react-router-dom";
 import config from "../../../config";
 import { Context } from "../../../Context";
 import styles from "./user.module.scss";
-import CardGenerator from "../CardGenerator";
+import CardGenerator from "../Card/CardGenerator";
 import { View, Canvas, ArtworkListElement } from "../../../types";
 import {
   State as ModalState,
@@ -356,6 +356,7 @@ const User: React.FC = () => {
               openArtworkPopup={openArtworkPopup}
               setToastType={setToastType}
               setToastText={setToastText}
+              cardDisplay="portrait"
             />
           ))}
         </div>

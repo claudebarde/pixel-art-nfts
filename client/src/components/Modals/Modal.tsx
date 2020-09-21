@@ -205,7 +205,9 @@ export const Modal: React.FC<ModalProps> = ({
                               className={
                                 item.size === GridSize.Small
                                   ? styles.cart_grid_small
-                                  : styles.cart_grid_default
+                                  : item.size === GridSize.Medium
+                                  ? styles.cart_grid_medium
+                                  : styles.cart_grid_large
                               }
                             >
                               {item.canvas.map((row, i1) =>

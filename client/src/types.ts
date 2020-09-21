@@ -40,6 +40,8 @@ export interface ArtworkListElement {
   artistName: string;
   size: number;
   hash: string;
+  seller: string;
+  extras?: any;
 }
 
 export enum View {
@@ -111,4 +113,18 @@ export interface CardProps {
   openArtworkPopup?: (artwork: ArtworkListElement) => any;
   setToastType: React.Dispatch<React.SetStateAction<ToastType>>;
   setToastText: React.Dispatch<React.SetStateAction<ReactNode>>;
+  cardDisplay: string;
+}
+
+export interface CardFooterProps {
+  artwork: ArtworkListElement;
+  styles: any;
+  address: string | undefined;
+  userAddress: string | undefined;
+  setToastType: any;
+  setToastText: any;
+  isOwnerConnected: boolean | undefined;
+  setFlippedCard: any;
+  setTransferRecipient: any;
+  display: string;
 }

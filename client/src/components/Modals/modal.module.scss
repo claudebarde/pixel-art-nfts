@@ -30,10 +30,16 @@
   grid-template-columns: repeat(12, 3px);
 }
 
-.cart_grid_default {
+.cart_grid_medium {
   display: grid;
   grid-template-rows: repeat(32, 1px);
   grid-template-columns: repeat(32, 1px);
+}
+
+.cart_grid_large {
+  display: grid;
+  grid-template-rows: repeat(48, 1px);
+  grid-template-columns: repeat(48, 1px);
 }
 
 .cart_total,

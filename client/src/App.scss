@@ -61,7 +61,7 @@ main {
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
-  padding: 10px 30px;
+  padding: 10px 20px;
 }
 
 aside {
@@ -349,11 +349,18 @@ footer {
   transform: rotateY(180deg);
 }
 
-.flip-container,
-.front,
-.back {
+.flip-container-portrait,
+.front-portrait,
+.back-portrait {
   width: 380px;
   height: 550px;
+}
+
+.flip-container-landscape,
+.front-landscape,
+.back-landscape {
+  width: 380px;
+  height: 350px;
 }
 
 /* flip speed goes here */
@@ -365,8 +372,10 @@ footer {
 }
 
 /* hide back of pane during swap */
-.front,
-.back {
+.front-portrait,
+.front-landscape,
+.back-portrait,
+.back-landscape {
   backface-visibility: hidden;
 
   position: absolute;
@@ -377,14 +386,16 @@ footer {
 }
 
 /* front pane, placed above back */
-.front {
+.front-portrait,
+.front-landscape {
   z-index: 2;
   /* for firefox 31 */
   transform: rotateY(0deg);
 }
 
 /* back, initially hidden pane */
-.back {
+.back-portrait,
+.back-landscape {
   transform: rotateY(180deg);
 }
 
