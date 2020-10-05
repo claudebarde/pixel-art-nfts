@@ -5,7 +5,9 @@ import {
   ArtworkListElement,
   GridSize,
   TokenMetadata,
-  View
+  View,
+  Canvas,
+  IPFSResponse
 } from "../../../types";
 import config from "../../../config";
 import { Context } from "../../../Context";
@@ -35,7 +37,7 @@ const Market: React.FC = () => {
   const [selectedSize, setSelectSize] = useState<GridSize | string>("all");
   const [orderByPrice, setOrderByPrice] = useState<string>();
   const [cardDisplay, setCardDisplay] = useState("portrait"); // portrait or landscape
-  const [initialCounter, setInitialCounter] = useState(0);
+  const [artworkLoadingCounter, setArtworkLoadingCounter] = useState(0);
   const [initialThreshold, setInitialThreshold] = useState(6);
   const { token_id } = useParams();
   const location = useLocation();
@@ -47,13 +49,16 @@ const Market: React.FC = () => {
     { value: GridSize.Large, label: "48x48" }
   ];
 
+  const artworkLoadingIncrement = 6;
+
   const openArtworkPopup = artwork => {
     setArtworkModal(artwork);
     setOpenArtworkModal(true);
   };
 
   const loadArtPieces = async storage => {
-    if (initialCounter > 0) setLoadingArtPieces(true);
+    const startTimer = performance.now();
+
     if (!setTokens || !setArtworkList || !setEntries) return;
     // no need to show the market loading if the artwork is already loaded
     if (artworkList && artworkList.length > 0) setLoadingMarket(false);
@@ -71,7 +76,9 @@ const Market: React.FC = () => {
       );
       let respEntries: any[] = await response.json();
       // entry.data.value is null if key has been removed
-      respEntries = respEntries.filter(entry => entry.data.value !== null);
+      respEntries = respEntries
+        .filter(entry => entry.data.value !== null)
+        .slice(0, 20);
       respEntries.sort((a, b) =>
         a.timestamp > b.timestamp ? -1 : b.timestamp > a.timestamp ? 1 : 0
       );
@@ -81,59 +88,177 @@ const Market: React.FC = () => {
     }
 
     if (localEntries && localEntries.length > 0 && storage) {
-      const artPieces: any[] = [];
-      const tempEntries = [...localEntries];
-      let counter = initialCounter;
-      for (const entry of localEntries) {
-        // must be a valid IPFS hash
-        if (
-          entry.data.key.value.length === 46 &&
-          entry.data.key.value.slice(0, 2) === "Qm"
-        ) {
-          const tkmt = (await storage?.token_metadata.get(
-            entry.data.key.value
-          )) as TokenMetadata;
-          if (tkmt && tkmt.market && counter < initialThreshold) {
-            // gets info for each piece from the IPFS
-            const response = await fetch(
-              `https://gateway.pinata.cloud/ipfs/${entry.data.key.value}`
-            );
-            const result = await response.json();
-            let artPiece = {
-              ...result,
-              ipfsHash: entry.data.key.value,
-              seller: entry.data.value.value
-            };
-            // gets value from the blockchain
-            const createdOn = await tkmt.extras.get("createdOn");
-            const canvasHash = await tkmt.extras.get("canvasHash");
-            if (canvasHash === artPiece.hash) {
-              counter++;
-              const price = (tkmt.price as BigNumber).toNumber();
-              artPiece = {
-                ...artPiece,
-                timestamp: +createdOn,
-                price,
-                market: true
-              };
+      if (artworkList?.length === 0) {
+        // if artwork list isloading for the first time
+        const artPieces: any[] = [];
+        let counter = artworkLoadingCounter;
 
-              artPieces.push(artPiece);
+        const tempArtworkList: ArtworkListElement[] = [];
+        const newArtworks = localEntries.map(async (entry, i) => {
+          if (
+            entry.data.key.value.length === 46 &&
+            entry.data.key.value.slice(0, 2) === "Qm"
+          ) {
+            // gets data
+            const ipfsHash = entry.data.key.value;
+            const response = await fetch(
+              `https://gateway.pinata.cloud/ipfs/${ipfsHash}`
+            );
+            // response from the IPFS
+            const result: IPFSResponse = await response.json();
+            // extra data from the blockchain
+            const seller = await storage.ledger.get(ipfsHash);
+            const tkmt = (await storage?.token_metadata.get(
+              entry.data.key.value
+            )) as TokenMetadata;
+            if (tkmt && tkmt.market) {
+              const createdOn: number = await tkmt.extras.get("createdOn");
+              const author: string = await tkmt.extras.get("createdBy");
+              const canvasHash: string = await tkmt.extras.get("canvasHash");
+              const artPiece: ArtworkListElement = {
+                ...result,
+                ipfsHash,
+                timestamp: +createdOn,
+                price: tkmt.price as number,
+                market: tkmt.market,
+                seller
+              };
+              tempArtworkList.push(artPiece);
             }
-          } else if (counter > initialThreshold - 1) {
-            setInitialThreshold(initialThreshold * 2);
-            break;
           }
+        });
+
+        await Promise.all(newArtworks);
+        tempArtworkList.sort((a, b) =>
+          a.timestamp > b.timestamp ? -1 : b.timestamp > a.timestamp ? 1 : 0
+        );
+        setLoadingMarket(false);
+        setTokens([...artworkList!, ...tempArtworkList]);
+        setArtworkList([...artworkList!, ...tempArtworkList.slice(0, 6)]);
+        setArtworkLoadingCounter(
+          artworkLoadingCounter + artworkLoadingIncrement
+        );
+
+        const endTimer = performance.now();
+        console.log(`Loading time: ${endTimer - startTimer} milliseconds`);
+      } else {
+        setLoadingArtPieces(true);
+        // infinite scroll
+        // 6 more artwork pieces are loaded in the artwork list
+        // while 6 other are fetched from the indexer
+        if (
+          tokens?.length &&
+          tokens?.length > artworkLoadingCounter + artworkLoadingIncrement
+        ) {
+          // there are still items to load
+          const newCounter = artworkLoadingCounter + artworkLoadingIncrement;
+          const itemsToLoad = tokens.slice(artworkLoadingCounter, newCounter);
+          setArtworkList([...artworkList!, ...itemsToLoad]);
+          setArtworkLoadingCounter(newCounter);
+        } else if (
+          tokens?.length &&
+          tokens?.length < artworkLoadingCounter + artworkLoadingIncrement &&
+          tokens?.length > artworkLoadingCounter
+        ) {
+          // there are some items but less that the increment value
+          const newCounter = artworkLoadingCounter + artworkLoadingIncrement;
+          const itemsToLoad = tokens.slice(
+            artworkLoadingCounter,
+            tokens.length
+          );
+          setArtworkList([...artworkList!, ...itemsToLoad]);
+          setArtworkLoadingCounter(newCounter);
         }
-        tempEntries.shift();
+        setLoadingArtPieces(false);
       }
-      // entries are updated so we don't use the same again after infinite scroll
-      setEntries([...tempEntries]);
-      setLoadingMarket(false);
-      setTokens([...artworkList!, ...artPieces]);
-      setArtworkList([...artworkList!, ...artPieces]);
-      setInitialCounter(counter);
     }
-    setLoadingArtPieces(false);
+    /*setEntries([...tempEntries]);
+    setLoadingMarket(false);
+    setTokens([...artworkList!, ...artPieces]);
+    setArtworkList([...artworkList!, ...artPieces]);
+    setInitialCounter(counter);*/
+
+    /*for (const entry of localEntries) {
+      // must be a valid IPFS hash
+      if (
+        entry.data.key.value.length === 46 &&
+        entry.data.key.value.slice(0, 2) === "Qm" &&
+        sideCounter < initialThreshold
+      ) {
+        const tkmt = (await storage?.token_metadata.get(
+          entry.data.key.value
+        )) as TokenMetadata;
+        if (tkmt && tkmt.market) {
+          const createdOn: number = await tkmt.extras.get("createdOn");
+          const author: string = await tkmt.extras.get("createdBy");
+          const canvasHash: string = await tkmt.extras.get("canvasHash");
+          tempArtworkList.push({
+            name: tkmt.name as string,
+            price: tkmt.price as number,
+            artistName: "unknown",
+            author: author,
+            ipfsHash: entry.data.key.value as string,
+            canvas: [] as Canvas,
+            timestamp: createdOn,
+            size: 0,
+            hash: canvasHash,
+            seller: ""
+          });
+          sideCounter++;
+        }
+      }
+    }
+    console.log(tempArtworkList);
+    setArtworkList([...artworkList!, ...tempArtworkList]);
+
+    for (const entry of localEntries) {
+      // must be a valid IPFS hash
+      if (
+        entry.data.key.value.length === 46 &&
+        entry.data.key.value.slice(0, 2) === "Qm"
+      ) {
+        const tkmt = (await storage?.token_metadata.get(
+          entry.data.key.value
+        )) as TokenMetadata;
+        if (tkmt && tkmt.market && counter < initialThreshold) {
+          // gets info for each piece from the IPFS
+          const response = await fetch(
+            `https://gateway.pinata.cloud/ipfs/${entry.data.key.value}`
+          );
+          const result = await response.json();
+          let artPiece = {
+            ...result,
+            ipfsHash: entry.data.key.value,
+            seller: entry.data.value.value
+          };
+          // gets value from the blockchain
+          const createdOn = await tkmt.extras.get("createdOn");
+          const canvasHash = await tkmt.extras.get("canvasHash");
+          if (canvasHash === artPiece.hash) {
+            counter++;
+            const price = (tkmt.price as BigNumber).toNumber();
+            artPiece = {
+              ...artPiece,
+              timestamp: +createdOn,
+              price,
+              market: true
+            };
+
+            artPieces.push(artPiece);
+          }
+        } else if (counter > initialThreshold - 1) {
+          setInitialThreshold(initialThreshold * 2);
+          break;
+        }
+      }
+      tempEntries.shift();
+    }
+    // entries are updated so we don't use the same again after infinite scroll
+    setEntries([...tempEntries]);
+    setLoadingMarket(false);
+    setTokens([...artworkList!, ...artPieces]);
+    setArtworkList([...artworkList!, ...artPieces]);
+    setInitialCounter(counter);*/
   };
 
   const handleScroll = async e => {

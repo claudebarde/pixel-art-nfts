@@ -19,6 +19,16 @@ export interface IPFSObject {
   artistName?: string;
 }
 
+export interface IPFSResponse {
+  artistName: string;
+  author: string;
+  canvas: Canvas;
+  createdOn: number;
+  hash: string;
+  name: string;
+  size: number;
+}
+
 export interface TokenMetadata {
   token_id: string;
   symbol: string;
@@ -41,6 +51,7 @@ export interface ArtworkListElement {
   size: number;
   hash: string;
   seller: string;
+  market: boolean;
   extras?: any;
 }
 
@@ -106,7 +117,7 @@ export interface State {
 }
 
 export interface CardProps {
-  artwork: any;
+  artwork: ArtworkListElement;
   i: number;
   styles: any;
   view: View;

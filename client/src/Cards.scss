@@ -107,6 +107,37 @@ $large-grid-blocks: 48;
   cursor: pointer;
 }
 
+.card__empty_canvas {
+  height: 80%;
+  width: 80%;
+  background-color: transparent;
+  border-radius: 5px;
+  position: relative;
+
+  &::after {
+    content: "";
+    display: block;
+    height: 90%;
+    width: 50%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.3),
+      transparent
+    );
+    opacity: 0.3s;
+    animation: loading-canvas 0.8s infinite;
+    position: absolute;
+    transform: translateX(-20%);
+  }
+}
+
+@keyframes loading-canvas {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
 .card__container {
   width: 100%;
   display: flex;

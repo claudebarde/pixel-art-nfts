@@ -271,6 +271,9 @@ const CardGenerator: React.FC<CardProps> = ({
                   }
                 }}
               >
+                {artwork.canvas.length === 0 && (
+                  <div className={styles.card__empty_canvas}></div>
+                )}
                 {artwork.size === GridSize.Small && (
                   <div
                     className={styles.pixelGridSmall}
@@ -401,7 +404,11 @@ const CardGenerator: React.FC<CardProps> = ({
                       onClick={() => {
                         if (location?.includes("market")) {
                           // market page
-                          if (!cart?.includes(artwork.ipfsHash)) {
+                          if (
+                            cart?.filter(
+                              item => item.ipfsHash === artwork.ipfsHash
+                            ).length === 0
+                          ) {
                             buy({
                               ipfsHash: artwork.ipfsHash,
                               seller: artwork.seller,
@@ -558,7 +565,6 @@ const CardGenerator: React.FC<CardProps> = ({
                 </button>
               </div>
             </div>
-            <br />
             <br />
             <div className={styles.card__footer}>
               <div

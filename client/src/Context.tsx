@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Tezos, ContractAbstraction, Wallet } from "@taquito/taquito";
 import config from "./config";
 import {
