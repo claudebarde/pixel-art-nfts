@@ -882,7 +882,7 @@ let buy_tokens ((list_of_token_id, storage) : token_id list * collection_storage
         if token.market = true
         then 
             (* Checks if the amount matches the price*)
-            if Tezos.amount >= token.price
+            if Tezos.amount = token.price
             then 
                 (* Proceeds with transfer *)
                 let artist: address = match Big_map.find_opt token_id storage.ledger with
@@ -899,7 +899,7 @@ let buy_tokens ((list_of_token_id, storage) : token_id list * collection_storage
                         storage.token_metadata in
                 (* Credits artist *)
                 let new_revenues = match Big_map.find_opt artist storage.revenues with
-                    | None -> Big_map.add artist Tezos.amount storage.revenues
+                    | None -> Big_map.add artist token.price storage.revenues
                     | Some blc -> Big_map.update artist (Some (token.price + blc)) storage.revenues in
             
                 { storage with ledger = new_ledger ; token_metadata = new_token_metadata ; revenues = new_revenues }

@@ -62,8 +62,6 @@
 
   &:active::before {
     content: "";
-    width: 20px;
-    height: 20px;
     background-color: darken(#f2c512, 5);
     position: absolute;
     top: -12%;
@@ -80,7 +78,6 @@
     top: 12%;
     left: 12%;
     border-radius: 50%;
-    animation: mount-radio-button 0.3s ease-in 0s 1 normal;
   }
 }
 
@@ -97,4 +94,9 @@
     top: 12%;
     left: 12%;
   }
+}
+
+.loading_art_pieces {
+  background-color: transparent;
+  padding: 10px;
 }

@@ -1,4 +1,10 @@
-import React, { useEffect, useState, useContext, ReactNode } from "react";
+import React, {
+  useEffect,
+  useState,
+  useContext,
+  useRef,
+  ReactNode
+} from "react";
 import { useParams, useLocation } from "react-router-dom";
 import styles from "./market.module.scss";
 import {
@@ -6,12 +12,10 @@ import {
   GridSize,
   TokenMetadata,
   View,
-  Canvas,
   IPFSResponse
 } from "../../../types";
 import config from "../../../config";
 import { Context } from "../../../Context";
-import { BigNumber } from "bignumber.js";
 import CardGenerator from "../Card/CardGenerator";
 import ArtworkModal from "../../Modals/ArtworkModal";
 import { Toast, ToastType } from "../../Toast/Toast";
@@ -41,6 +45,7 @@ const Market: React.FC = () => {
   const [initialThreshold, setInitialThreshold] = useState(6);
   const { token_id } = useParams();
   const location = useLocation();
+  const cards = useRef<HTMLDivElement>(null);
 
   const sizeOptions = [
     { value: "all", label: "All" },
@@ -61,7 +66,9 @@ const Market: React.FC = () => {
 
     if (!setTokens || !setArtworkList || !setEntries) return;
     // no need to show the market loading if the artwork is already loaded
-    if (artworkList && artworkList.length > 0) setLoadingMarket(false);
+    if (artworkList && artworkList.length > 0) {
+      setLoadingMarket(false);
+    }
 
     let localEntries = !entries ? undefined : [...entries];
     if (!entries) {
@@ -89,10 +96,7 @@ const Market: React.FC = () => {
 
     if (localEntries && localEntries.length > 0 && storage) {
       if (artworkList?.length === 0) {
-        // if artwork list isloading for the first time
-        const artPieces: any[] = [];
-        let counter = artworkLoadingCounter;
-
+        // if artwork list is loading for the first time
         const tempArtworkList: ArtworkListElement[] = [];
         const newArtworks = localEntries.map(async (entry, i) => {
           if (
@@ -142,10 +146,10 @@ const Market: React.FC = () => {
         const endTimer = performance.now();
         console.log(`Loading time: ${endTimer - startTimer} milliseconds`);
       } else {
-        setLoadingArtPieces(true);
         // infinite scroll
         // 6 more artwork pieces are loaded in the artwork list
         // while 6 other are fetched from the indexer
+        const cardsHeight = cards.current?.scrollHeight || 0;
         if (
           tokens?.length &&
           tokens?.length > artworkLoadingCounter + artworkLoadingIncrement
@@ -153,8 +157,11 @@ const Market: React.FC = () => {
           // there are still items to load
           const newCounter = artworkLoadingCounter + artworkLoadingIncrement;
           const itemsToLoad = tokens.slice(artworkLoadingCounter, newCounter);
-          setArtworkList([...artworkList!, ...itemsToLoad]);
-          setArtworkLoadingCounter(newCounter);
+          let newItems = await reorderItems([...artworkList!, ...itemsToLoad]);
+          if (newItems.length > 0) {
+            setArtworkList(newItems);
+            setArtworkLoadingCounter(newCounter);
+          }
         } else if (
           tokens?.length &&
           tokens?.length < artworkLoadingCounter + artworkLoadingIncrement &&
@@ -166,106 +173,54 @@ const Market: React.FC = () => {
             artworkLoadingCounter,
             tokens.length
           );
-          setArtworkList([...artworkList!, ...itemsToLoad]);
+          // reorders items according to current settings
+          let newItems = await reorderItems([...artworkList!, ...itemsToLoad]);
+
+          setArtworkList(newItems);
           setArtworkLoadingCounter(newCounter);
         }
         setLoadingArtPieces(false);
+        // scrolls down to show new cards
+        cards.current?.scrollTo({
+          top: cardsHeight,
+          left: 0,
+          behavior: "smooth"
+        });
       }
     }
-    /*setEntries([...tempEntries]);
-    setLoadingMarket(false);
-    setTokens([...artworkList!, ...artPieces]);
-    setArtworkList([...artworkList!, ...artPieces]);
-    setInitialCounter(counter);*/
+  };
 
-    /*for (const entry of localEntries) {
-      // must be a valid IPFS hash
-      if (
-        entry.data.key.value.length === 46 &&
-        entry.data.key.value.slice(0, 2) === "Qm" &&
-        sideCounter < initialThreshold
-      ) {
-        const tkmt = (await storage?.token_metadata.get(
-          entry.data.key.value
-        )) as TokenMetadata;
-        if (tkmt && tkmt.market) {
-          const createdOn: number = await tkmt.extras.get("createdOn");
-          const author: string = await tkmt.extras.get("createdBy");
-          const canvasHash: string = await tkmt.extras.get("canvasHash");
-          tempArtworkList.push({
-            name: tkmt.name as string,
-            price: tkmt.price as number,
-            artistName: "unknown",
-            author: author,
-            ipfsHash: entry.data.key.value as string,
-            canvas: [] as Canvas,
-            timestamp: createdOn,
-            size: 0,
-            hash: canvasHash,
-            seller: ""
-          });
-          sideCounter++;
-        }
-      }
+  const reorderItems = async (
+    items: ArtworkListElement[]
+  ): Promise<ArtworkListElement[]> => {
+    // order by price
+    if (orderByPrice === "up") {
+      items.sort((a, b) => (+a.price < +b.price ? -1 : 1));
+    } else if (orderByPrice === "down") {
+      items.sort((a, b) => (+a.price > +b.price ? -1 : 1));
+    } else {
+      items.sort((a, b) =>
+        a.timestamp > b.timestamp ? -1 : b.timestamp > a.timestamp ? 1 : 0
+      );
     }
-    console.log(tempArtworkList);
-    setArtworkList([...artworkList!, ...tempArtworkList]);
-
-    for (const entry of localEntries) {
-      // must be a valid IPFS hash
-      if (
-        entry.data.key.value.length === 46 &&
-        entry.data.key.value.slice(0, 2) === "Qm"
-      ) {
-        const tkmt = (await storage?.token_metadata.get(
-          entry.data.key.value
-        )) as TokenMetadata;
-        if (tkmt && tkmt.market && counter < initialThreshold) {
-          // gets info for each piece from the IPFS
-          const response = await fetch(
-            `https://gateway.pinata.cloud/ipfs/${entry.data.key.value}`
-          );
-          const result = await response.json();
-          let artPiece = {
-            ...result,
-            ipfsHash: entry.data.key.value,
-            seller: entry.data.value.value
-          };
-          // gets value from the blockchain
-          const createdOn = await tkmt.extras.get("createdOn");
-          const canvasHash = await tkmt.extras.get("canvasHash");
-          if (canvasHash === artPiece.hash) {
-            counter++;
-            const price = (tkmt.price as BigNumber).toNumber();
-            artPiece = {
-              ...artPiece,
-              timestamp: +createdOn,
-              price,
-              market: true
-            };
-
-            artPieces.push(artPiece);
-          }
-        } else if (counter > initialThreshold - 1) {
-          setInitialThreshold(initialThreshold * 2);
-          break;
-        }
-      }
-      tempEntries.shift();
+    // order by size
+    if (selectedSize !== "all") {
+      items = [...items].filter(token => token.size === +selectedSize);
     }
-    // entries are updated so we don't use the same again after infinite scroll
-    setEntries([...tempEntries]);
-    setLoadingMarket(false);
-    setTokens([...artworkList!, ...artPieces]);
-    setArtworkList([...artworkList!, ...artPieces]);
-    setInitialCounter(counter);*/
+
+    return items.filter(
+      (item, index, self) =>
+        self.findIndex(
+          t => t.ipfsHash === item.ipfsHash && t.hash === item.hash
+        ) === index
+    );
   };
 
   const handleScroll = async e => {
     const bottom =
       e.target.scrollHeight - e.target.scrollTop === e.target.clientHeight;
-    if (bottom && !loadingArtPieces) {
-      await loadArtPieces(storage);
+    if (bottom && tokens && artworkList && tokens.length > artworkList.length) {
+      setLoadingArtPieces(true);
     }
   };
 
@@ -274,6 +229,14 @@ const Market: React.FC = () => {
       loadArtPieces(storage);
     })();
   }, [storage, token_id]);
+
+  useEffect(() => {
+    (async () => {
+      if (loadingArtPieces) {
+        await loadArtPieces(storage);
+      }
+    })();
+  }, [loadingArtPieces]);
 
   return (
     <>
@@ -301,13 +264,24 @@ const Market: React.FC = () => {
                     setSelectSize(val);
                     // filters tokens
                     if (val === "all") {
-                      setArtworkList(tokens as ArtworkListElement[]);
-                    } else {
-                      const newTokens = [...tokens!].filter(
-                        token => token.size === +val
+                      setArtworkList(
+                        tokens
+                          ?.sort((a, b) =>
+                            a.timestamp > b.timestamp
+                              ? -1
+                              : b.timestamp > a.timestamp
+                              ? 1
+                              : 0
+                          )
+                          .slice(0, 6) as ArtworkListElement[]
                       );
+                    } else {
+                      const newTokens = [...tokens!]
+                        .filter(token => token.size === +val)
+                        .slice(0, 6);
                       setArtworkList(newTokens);
                     }
+                    setArtworkLoadingCounter(6);
                   }}
                   value={selectedSize}
                 >
@@ -340,8 +314,11 @@ const Market: React.FC = () => {
                       newTokens.sort((a, b) => (+a.price > +b.price ? -1 : 1));
                       setArtworkList(newTokens as ArtworkListElement[]);
                     } else {
-                      setArtworkList(tokens as ArtworkListElement[]);
+                      setArtworkList(
+                        tokens?.slice(0, 6) as ArtworkListElement[]
+                      );
                     }
+                    setArtworkLoadingCounter(6);
                   }}
                 >
                   <option value={undefined}>None</option>
@@ -370,7 +347,12 @@ const Market: React.FC = () => {
             </div>
           </>
         )}
-        <div className={styles.cards} onScroll={handleScroll}>
+        <div
+          id="cards"
+          ref={cards}
+          className={styles.cards}
+          onScroll={handleScroll}
+        >
           {artworkList?.map((artwork, i) => (
             <CardGenerator
               key={artwork.hash}
@@ -387,14 +369,13 @@ const Market: React.FC = () => {
               cardDisplay={cardDisplay}
             />
           ))}
-          {loadingArtPieces && (
-            <>
-              <div></div>
-              <div>Loading more artwork...</div>
-              <div></div>
-            </>
-          )}
         </div>
+        {loadingArtPieces && (
+          <div className={styles.loading_art_pieces}>
+            {console.log(loadingArtPieces)}
+            Loading more artwork...
+          </div>
+        )}
         {artworkList && artworkList.length === 0 && !loadingMarket && (
           <div>
             <h2>No artwork available yet</h2>
