@@ -7,6 +7,7 @@ import Canvas from "./components/Body/Canvas/Canvas";
 import Market from "./components/Body/Market/Market";
 import User from "./components/Body/User/User";
 import Footer from "./components/Footer/Footer";
+import TermsAndConditions from "./components/Footer/TermsAndConditions";
 
 function App() {
   return (
@@ -23,12 +24,15 @@ function App() {
           <Route path="/draw">
             <Canvas />
           </Route>
+          <Route path="/terms">
+            <TermsAndConditions />
+          </Route>
           <Route path="/">
             <Home />
           </Route>
         </Switch>
+        <Footer />
       </Router>
-      <Footer />
     </div>
   );
 }

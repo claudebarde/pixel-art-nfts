@@ -16,5 +16,6 @@ export default {
   // previous id on CTHG: 16420,
   TOKEN_METADATA_ID: 17143,
   // previous id on CTHG: 16423
-  version: "1.12.0"
+  version: "1.14.0",
+  termsIPFShash: "QmPGvbxzhjCPogpXG53gY9FYFbxH4qnXdVGK7pdKkdwUYr"
 };

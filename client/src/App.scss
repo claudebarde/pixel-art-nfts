@@ -48,10 +48,10 @@ footer {
   justify-content: space-between;
   align-items: center;
   padding: 5px 10px;
+  font-size: 0.8rem;
 
   .address-display {
     font-style: italic;
-    font-size: 0.8rem;
   }
 }
 
@@ -480,6 +480,14 @@ footer {
 
 .custom-dropdown::after {
   color: rgba(0, 0, 0, 0.4);
+}
+
+.terms {
+  height: 85%;
+  width: 65%;
+  margin: 0 auto;
+  overflow: auto;
+  padding: 40px 20px;
 }
 
 @media (max-width: 700px) {

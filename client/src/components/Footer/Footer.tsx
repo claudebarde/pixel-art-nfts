@@ -1,10 +1,13 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import config from "../../config";
 
 const Footer: React.FC = () => {
   return (
     <footer>
-      <div></div>
+      <div>
+        <Link to="/terms">Terms and conditions</Link>
+      </div>
       <div>
         <span className="address-display">v{config.version}</span>{" "}
         <a
