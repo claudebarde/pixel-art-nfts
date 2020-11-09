@@ -16,6 +16,7 @@ export interface IPFSObject {
   size: number;
   author: string;
   name: string;
+  url: string;
   artistName?: string;
 }
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { Tezos, ContractAbstraction, Wallet } from "@taquito/taquito";
+import { TezosToolkit, ContractAbstraction, Wallet } from "@taquito/taquito";
 import config from "./config";
 import {
   Storage,
@@ -45,7 +45,7 @@ export const Provider: React.FC = props => {
     setView,
     gridSize,
     setGridSize,
-    Tezos,
+    Tezos: new TezosToolkit("https://testnet-tezos.giganode.io"),
     userAddress,
     setUserAddress,
     network: config.NETWORK[config.ENV],
@@ -72,8 +72,8 @@ export const Provider: React.FC = props => {
     setFirebase(firebase);
 
     (async () => {
-      Tezos.setRpcProvider(state.network);
       // creates contract instance
+      const { Tezos } = state;
       try {
         const newInstance: ContractAbstraction<Wallet> = await Tezos.wallet.at(
           config.CONTRACT[config.ENV]
@@ -94,16 +94,14 @@ export const Provider: React.FC = props => {
             const pkh = await connectWithBeacon(Tezos, state.network);
             if (pkh) {
               setUserAddress(pkh);
-              let balance: number | BigNumber = 0;
-              balance = await Tezos.tz.getBalance(pkh);
+              let balance = await Tezos.tz.getBalance(pkh);
               setUserBalance(balance.toNumber());
             }
           } else if (wallet.walletType === "thanos") {
             const pkh = await connectWithThanos(Tezos, state.network);
             if (pkh) {
               setUserAddress(pkh);
-              let balance: number | BigNumber = 0;
-              balance = await Tezos.tz.getBalance(pkh);
+              let balance = await Tezos.tz.getBalance(pkh);
               setUserBalance(balance.toNumber());
             }
           }

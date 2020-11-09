@@ -17,12 +17,10 @@ import {
   ModalType,
   Modal
 } from "../../Modals/Modal";
-import config from "../../../config";
 import { IPFSObject, TokenMetadata } from "../../../types";
 import { saveCanvas, loadCanvas } from "./localCanvas";
 import { Toast, ToastType } from "../../Toast/Toast";
 import WalletModal from "../../Modals/WalletModal";
-import { burnPixelArt } from "../../../../functions/src/index";
 
 const [blockNumberSmall, blockNumberMedium, blockNumberLarge]: number[] = [
   12,
@@ -86,6 +84,11 @@ const CanvasPainting: React.FC = () => {
   const [toastText, setToastText] = useState<ReactNode>();
   const [toastType, setToastType] = useState<ToastType>(ToastType.DEFAULT);
   const [cursorType, setCursorType] = useState<CursorType>(CursorType.PEN);
+  const [virtualCanvas, setVirtualCanvas] = useState({
+    width: 32 * 4,
+    height: 32 * 4
+  });
+  const virtualCanvasRef = useRef(null);
 
   const resetCanvas = () => {
     if (colorPicker && bgColorPicker) {
@@ -244,12 +247,28 @@ const CanvasPainting: React.FC = () => {
       canvas = [[""]];
     }
     if (canvas && canvas.length > 1 && userAddress) {
+      // creates a URL for the pixel artwork
+      const cnvs: HTMLCanvasElement | null = virtualCanvasRef.current;
+      if (!cnvs) return;
+      const ctx = cnvs!.getContext("2d");
+      const pixelSize =
+        gridSize === GridSize.Small ? 6 : gridSize === GridSize.Medium ? 4 : 2;
+      canvas.forEach((row, i1) => {
+        row.forEach((color, i2) => {
+          ctx!.fillStyle = color;
+          ctx!.fillRect(i2 * pixelSize, i1 * pixelSize, pixelSize, pixelSize);
+        });
+      });
+      let url = cnvs!.toDataURL("image/png");
+      console.log(url);
+
       const IPFSObject: IPFSObject = {
         canvas,
         size: gridSize as number,
         author: userAddress as string,
         name: tkmt.name,
-        artistName: tkmt.artistName
+        artistName: tkmt.artistName,
+        url
       };
       const pinPixelArt = firebase.functions().httpsCallable("pinPixelArt");
 
@@ -500,6 +519,12 @@ const CanvasPainting: React.FC = () => {
   return (
     <>
       <main>
+        <canvas
+          ref={virtualCanvasRef}
+          width={virtualCanvas.width}
+          height={virtualCanvas.height}
+          style={{ display: "none" }}
+        ></canvas>
         <div className={styles.layout}>
           <div className={styles.layout__tools}>
             <h2>
@@ -522,6 +547,7 @@ const CanvasPainting: React.FC = () => {
                   onChange={() => {
                     if (setGridSize) setGridSize(GridSize.Small);
                     activeGridSize.current = GridSize.Small;
+                    setVirtualCanvas({ width: 12 * 4, height: 12 * 4 });
                     resetCanvas();
                   }}
                 />
@@ -542,6 +568,7 @@ const CanvasPainting: React.FC = () => {
                   onChange={() => {
                     if (setGridSize) setGridSize(GridSize.Medium);
                     activeGridSize.current = GridSize.Medium;
+                    setVirtualCanvas({ width: 32 * 4, height: 32 * 4 });
                     resetCanvas();
                   }}
                 />
@@ -562,6 +589,7 @@ const CanvasPainting: React.FC = () => {
                   onChange={() => {
                     if (setGridSize) setGridSize(GridSize.Large);
                     activeGridSize.current = GridSize.Large;
+                    setVirtualCanvas({ width: 48 * 4, height: 48 * 4 });
                     resetCanvas();
                   }}
                 />

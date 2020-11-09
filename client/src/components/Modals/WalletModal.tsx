@@ -23,7 +23,7 @@ const WalletModal: React.FC<{ close: any }> = ({ close }) => {
     "44'/1729'/0'/0'"
   );
   const [derivationType, setDerivationType] = useState<DerivationType>(
-    DerivationType.tz1
+    DerivationType.ED25519
   );
   const [addressFromLedger, setAddressFromLedger] = useState("");
   const [ledgerSigner, setLedgerSigner] = useState<LedgerSigner>();
@@ -32,8 +32,7 @@ const WalletModal: React.FC<{ close: any }> = ({ close }) => {
     if (!Tezos || !setUserBalance) return;
 
     try {
-      let balance: number | BigNumber = 0;
-      balance = await Tezos.tz.getBalance(address);
+      let balance = await Tezos.tz.getBalance(address);
       setUserBalance(balance.toNumber());
     } catch (error) {
       console.log(error);
@@ -244,29 +243,29 @@ const WalletModal: React.FC<{ close: any }> = ({ close }) => {
                 <label>
                   <input
                     type="radio"
-                    value={DerivationType.tz1}
-                    checked={derivationType === DerivationType.tz1}
-                    onChange={e => setDerivationType(DerivationType.tz1)}
+                    value={DerivationType.ED25519}
+                    checked={derivationType === DerivationType.ED25519}
+                    onChange={e => setDerivationType(DerivationType.ED25519)}
                   />{" "}
-                  tz1
+                  ED25519
                 </label>
                 <label>
                   <input
                     type="radio"
-                    value={DerivationType.tz2}
-                    checked={derivationType === DerivationType.tz2}
-                    onChange={e => setDerivationType(DerivationType.tz2)}
+                    value={DerivationType.P256}
+                    checked={derivationType === DerivationType.P256}
+                    onChange={e => setDerivationType(DerivationType.P256)}
                   />{" "}
-                  tz2
+                  P256
                 </label>
                 <label>
                   <input
                     type="radio"
-                    value={DerivationType.tz3}
-                    checked={derivationType === DerivationType.tz3}
-                    onChange={e => setDerivationType(DerivationType.tz3)}
+                    value={DerivationType.SECP256K1}
+                    checked={derivationType === DerivationType.SECP256K1}
+                    onChange={e => setDerivationType(DerivationType.SECP256K1)}
                   />{" "}
-                  tz3
+                  SECP256K1
                 </label>
               </div>
               <p>Your address:</p>

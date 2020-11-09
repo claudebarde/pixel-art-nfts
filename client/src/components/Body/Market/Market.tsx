@@ -372,7 +372,6 @@ const Market: React.FC = () => {
         </div>
         {loadingArtPieces && (
           <div className={styles.loading_art_pieces}>
-            {console.log(loadingArtPieces)}
             Loading more artwork...
           </div>
         )}
